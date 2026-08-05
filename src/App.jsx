@@ -6,11 +6,14 @@ import BecomeRiderPage from "./components/BecomeRiderPage";
 import AboutPage from "./components/AboutPage";
 import SupportPage from "./components/SupportPage";
 import CustomerLoginPage from "./components/CustomerLoginPage";
+import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
+
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<CustomerLoginPage />} />
+        <Route path="/register" element={<CustomerRegistrationPage />} />
         <Route path="/" element={<AppKartHome />} />
         <Route path="/categories" element={<CategoriesPage />} />
         <Route path="/become-vendor" element={<BecomeVendorPage />} />
