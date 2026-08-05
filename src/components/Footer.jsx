@@ -43,7 +43,7 @@ export default function Footer() {
         <div className="grid md:grid-cols-5 gap-8 mb-10">
           <div className="md:col-span-1">
             <Link to="/" className="text-lg font-extrabold mb-2.5 block" style={{ fontFamily: "'Fraunces', serif" }}>
-              App<span className="text-blue-400">Kart</span>
+              Fill<span className="text-blue-400">Carts</span>
             </Link>
             <p className="text-sm text-slate-400 max-w-[200px]">Connecting local vendors, customers and delivery riders — one neighbourhood at a time.</p>
           </div>
@@ -64,7 +64,7 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="border-t border-slate-700 pt-5 text-base text-slate-500 text-center">© 2026 AppKart. All rights reserved.</div>
+        <div className="border-t border-slate-700 pt-5 text-base text-slate-500 text-center">© 2026 FillCarts. All rights reserved.</div>
       </div>
     </footer>
   );

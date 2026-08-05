@@ -2,13 +2,13 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
 import {
-  Store, MapPin, Search, User, ShoppingCart, ChevronRight, TrendingUp,
+  Store, User, ChevronRight, TrendingUp,
   Users, LayoutDashboard, Wallet, CheckCircle2, Star, ClipboardList,
   PackageCheck, Bell, Banknote, Building2, Phone, Mail, Upload
 } from "lucide-react";
 
 const benefits = [
-  { icon: Users, bg: "bg-blue-50", color: "text-blue-600", title: "More Customers", desc: "Reach thousands of local shoppers already using AppKart." },
+  { icon: Users, bg: "bg-blue-50", color: "text-blue-600", title: "More Customers", desc: "Reach thousands of local shoppers already using FillCarts." },
   { icon: TrendingUp, bg: "bg-teal-50", color: "text-teal-600", title: "Grow Your Sales", desc: "Vendors typically see steady order growth within weeks." },
   { icon: LayoutDashboard, bg: "bg-violet-50", color: "text-violet-600", title: "Easy Dashboard", desc: "Manage inventory, orders and earnings from one screen." },
   { icon: Wallet, bg: "bg-amber-50", color: "text-amber-700", title: "Fast Payouts", desc: "Transparent commission and weekly settlements." },
@@ -54,17 +54,10 @@ export default function BecomeVendorPage() {
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
-          <div className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></div>
-          <div className="hidden md:flex items-center gap-1.5 text-sm font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
-            <MapPin size={14} className="text-blue-600" /> Your Location
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
-            <Search size={16} /> <span>Search products, stores...</span>
-          </div>
-          <div className="flex items-center gap-2 ml-auto">
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><User size={16} /></button>
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><ShoppingCart size={16} /></button>
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
+          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></Link>
+          <div className="flex items-center gap-2">
+            <Link to="/login" className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:border-violet-500 transition-colors"><User size={16} /></Link>
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-6 pb-3 text-sm text-slate-500 font-medium flex items-center gap-1.5">

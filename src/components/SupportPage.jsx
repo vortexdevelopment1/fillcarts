@@ -70,7 +70,7 @@ export default function SupportPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
-          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>App<span className="text-blue-600">Kart</span></Link>
+          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></Link>
           <div className="hidden md:flex items-center gap-1.5 text-sm font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
             <MapPin size={14} className="text-blue-600" /> Your Location
           </div>
