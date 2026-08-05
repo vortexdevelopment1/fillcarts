@@ -66,7 +66,7 @@ router.post("/register-customer", (req, res) => {
             return res.status(500).send("Failed to create customer profile");
           }
 
-          res.status(201).send("Customer registered successfully");
+          return res.status(201).send("Customer registered successfully");
         }
       );
     }

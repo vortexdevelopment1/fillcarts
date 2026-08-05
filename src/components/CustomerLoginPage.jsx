@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
-  Phone, ShieldCheck, ArrowRight, ArrowLeft, Smartphone, QrCode,
-  RotateCcw, CheckCircle2
+  Phone,
+  ShieldCheck,
+  ArrowRight,
+  ArrowLeft,
+  Smartphone,
+  QrCode,
+  RotateCcw,
+  CheckCircle2,
 } from "lucide-react";
 import api from "../api";
 
@@ -85,18 +91,16 @@ export default function CustomerLoginPage() {
     }
 
     try {
-      const res = await api.post("/send-otp", {
+      await api.post("/send-otp", {
         contact,
         type: isEmail ? "email" : "sms",
       });
 
-      console.log(res.data);
       setError("");
       setStep("otp");
       setTimer(30);
     } catch (err) {
       setError(getErrorMessage(err));
-      console.error(err);
     }
   };
 
@@ -105,7 +109,9 @@ export default function CustomerLoginPage() {
     const next = [...otp];
     next[i] = val;
     setOtp(next);
-    if (val && i < 5) document.getElementById(`otp-${i + 1}`)?.focus();
+    if (val && i < 5) {
+      document.getElementById(`otp-${i + 1}`)?.focus();
+    }
   };
 
   const handleOtpKeyDown = (i, e) => {
@@ -151,7 +157,7 @@ export default function CustomerLoginPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-extrabold" style={{ fontFamily: "'Fraunces', serif" }}>
-            App<span className="text-blue-600">Kart</span>
+            Fill<span className="text-blue-600">Carts</span>
           </Link>
           <Link to="/" className="text-sm font-semibold text-slate-500 hover:text-blue-600 flex items-center gap-1.5">
             <ArrowLeft size={15} /> Back to Home
@@ -169,6 +175,7 @@ export default function CustomerLoginPage() {
             {step === "phone" && (
               <>
                 <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Log in to order</h1>
+                
                 <p className="text-sm text-slate-500 mb-7">Enter your mobile number or email to continue as a customer.</p>
 
                 <div className="flex gap-2 mb-4 rounded-full bg-slate-100 p-1">
@@ -193,7 +200,7 @@ export default function CustomerLoginPage() {
                     <div>
                       <label className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><Phone size={14} /> Mobile Number or Email</label>
                       <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden focus-within:border-blue-400">
-                        <span className="px-3.5 py-3 text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200">+</span>
+                        <span className="px-3.5 py-3 text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200">@</span>
                         <input
                           value={contact}
                           onChange={(e) => {
@@ -246,7 +253,7 @@ export default function CustomerLoginPage() {
                   New customer? <Link to="/register" className="text-blue-600 font-semibold">Create profile</Link>
                 </p>
                 <p className="text-xs text-slate-400 text-center mt-2">
-                  By continuing, you agree to AppKart's Terms & Privacy Policy.
+                  By continuing, you agree to FillCarts' Terms & Privacy Policy.
                 </p>
               </>
             )}
@@ -300,7 +307,10 @@ export default function CustomerLoginPage() {
                   </div>
                   <button
                     type="button"
-                    onClick={() => { setStep("phone"); setOtp(["", "", "", "", "", ""]); }}
+                    onClick={() => {
+                      setStep("phone");
+                      setOtp(["", "", "", "", "", ""]);
+                    }}
                     className="w-full text-sm font-semibold text-slate-500 flex items-center justify-center gap-1.5"
                   >
                     <ArrowLeft size={13} /> Change number
@@ -332,31 +342,20 @@ export default function CustomerLoginPage() {
           </div>
 
           <div className="mt-5 bg-white border border-slate-200 rounded-2xl p-5 flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
               <QrCode size={22} className="text-blue-600" />
             </div>
             <div className="flex-1">
               <div className="font-extrabold text-sm">Get the full experience</div>
-              <div className="text-sm text-slate-500">Download the AppKart app for faster ordering.</div>
+              <div className="text-sm text-slate-500">Download the FillCarts app for faster ordering.</div>
             </div>
           </div>
 
           <p className="text-center text-sm text-slate-400 mt-6">
-         Own a shop or want to deliver?{" "}
-       <Link
-    to="/become-vendor"
-    className="text-blue-600 font-semibold"
-    >
-    Become a Vendor
-  </Link>
-  {" "}·{" "}
-  <Link
-    to="/become-rider"
-    className="text-blue-600 font-semibold"
-  >
-    Become a Rider
-  </Link>
-</p>
+            Own a shop or want to deliver? <Link to="/become-vendor" className="text-blue-600 font-semibold">Become a Vendor</Link>
+            {' '} B7{' '}
+            <Link to="/become-rider" className="text-blue-600 font-semibold">Become a Rider</Link>
+          </p>
         </div>
       </div>
     </div>
