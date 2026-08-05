@@ -85,7 +85,7 @@ export default function CustomerLoginPage() {
       <header className="border-b border-slate-200 bg-white">
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <Link to="/" className="text-xl font-extrabold" style={{ fontFamily: "'Fraunces', serif" }}>
-            App<span className="text-blue-600">Kart</span>
+            Fill<span className="text-blue-600">Carts</span>
           </Link>
           <Link to="/" className="text-sm font-semibold text-slate-500 hover:text-blue-600 flex items-center gap-1.5">
             <ArrowLeft size={15} /> Back to Home
@@ -124,7 +124,7 @@ export default function CustomerLoginPage() {
                   </button>
                 </form>
                 <p className="text-xs text-slate-400 text-center mt-5">
-                  By continuing, you agree to AppKart's Terms & Privacy Policy.
+                  By continuing, you agree to FillCarts' Terms & Privacy Policy.
                 </p>
               </>
             )}
@@ -178,7 +178,7 @@ export default function CustomerLoginPage() {
               <div className="text-center py-4">
                 <CheckCircle2 size={44} className="text-blue-600 mx-auto mb-4" />
                 <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>You're logged in!</h1>
-                <p className="text-sm text-slate-500 mb-6">For the full experience — live tracking, saved addresses, faster checkout — continue on the AppKart app.</p>
+                <p className="text-sm text-slate-500 mb-6">For the full experience — live tracking, saved addresses, faster checkout — continue on the FillCarts app.</p>
                 <Link to="/" className="inline-block bg-slate-900 text-white font-bold rounded-full px-6 py-3 text-sm mb-6">Continue to Website</Link>
               </div>
             )}
@@ -191,7 +191,7 @@ export default function CustomerLoginPage() {
             </div>
             <div className="flex-1">
               <div className="font-extrabold text-sm">Get the full experience</div>
-              <div className="text-sm text-slate-500">Download the AppKart app for faster ordering.</div>
+              <div className="text-sm text-slate-500">Download the FillCarts app for faster ordering.</div>
             </div>
           </div>
 
