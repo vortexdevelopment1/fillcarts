@@ -113,10 +113,10 @@ export default function AppKartHome() {
         <div className="flex whitespace-nowrap animate-[marquee_22s_linear_infinite]">
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex">
-              <span className="px-10 flex items-center gap-2"><Truck size={13} /> Delivery in 15 minutes</span>
-              <span className="px-10 flex items-center gap-2"><Gift size={13} /> Today's offers live now</span>
-              <span className="px-10 flex items-center gap-2"><CreditCard size={13} /> Free delivery above ₹299</span>
-              <span className="px-10 flex items-center gap-2"><Moon size={13} /> Night delivery available</span>
+              <span className="px-10 flex items-center gap-2"><Zap size={13} className="text-amber-400" /> Express Local Delivery</span>
+              <span className="px-10 flex items-center gap-2"><Gift size={13} className="text-blue-400" /> Today's offers live now</span>
+              <span className="px-10 flex items-center gap-2"><CreditCard size={13} className="text-teal-400" /> Free delivery above ₹299</span>
+              <span className="px-10 flex items-center gap-2"><Sparkles size={13} className="text-violet-400" /> 100% Fresh & Quality Assured</span>
             </div>
           ))}
         </div>
@@ -140,18 +140,18 @@ export default function AppKartHome() {
             <button onClick={() => setLoginOpen(!loginOpen)} className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center">
               <User size={16} />
             </button>
-         {loginOpen && (
-  <div className="absolute top-11 right-24 bg-white border border-slate-200 rounded-xl shadow-lg w-48 p-1.5 z-50">
-    <Link
-      to="/login"
-      onClick={() => setLoginOpen(false)}
-      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50"
-    >
-      <ChevronRight size={14} className="text-blue-600" />
-      Customer Login
-    </Link>
-  </div>
-)}
+            {loginOpen && (
+              <div className="absolute top-11 right-24 bg-white border border-slate-200 rounded-xl shadow-lg w-48 p-1.5 z-50">
+                <Link
+                  to="/login"
+                  onClick={() => setLoginOpen(false)}
+                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50"
+                >
+                  <ChevronRight size={14} className="text-blue-600" />
+                  Customer Login
+                </Link>
+              </div>
+            )}
             <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center relative">
               <ShoppingCart size={16} />
               <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 border-2 border-slate-50" />

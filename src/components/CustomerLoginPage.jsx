@@ -18,32 +18,32 @@ export default function CustomerLoginPage() {
     return () => clearTimeout(t);
   }, [step, timer]);
 
- 
-    const handleSendOtp = async (e) => {
-  e.preventDefault();
-   alert("Button Clicked");
-  console.log("Button Clicked");
 
-  if (phone.length !== 10) {
-    setError("Enter a valid 10-digit mobile number");
-    return;
-  }
+  const handleSendOtp = async (e) => {
+    e.preventDefault();
+    alert("Button Clicked");
+    console.log("Button Clicked");
 
-  try {
-    const res = await api.post("/send-otp", {
-      contact: phone,
-      type: "sms",
-    });
+    if (phone.length !== 10) {
+      setError("Enter a valid 10-digit mobile number");
+      return;
+    }
 
-    console.log(res.data);
-    setError("");
-    setStep("otp");
-    setTimer(30);
-  } catch (err) {
-    setError("Failed to send OTP");
-    console.error(err);
-  }
-};
+    try {
+      const res = await api.post("/send-otp", {
+        contact: phone,
+        type: "sms",
+      });
+
+      console.log(res.data);
+      setError("");
+      setStep("otp");
+      setTimer(30);
+    } catch (err) {
+      setError("Failed to send OTP");
+      console.error(err);
+    }
+  };
 
   const handleOtpChange = (i, val) => {
     if (!/^\d?$/.test(val)) return;
@@ -54,28 +54,28 @@ export default function CustomerLoginPage() {
   };
 
   const handleVerify = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  const enteredOtp = otp.join("");
+    const enteredOtp = otp.join("");
 
-  if (enteredOtp.length !== 6) {
-    setError("Enter the complete 6-digit OTP");
-    return;
-  }
+    if (enteredOtp.length !== 6) {
+      setError("Enter the complete 6-digit OTP");
+      return;
+    }
 
-  try {
-    const res = await api.post("/verify-otp", {
-      contact: phone,
-      otp: enteredOtp,
-    });
+    try {
+      const res = await api.post("/verify-otp", {
+        contact: phone,
+        otp: enteredOtp,
+      });
 
-    console.log(res.data);
-    setError("");
-    setStep("success");
-  } catch (err) {
-    setError(err.response?.data || "Invalid OTP");
-  }
-};
+      console.log(res.data);
+      setError("");
+      setStep("success");
+    } catch (err) {
+      setError(err.response?.data || "Invalid OTP");
+    }
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-900 flex flex-col" style={{ fontFamily: "'Manrope', sans-serif" }}>
@@ -196,21 +196,21 @@ export default function CustomerLoginPage() {
           </div>
 
           <p className="text-center text-sm text-slate-400 mt-6">
-         Own a shop or want to deliver?{" "}
-       <Link
-    to="/become-vendor"
-    className="text-blue-600 font-semibold"
-    >
-    Become a Vendor
-  </Link>
-  {" "}·{" "}
-  <Link
-    to="/become-rider"
-    className="text-blue-600 font-semibold"
-  >
-    Become a Rider
-  </Link>
-</p>
+            Own a shop or want to deliver?{" "}
+            <Link
+              to="/become-vendor"
+              className="text-blue-600 font-semibold"
+            >
+              Become a Vendor
+            </Link>
+            {" "}·{" "}
+            <Link
+              to="/become-rider"
+              className="text-blue-600 font-semibold"
+            >
+              Become a Rider
+            </Link>
+          </p>
         </div>
       </div>
     </div>
