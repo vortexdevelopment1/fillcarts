@@ -11,16 +11,16 @@ import {
 } from "lucide-react";
 
 const categories = [
-  { name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
-  { name: "Fruits & Veg", sub: "Fresh daily", icon: Apple, color: "text-teal-600", img: "fresh-fruit-01" },
-  { name: "Dairy", sub: "Milk, curd, paneer", icon: Milk, color: "text-blue-600", img: "dairy-milk-01" },
-  { name: "Bakery", sub: "Fresh baked", icon: Croissant, color: "text-amber-700", img: "bakery-bread-01" },
-  { name: "Pharmacy", sub: "Verified medicines", icon: Pill, color: "text-teal-600", img: "pharmacy-01" },
-  { name: "Food", sub: "80+ restaurants", icon: UtensilsCrossed, color: "text-violet-600", img: "fastfood-01" },
-  { name: "Pet Care", sub: "Food & supplies", icon: PawPrint, color: "text-amber-800", img: "petcare-01" },
-  { name: "Home Essentials", sub: "Daily needs", icon: Home, color: "text-slate-700", img: "homeessentials-01" },
-  { name: "Personal Care", sub: "Health & beauty", icon: Sparkles, color: "text-teal-500", img: "personalcare-01" },
-  { name: "Electronics", sub: "Small gadgets", icon: Smartphone, color: "text-violet-600", img: "gadgets-01" },
+  { key: "grocery", name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", bg: "bg-blue-50", badge: "Essentials", img: "grocery-basket-01" },
+  { key: "fruits", name: "Fruits & Veg", sub: "Fresh daily", icon: Apple, color: "text-teal-600", bg: "bg-teal-50", badge: "Farm Fresh", img: "fresh-fruit-01" },
+  { key: "dairy", name: "Dairy", sub: "Milk, curd, paneer", icon: Milk, color: "text-blue-600", bg: "bg-blue-50", badge: "7 AM Daily", img: "dairy-milk-01" },
+  { key: "bakery", name: "Bakery", sub: "Fresh baked", icon: Croissant, color: "text-amber-700", bg: "bg-amber-50", badge: "Oven Fresh", img: "bakery-bread-01" },
+  { key: "pharmacy", name: "Pharmacy", sub: "Verified medicines", icon: Pill, color: "text-teal-600", bg: "bg-teal-50", badge: "24/7 Express", img: "pharmacy-01" },
+  { key: "food", name: "Food", sub: "80+ restaurants", icon: UtensilsCrossed, color: "text-violet-600", bg: "bg-violet-50", badge: "Top Rated", img: "fastfood-01" },
+  { key: "pet", name: "Pet Care", sub: "Food & supplies", icon: PawPrint, color: "text-amber-800", bg: "bg-amber-50", badge: "Pet Care", img: "petcare-01" },
+  { key: "home", name: "Home Essentials", sub: "Daily needs", icon: Home, color: "text-slate-700", bg: "bg-slate-100", badge: "Best Value", img: "homeessentials-01" },
+  { key: "personal", name: "Personal Care", sub: "Health & beauty", icon: Sparkles, color: "text-teal-500", bg: "bg-teal-50", badge: "Self Care", img: "personalcare-01" },
+  { key: "electronics", name: "Electronics", sub: "Small gadgets", icon: Smartphone, color: "text-violet-600", bg: "bg-violet-50", badge: "Top Gadgets", img: "gadgets-01" },
 ];
 
 const whyChoose = [
@@ -185,26 +185,52 @@ export default function AppKartHome() {
         )}
       </div>
 
-      {/* Categories */}
+      {/* Redesigned Category Cards with Exact Category Route Parameters */}
       <Section id="categories" eyebrow="Shop by category" title="Everything you need, sorted.">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {categories.map((c, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all">
-              <div className="relative aspect-square bg-slate-100">
-                <img src={`https://picsum.photos/seed/${c.img}/300/300`} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center">
-                  <c.icon size={14} className={c.color} />
+            <Link
+              key={i}
+              to={`/categories?category=${c.key}`}
+              className="group relative bg-white border border-slate-200/90 hover:border-blue-500/60 rounded-3xl overflow-hidden cursor-pointer hover:-translate-y-1.5 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300 shadow-2xs flex flex-col justify-between"
+            >
+              <div className="relative aspect-square bg-slate-100 overflow-hidden">
+                <img
+                  src={`https://picsum.photos/seed/${c.img}/350/350`}
+                  alt={c.name}
+                  className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500 ease-out"
+                  loading="lazy"
+                />
+                {/* Image Gradient Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-50 group-hover:opacity-30 transition-opacity" />
+
+                {/* Floating Category Icon Badge */}
+                <div className="absolute top-3 left-3 w-9 h-9 rounded-2xl bg-white/90 backdrop-blur-md shadow-md border border-white/80 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <c.icon size={17} className={c.color} />
+                </div>
+
+                {/* Top Right Tag Badge */}
+                <div className="absolute top-3 right-3 bg-slate-900/85 backdrop-blur-md text-white font-extrabold text-[10px] px-2.5 py-1 rounded-full shadow-sm border border-white/10">
+                  {c.badge}
                 </div>
               </div>
-              <div className="p-3">
-                <div className="font-bold text-base">{c.name}</div>
-                <div className="text-base text-slate-500 font-semibold">{c.sub}</div>
+
+              <div className="p-4 bg-white">
+                <div className="flex items-center justify-between">
+                  <div className="font-extrabold text-base text-slate-900 group-hover:text-blue-600 transition-colors">
+                    {c.name}
+                  </div>
+                  <ChevronRight size={14} className="text-slate-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" />
+                </div>
+                <div className="text-xs text-slate-500 font-semibold mt-0.5">{c.sub}</div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
-        <div className="text-center mt-6">
-          <Link to="/categories" className="text-blue-600 font-extrabold text-base inline-flex items-center gap-1">View All Categories <ChevronRight size={15} /></Link>
+        <div className="text-center mt-8">
+          <Link to="/categories" className="bg-white border border-slate-200 hover:border-blue-600 text-blue-600 font-extrabold text-xs uppercase tracking-wider px-6 py-3 rounded-full inline-flex items-center gap-2 shadow-2xs hover:shadow-md transition-all">
+            View All Categories <ChevronRight size={15} />
+          </Link>
         </div>
       </Section>
 

@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import {
@@ -49,13 +49,35 @@ function genProducts(catKey) {
 const sortOptions = ["Popularity", "Price: Low to High", "Price: High to Low", "Rating"];
 
 export default function CategoriesPage() {
-  const [active, setActive] = useState("grocery");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialCategory = searchParams.get("category");
+
+  const [active, setActive] = useState(() => {
+    if (initialCategory && categories.some((c) => c.key === initialCategory)) {
+      return initialCategory;
+    }
+    return "grocery";
+  });
+
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortOpen, setSortOpen] = useState(false);
   const [priceMax, setPriceMax] = useState(300);
 
-  const activeCat = categories.find((c) => c.key === active);
+  useEffect(() => {
+    const cat = searchParams.get("category");
+    if (cat && categories.some((c) => c.key === cat)) {
+      setActive(cat);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [searchParams]);
+
+  const handleCategorySelect = (key) => {
+    setActive(key);
+    setSearchParams({ category: key });
+  };
+
+  const activeCat = categories.find((c) => c.key === active) || categories[0];
 
   const products = useMemo(() => {
     let list = genProducts(active).filter((p) => p.price <= priceMax);
@@ -80,7 +102,9 @@ export default function CategoriesPage() {
         <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
           <Link to="/" className="hover:text-blue-600">Home</Link>
           <ChevronRight size={13} />
-          <span className="text-slate-900 font-bold">Categories</span>
+          <Link to="/categories" className="hover:text-blue-600">Categories</Link>
+          <ChevronRight size={13} />
+          <span className="text-slate-900 font-bold">{activeCat.name}</span>
         </div>
       </div>
 
@@ -92,7 +116,7 @@ export default function CategoriesPage() {
             return (
               <button
                 key={c.key}
-                onClick={() => setActive(c.key)}
+                onClick={() => handleCategorySelect(c.key)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap border transition-colors flex-shrink-0 ${
                   isActive ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
                 }`}
@@ -117,7 +141,7 @@ export default function CategoriesPage() {
                 return (
                   <button
                     key={c.key}
-                    onClick={() => setActive(c.key)}
+                    onClick={() => handleCategorySelect(c.key)}
                     className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${
                       isActive ? `${c.bg} ${c.color}` : "hover:bg-slate-50 text-slate-700"
                     }`}
