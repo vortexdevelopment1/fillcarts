@@ -1,11 +1,11 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import {
-  MapPin, Search, User, ShoppingCart, ChevronRight, Repeat, Clock,
-  Percent, Bell, PauseCircle, CheckCircle2, Milk, ShoppingBasket,
+  ChevronRight, Repeat, Clock, Percent, Bell, PauseCircle, CheckCircle2, Milk, ShoppingBasket,
   Sparkles, Star
 } from "lucide-react";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
 
 const benefits = [
   { icon: Clock, bg: "bg-blue-50", color: "text-blue-600", title: "Never Run Out", desc: "Essentials delivered automatically on your schedule." },
@@ -74,25 +74,17 @@ export default function SubscriptionPage() {
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
-          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>App<span className="text-blue-600">Kart</span></Link>
-          <div className="hidden md:flex items-center gap-1.5 text-sm font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
-            <MapPin size={14} className="text-blue-600" /> Your Location
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
-            <Search size={16} /> <span>Search products, stores...</span>
-          </div>
-          <div className="flex items-center gap-2 ml-auto">
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><User size={16} /></button>
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><ShoppingCart size={16} /></button>
-          </div>
+      {/* Shared Common Navbar */}
+      <Navbar />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <ChevronRight size={13} />
+          <span className="text-slate-900 font-bold">Subscriptions</span>
         </div>
-        <div className="max-w-6xl mx-auto px-6 pb-3 text-sm text-slate-500 font-medium flex items-center gap-1.5">
-          <Link to="/" className="hover:text-blue-600">Home</Link><ChevronRight size={13} /><span className="text-slate-900 font-bold">Subscriptions</span>
-        </div>
-      </header>
+      </div>
 
       {/* Hero */}
       <section className="max-w-3xl mx-auto px-6 py-14 text-center">

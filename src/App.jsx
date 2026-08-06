@@ -8,6 +8,8 @@ import SupportPage from "./components/SupportPage";
 import CustomerLoginPage from "./components/CustomerLoginPage";
 import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
 import SubscriptionPage from "./components/SubscriptionPage";
+import CareersPage from "./components/CareersPage";
+import BlogPage from "./components/BlogPage";
 
 function App() {
   return (
@@ -23,6 +25,8 @@ function App() {
         <Route path="/support" element={<SupportPage />} />
         <Route path="/login/customer" element={<CustomerLoginPage />} />
         <Route path="/subscriptions" element={<SubscriptionPage />} />
+        <Route path="/careers" element={<CareersPage />} />
+        <Route path="/blog" element={<BlogPage />} />
       </Routes>
     </BrowserRouter>
   );

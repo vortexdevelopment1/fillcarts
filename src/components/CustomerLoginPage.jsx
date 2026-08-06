@@ -175,7 +175,7 @@ export default function CustomerLoginPage() {
             {step === "phone" && (
               <>
                 <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Log in to order</h1>
-                
+
                 <p className="text-sm text-slate-500 mb-7">Enter your mobile number or email to continue as a customer.</p>
 
                 <div className="flex gap-2 mb-4 rounded-full bg-slate-100 p-1">
