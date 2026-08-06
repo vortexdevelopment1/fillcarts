@@ -1,10 +1,10 @@
 import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
 import {
-  MapPin, Search, User, ShoppingCart, ChevronRight, ChevronDown, Package,
-  CreditCard, RotateCcw, UserCog, Truck, Store, Bike, Phone, Mail,
-  MessageCircle, Clock
+  ChevronRight, ChevronDown, Package, CreditCard, RotateCcw, UserCog,
+  Truck, Store, Bike, Phone, Mail, MessageCircle, Clock, Search, Plus
 } from "lucide-react";
 
 const helpTopics = [
@@ -24,7 +24,7 @@ const faqsByTopic = {
     { q: "Why is my order delayed?", a: "Delays can happen during high demand or bad weather — check live tracking for updated ETA." },
   ],
   payments: [
-    { q: "What payment methods are accepted?", a: "UPI, debit/credit cards, net banking, AppKart wallet, and cash on delivery." },
+    { q: "What payment methods are accepted?", a: "UPI, debit/credit cards, net banking, FillCarts wallet, and cash on delivery." },
     { q: "How long do refunds take?", a: "Refunds are processed within 3-5 business days to your original payment method." },
     { q: "Is my payment information secure?", a: "Yes, all transactions are encrypted and we never store your full card details." },
   ],
@@ -67,120 +67,107 @@ export default function SupportPage() {
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
-          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></Link>
-          <div className="hidden md:flex items-center gap-1.5 text-sm font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
-            <MapPin size={14} className="text-blue-600" /> Your Location
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
-            <Search size={16} /> <span>Search products, stores...</span>
-          </div>
-          <div className="flex items-center gap-2 ml-auto">
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><User size={16} /></button>
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center"><ShoppingCart size={16} /></button>
-          </div>
-        </div>
-        <div className="max-w-6xl mx-auto px-6 pb-3 text-sm text-slate-500 font-medium flex items-center gap-1.5">
-          <Link to="/" className="hover:text-blue-600">Home</Link><ChevronRight size={13} /><span className="text-slate-900 font-bold">Support</span>
-        </div>
-      </header>
+      {/* Shared Common Navbar */}
+      <Navbar searchPlaceholder="Search help articles..." onSearchChange={(val) => setQuery(val)} />
 
-      {/* Hero + search */}
-      <section className="max-w-3xl mx-auto px-6 py-14 text-center">
-        <h1 className="text-4xl font-bold mb-4" style={{ fontFamily: "'Fraunces', serif" }}>How can we help you?</h1>
-        <p className="text-slate-500 text-base mb-7">Search for help topics or browse categories below.</p>
-        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-5 py-3 max-w-lg mx-auto shadow-sm">
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <ChevronRight size={13} />
+          <span className="text-slate-900 font-bold">Support & Help Center</span>
+        </div>
+      </div>
+
+      {/* Hero */}
+      <section className="max-w-4xl mx-auto px-6 py-14 text-center">
+        <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Help Center</span>
+        <h1 className="text-4xl md:text-5xl font-bold mb-4" style={{ fontFamily: "'Fraunces', serif" }}>How can we help you?</h1>
+        <div className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-3 text-base max-w-xl mx-auto shadow-sm">
           <Search size={18} className="text-slate-400" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search for a question..."
-            className="bg-transparent outline-none w-full text-base"
+            placeholder="Search help articles..."
+            className="bg-transparent outline-none w-full text-slate-900 text-sm"
           />
         </div>
       </section>
 
-      {/* Help topic cards */}
+      {/* Topics */}
       <section className="max-w-6xl mx-auto px-6 pb-14">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           {helpTopics.map((t) => {
             const isActive = activeTopic === t.key;
             return (
-              <button
+              <div
                 key={t.key}
-                onClick={() => { setActiveTopic(t.key); setOpenFaq(0); setQuery(""); }}
-                className={`text-left bg-white border rounded-2xl p-5 transition-all ${isActive ? "border-blue-400 shadow-md" : "border-slate-200 hover:-translate-y-1 hover:shadow-md"}`}
+                onClick={() => setActiveTopic(t.key)}
+                className={`p-6 rounded-2xl border cursor-pointer transition-all ${
+                  isActive ? "bg-white border-blue-600 shadow-md" : "bg-white border-slate-200 hover:border-slate-300"
+                }`}
               >
-                <div className={`w-11 h-11 rounded-xl ${t.bg} ${t.color} flex items-center justify-center mb-3.5`}><t.icon size={19} /></div>
+                <div className={`w-11 h-11 rounded-full ${t.bg} ${t.color} flex items-center justify-center mb-3.5`}>
+                  <t.icon size={19} />
+                </div>
                 <div className="font-extrabold text-base mb-1">{t.title}</div>
                 <div className="text-sm text-slate-500">{t.desc}</div>
-              </button>
+              </div>
             );
           })}
         </div>
       </section>
 
-      {/* FAQ for selected topic */}
-      <section className="max-w-3xl mx-auto px-6 py-4 pb-14">
-        <div className="flex items-center gap-2.5 mb-6">
-          <div className={`w-9 h-9 rounded-lg ${activeTopicData.bg} ${activeTopicData.color} flex items-center justify-center`}>
-            <activeTopicData.icon size={17} />
+      {/* FAQs */}
+      <section className="max-w-3xl mx-auto px-6 pb-14">
+        <div className="mb-6 flex items-center gap-3">
+          <div className={`w-9 h-9 rounded-xl ${activeTopicData.bg} ${activeTopicData.color} flex items-center justify-center`}>
+            <activeTopicData.icon size={18} />
           </div>
-          <h2 className="text-2xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>{activeTopicData.title} FAQs</h2>
+          <h2 className="text-2xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>{activeTopicData.title} Questions</h2>
         </div>
 
-        {filteredFaqs.length === 0 ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center text-slate-500">
-            No matching questions found. Try a different search or contact us below.
-          </div>
-        ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl divide-y divide-slate-200">
-            {filteredFaqs.map((f, i) => {
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          {filteredFaqs.length === 0 ? (
+            <div className="p-6 text-center text-sm text-slate-500">No help articles found matching "{query}".</div>
+          ) : (
+            filteredFaqs.map((f, i) => {
               const open = openFaq === i;
               return (
-                <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="p-5 cursor-pointer">
-                  <div className="flex justify-between items-center font-bold text-sm">
+                <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="border-b border-slate-200 py-4 cursor-pointer last:border-b-0">
+                  <div className="flex justify-between items-center font-bold text-sm text-slate-900">
                     {f.q}
-                    <ChevronDown size={16} className={`text-blue-600 transition-transform flex-shrink-0 ${open ? "rotate-180" : ""}`} />
+                    <Plus size={16} className={`text-blue-600 transition-transform ${open ? "rotate-45" : ""}`} />
                   </div>
                   {open && <div className="text-sm text-slate-500 mt-2.5">{f.a}</div>}
                 </div>
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
       </section>
 
-      {/* Contact options */}
-      <section className="max-w-6xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Still need help</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Talk to our support team.</h2>
-        </div>
-        <div className="grid sm:grid-cols-3 gap-4">
+      {/* Contact Cards */}
+      <section className="max-w-6xl mx-auto px-6 pb-16">
+        <div className="grid md:grid-cols-3 gap-4">
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3"><Phone size={20} /></div>
-            <div className="font-extrabold text-base mb-1">Call Us</div>
-            <div className="text-sm text-slate-500 mb-3">Mon-Sun, 8am - 11pm</div>
-            <div className="text-sm font-bold text-blue-600">1800-123-4567</div>
+            <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3"><MessageCircle size={20} /></div>
+            <h3 className="font-extrabold text-base mb-1">Live Chat</h3>
+            <p className="text-sm text-slate-500 mb-4">Chat with our 24/7 support team.</p>
+            <button className="bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-full">Start Chat</button>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3"><MessageCircle size={20} /></div>
-            <div className="font-extrabold text-base mb-1">Live Chat</div>
-            <div className="text-sm text-slate-500 mb-3">Fastest response time</div>
-            <button className="text-sm font-bold text-teal-600">Start Chat →</button>
+            <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3"><Phone size={20} /></div>
+            <h3 className="font-extrabold text-base mb-1">Phone Support</h3>
+            <p className="text-sm text-slate-500 mb-4">Call us toll-free for urgent help.</p>
+            <a href="tel:1800123456" className="text-sm font-extrabold text-teal-600 hover:underline">1800-123-456</a>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
-            <div className="w-12 h-12 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3"><Mail size={20} /></div>
-            <div className="font-extrabold text-base mb-1">Email Us</div>
-            <div className="text-sm text-slate-500 mb-3">Reply within 24 hours</div>
-            <div className="text-sm font-bold text-violet-600">support@appkart.com</div>
+            <div className="w-11 h-11 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3"><Mail size={20} /></div>
+            <h3 className="font-extrabold text-base mb-1">Email Support</h3>
+            <p className="text-sm text-slate-500 mb-4">Send us details of your query.</p>
+            <a href="mailto:support@fillcarts.com" className="text-sm font-extrabold text-violet-600 hover:underline">support@fillcarts.com</a>
           </div>
-        </div>
-        <div className="flex items-center justify-center gap-2 text-sm text-slate-400 mt-6">
-          <Clock size={14} /> Average response time: under 2 hours
         </div>
       </section>
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
 import {
   Truck, Gift, CreditCard, Moon, MapPin, Search, User, ShoppingCart,
   Store, Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed,
@@ -78,7 +79,6 @@ function Section({ id, eyebrow, title, center, children }) {
 }
 
 export default function AppKartHome() {
-  const [loginOpen, setLoginOpen] = useState(false);
   const [openFeature, setOpenFeature] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
@@ -108,71 +108,8 @@ export default function AppKartHome() {
     <div className="bg-slate-50 text-slate-900 min-h-screen" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-      {/* Utility bar */}
-      <div className="bg-slate-900 text-slate-50 text-xs font-semibold h-9 overflow-hidden flex items-center">
-        <div className="flex whitespace-nowrap animate-[marquee_22s_linear_infinite]">
-          {[...Array(2)].map((_, i) => (
-            <div key={i} className="flex">
-              <span className="px-10 flex items-center gap-2"><Zap size={13} className="text-amber-400" /> Express Local Delivery</span>
-              <span className="px-10 flex items-center gap-2"><Gift size={13} className="text-blue-400" /> Today's offers live now</span>
-              <span className="px-10 flex items-center gap-2"><CreditCard size={13} className="text-teal-400" /> Free delivery above ₹299</span>
-              <span className="px-10 flex items-center gap-2"><Sparkles size={13} className="text-violet-400" /> 100% Fresh & Quality Assured</span>
-            </div>
-          ))}
-        </div>
-      </div>
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
-
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
-          <div className="text-xl font-extrabold tracking-tight" style={{ fontFamily: "'Fraunces', serif" }}>
-            Fill<span className="text-blue-600">Carts</span>
-          </div>
-          <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
-            <MapPin size={14} className="text-blue-600" /> Your Location
-          </div>
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
-            <Search size={15} />
-            <input placeholder="Search products, stores..." className="bg-transparent outline-none w-full text-slate-900 text-sm" />
-          </div>
-          <div className="flex items-center gap-2 ml-auto relative">
-            <button onClick={() => setLoginOpen(!loginOpen)} className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center">
-              <User size={16} />
-            </button>
-            {loginOpen && (
-              <div className="absolute top-11 right-24 bg-white border border-slate-200 rounded-xl shadow-lg w-48 p-1.5 z-50">
-                <Link
-                  to="/login"
-                  onClick={() => setLoginOpen(false)}
-                  className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50"
-                >
-                  <ChevronRight size={14} className="text-blue-600" />
-                  Customer Login
-                </Link>
-              </div>
-            )}
-            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center relative">
-              <ShoppingCart size={16} />
-              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 border-2 border-slate-50" />
-            </button>
-            <button className="bg-slate-900 text-white text-sm font-bold rounded-full px-5 py-2.5 whitespace-nowrap">Download App</button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Nav */}
-      <nav className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex gap-7 text-sm font-bold overflow-x-auto">
-          <Link to="/" className="text-blue-600 whitespace-nowrap">Home</Link>
-          <Link to="/categories" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Categories</Link>
-          <a href="#features" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Features</a>
-          <Link to="/become-vendor" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Become Vendor</Link>
-          <Link to="/become-rider" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Become Rider</Link>
-          <Link to="/about" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">About</Link>
-          <Link to="/support" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Support</Link>
-        </div>
-      </nav>
+      {/* Shared Common Navbar */}
+      <Navbar />
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 pt-14 pb-4 grid md:grid-cols-2 gap-10 items-center">

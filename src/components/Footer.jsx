@@ -6,25 +6,25 @@ const footerColumns = [
     h: "Company",
     links: [
       { l: "About", to: "/about" },
-      { l: "Careers", to: null },
-      { l: "Blog", to: null },
+      { l: "Careers", to: "/careers" },
+      { l: "Blog", to: "/blog" },
       { l: "Contact", to: "/support" },
     ],
   },
   {
     h: "Partner",
     links: [
-      { l: "Become Vendor", to: "/become-vendor" },
-      { l: "Become Rider", to: "/become-rider" },
+      { l: "Become a Vendor", to: "/become-vendor" },
+      { l: "Deliver with FillCarts", to: "/become-rider" },
     ],
   },
   {
     h: "Support",
     links: [
       { l: "Help Center", to: "/support" },
-      { l: "Refund Policy", to: null },
-      { l: "Privacy", to: null },
-      { l: "Terms", to: null },
+      { l: "Refund Policy", to: "/support" },
+      { l: "Privacy", to: "/support" },
+      { l: "Terms", to: "/support" },
     ],
   },
   {
@@ -52,11 +52,11 @@ export default function Footer() {
               <h4 className="text-sm font-extrabold mb-3.5 text-slate-300">{col.h}</h4>
               {col.links.map((item) =>
                 item.to ? (
-                  <Link key={item.l} to={item.to} className="block text-sm text-slate-400 mb-2.5 hover:text-white">
+                  <Link key={item.l} to={item.to} className="block text-sm text-slate-400 mb-2.5 hover:text-white transition-colors">
                     {item.l}
                   </Link>
                 ) : (
-                  <a key={item.l} href="#" className="block text-sm text-slate-400 mb-2.5 hover:text-white">
+                  <a key={item.l} href="#" className="block text-sm text-slate-400 mb-2.5 hover:text-white transition-colors">
                     {item.l}
                   </a>
                 )
@@ -64,7 +64,7 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="border-t border-slate-700 pt-5 text-base text-slate-500 text-center">© 2026 FillCarts. All rights reserved.</div>
+        <div className="border-t border-slate-700 pt-5 text-sm font-medium text-slate-500 text-center">© 2026 FillCarts. All rights reserved.</div>
       </div>
     </footer>
   );
