@@ -10,6 +10,7 @@ import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
 import SubscriptionPage from "./components/SubscriptionPage";
 import CareersPage from "./components/CareersPage";
 import BlogPage from "./components/BlogPage";
+import FeaturesPage from "./components/FeaturesPage";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/register" element={<CustomerRegistrationPage />} />
         <Route path="/" element={<AppKartHome />} />
         <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/features" element={<FeaturesPage />} />
         <Route path="/become-vendor" element={<BecomeVendorPage />} />
         <Route path="/become-rider" element={<BecomeRiderPage />} />
         <Route path="/about" element={<AboutPage />} />
