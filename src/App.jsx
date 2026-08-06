@@ -7,6 +7,7 @@ import AboutPage from "./components/AboutPage";
 import SupportPage from "./components/SupportPage";
 import CustomerLoginPage from "./components/CustomerLoginPage";
 import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
+import SubscriptionPage from "./components/SubscriptionPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
         <Route path="/about" element={<AboutPage />} />
         <Route path="/support" element={<SupportPage />} />
         <Route path="/login/customer" element={<CustomerLoginPage />} />
+        <Route path="/subscriptions" element={<SubscriptionPage />} />
       </Routes>
     </BrowserRouter>
   );

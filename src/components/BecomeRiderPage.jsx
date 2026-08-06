@@ -65,7 +65,7 @@ export default function BecomeRiderPage() {
       {/* Header */}
       <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
         <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>App<span className="text-blue-600">Kart</span></Link>
+          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></Link>
           <div className="flex items-center gap-2">
             <Link to="/login" className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:border-teal-500 transition-colors"><User size={16} /></Link>
           </div>

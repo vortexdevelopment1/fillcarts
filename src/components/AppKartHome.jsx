@@ -222,7 +222,7 @@ export default function AppKartHome() {
         {[
           { icon: ShoppingCart, bg: "bg-blue-50", iconBg: "bg-blue-600", title: "Browse Categories", sub: "Grocery, food & more", to: "/categories" },
           { icon: Gift, bg: "bg-violet-50", iconBg: "bg-violet-600", title: "Today's Offers", sub: "Best deals near you", to: "#deals" },
-          { icon: Repeat, bg: "bg-teal-50", iconBg: "bg-teal-500", title: "Subscribe & Save", sub: "Auto-delivered essentials", to: "#subscription" },
+          { icon: Repeat, bg: "bg-teal-50", iconBg: "bg-teal-500", title: "Subscribe & Save", sub: "Auto-delivered essentials", to: "/subscriptions" },
         ].map((c, i) =>
           c.to.startsWith("/") ? (
             <Link key={i} to={c.to} className={`${c.bg} rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all`}>
@@ -367,7 +367,7 @@ export default function AppKartHome() {
             <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>Never run out of essentials.</h2>
             <p className="text-sm text-slate-300 max-w-md">Subscribe to your daily milk, bread and groceries — auto-delivered on schedule, cancel anytime.</p>
           </div>
-          <button className="bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-sm whitespace-nowrap">Explore Subscriptions</button>
+          <Link to="/subscriptions" className="inline-block bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-sm whitespace-nowrap">Explore Subscriptions</Link>
         </div>
       </div>
 
