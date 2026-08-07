@@ -11,6 +11,8 @@ import SubscriptionPage from "./components/SubscriptionPage";
 import CareersPage from "./components/CareersPage";
 import BlogPage from "./components/BlogPage";
 import FeaturesPage from "./components/FeaturesPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import TermsPage from "./components/TermsPage";
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
         <Route path="/subscriptions" element={<SubscriptionPage />} />
         <Route path="/careers" element={<CareersPage />} />
         <Route path="/blog" element={<BlogPage />} />
+        <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        <Route path="/terms" element={<TermsPage />} />
       </Routes>
     </BrowserRouter>
   );

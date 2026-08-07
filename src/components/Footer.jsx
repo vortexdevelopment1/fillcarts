@@ -22,9 +22,9 @@ const footerColumns = [
     h: "Support",
     links: [
       { l: "Help Center", to: "/support" },
-      { l: "Refund Policy", to: "/support" },
-      { l: "Privacy", to: "/support" },
-      { l: "Terms", to: "/support" },
+      { l: "Refund Policy", to: "/terms#refunds-cancellations" },
+      { l: "Privacy", to: "/privacy" },
+      { l: "Terms", to: "/terms" },
     ],
   },
   {

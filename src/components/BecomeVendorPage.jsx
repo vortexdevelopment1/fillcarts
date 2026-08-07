@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
+import Navbar from "./Navbar";
 import {
   Store, User, ChevronRight, TrendingUp,
   Users, LayoutDashboard, Wallet, CheckCircle2, Star, ClipboardList,
@@ -52,61 +53,113 @@ export default function BecomeVendorPage() {
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
       <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-      {/* Header */}
-      <header className="sticky top-0 z-40 bg-slate-50/95 backdrop-blur border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center justify-between gap-4">
-          <Link to="/" className="text-xl font-extrabold flex-shrink-0" style={{ fontFamily: "'Fraunces', serif" }}>Fill<span className="text-blue-600">Carts</span></Link>
-          <div className="flex items-center gap-2">
-            <Link to="/login" className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-700 hover:border-violet-500 transition-colors"><User size={16} /></Link>
-          </div>
+      {/* Shared Common Navbar */}
+      <Navbar searchPlaceholder="Search vendor partner resources..." />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <ChevronRight size={13} />
+          <span className="text-slate-900 font-bold">Become a Vendor</span>
         </div>
-        <div className="max-w-6xl mx-auto px-6 pb-3 text-sm text-slate-500 font-medium flex items-center gap-1.5">
-          <Link to="/" className="hover:text-blue-600">Home</Link><ChevronRight size={13} /><span className="text-slate-900 font-bold">Become a Vendor</span>
-        </div>
-      </header>
+      </div>
 
       {/* Hero */}
       <section className="max-w-6xl mx-auto px-6 py-14 grid md:grid-cols-2 gap-10 items-center">
         <div>
-          <div className="inline-flex items-center gap-2 bg-violet-50 text-violet-700 rounded-full px-3.5 py-1.5 text-sm font-bold mb-5">
-            <Store size={14} /> For Local Businesses
+          <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3.5 py-1.5 text-sm font-bold mb-5">
+            <Store size={14} className="text-blue-600" /> Partner With FillCarts
           </div>
           <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
-            Grow your business<br /><span className="text-violet-600">online, today.</span>
+            Grow your store business <br /><span className="text-blue-600">with local deliveries.</span>
           </h1>
           <p className="text-slate-500 text-base mb-7 max-w-md font-medium">
-            Bring your shop onto AppKart and reach local customers who are ready to order — no tech skills needed.
+            Join 1,200+ neighbourhood Kiranas, bakeries and pharmacies reaching thousands of local customers daily.
           </p>
           <div className="flex gap-3 flex-wrap">
-            <a href="#register" className="bg-violet-600 text-white font-bold rounded-full px-6 py-3 text-sm">Register Your Store</a>
-            <a href="#calculator" className="bg-white border border-slate-200 font-bold rounded-full px-6 py-3 text-sm">See Earnings Estimate</a>
+            <a href="#register" className="bg-slate-900 text-white font-bold rounded-full px-6 py-3 text-sm shadow-md">Register Your Store</a>
+            <a href="#calculator" className="bg-white border border-slate-200 text-slate-800 font-bold rounded-full px-6 py-3 text-sm">Calculate Earnings</a>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-4">
-          {[
-            { n: "1,200+", l: "Active Vendors" },
-            { n: "150K+", l: "Orders Delivered" },
-            { n: "24-48h", l: "Verification Time" },
-            { n: "4.6★", l: "Avg Vendor Rating" },
-          ].map((s) => (
-            <div key={s.l} className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
-              <div className="text-2xl font-bold text-violet-600" style={{ fontFamily: "'Fraunces', serif" }}>{s.n}</div>
-              <div className="text-sm text-slate-500 font-semibold mt-1">{s.l}</div>
+        <div className="flex justify-center">
+          <div className="bg-white border border-slate-200 rounded-3xl p-7 shadow-xl w-full max-w-md">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                <Store size={20} />
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base">Store Onboarding</h3>
+                <p className="text-xs text-slate-500">Takes less than 3 minutes</p>
+              </div>
             </div>
-          ))}
+            <div className="space-y-3 text-xs font-semibold text-slate-600">
+              <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <CheckCircle2 size={15} className="text-teal-600" /> Zero registration fees
+              </div>
+              <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <CheckCircle2 size={15} className="text-teal-600" /> 24-Hour quick approval
+              </div>
+              <div className="flex items-center gap-2 bg-slate-50 p-2.5 rounded-xl border border-slate-100">
+                <CheckCircle2 size={15} className="text-teal-600" /> Transparent weekly payouts
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Calculator */}
+      <section id="calculator" className="max-w-6xl mx-auto px-6 py-14">
+        <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 shadow-2xl">
+          <div className="max-w-xl mx-auto text-center mb-8">
+            <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-400 mb-2">Earnings Estimator</span>
+            <h2 className="text-3xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>Estimate your store earnings</h2>
+            <p className="text-sm text-slate-300">Based on average partner store performance on FillCarts.</p>
+          </div>
+
+          <div className="max-w-md mx-auto space-y-6">
+            <div>
+              <div className="flex justify-between text-sm font-bold mb-2">
+                <span>Monthly Store Sales</span>
+                <span className="text-blue-400">₹{monthlySales.toLocaleString()}</span>
+              </div>
+              <input
+                type="range"
+                min="20000"
+                max="300000"
+                step="5000"
+                value={monthlySales}
+                onChange={(e) => setMonthlySales(Number(e.target.value))}
+                className="w-full accent-blue-600"
+              />
+            </div>
+
+            <div className="bg-slate-800 rounded-2xl p-5 border border-slate-700 flex items-center justify-between">
+              <div>
+                <div className="text-xs text-slate-400 font-bold uppercase">Estimated Net Payout</div>
+                <div className="text-2xl font-bold text-teal-400 mt-0.5" style={{ fontFamily: "'Fraunces', serif" }}>₹{estEarnings.toLocaleString()}/mo</div>
+              </div>
+              <div className="text-xs text-slate-400 text-right">
+                <div>Commission: ~12%</div>
+                <div>No hidden charges</div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
       {/* Benefits */}
       <section className="max-w-6xl mx-auto px-6 py-14">
-        <div className="mb-9">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-violet-600 mb-2">Why sell with us</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Everything you need to sell online.</h2>
+        <div className="mb-9 text-center">
+          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Partner Perks</span>
+          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Why partner with FillCarts?</h2>
         </div>
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
           {benefits.map((b, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6">
-              <div className={`w-11 h-11 rounded-full ${b.bg} ${b.color} flex items-center justify-center mb-3.5`}><b.icon size={19} /></div>
+              <div className={`w-11 h-11 rounded-full ${b.bg} ${b.color} flex items-center justify-center mb-3.5`}>
+                <b.icon size={19} />
+              </div>
               <div className="font-extrabold text-base mb-1">{b.title}</div>
               <div className="text-sm text-slate-500">{b.desc}</div>
             </div>
@@ -114,138 +167,78 @@ export default function BecomeVendorPage() {
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="max-w-6xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-violet-600 mb-2">Getting started</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Four steps to your first order.</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
-          {steps.map((s, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 relative">
-              <div className="absolute top-4 right-5 text-3xl font-bold text-slate-100" style={{ fontFamily: "'Fraunces', serif" }}>{i + 1}</div>
-              <div className="w-11 h-11 rounded-full bg-violet-50 text-violet-600 flex items-center justify-center mb-4"><s.icon size={19} /></div>
-              <div className="font-extrabold text-base mb-1">{s.title}</div>
-              <div className="text-sm text-slate-500">{s.desc}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Commission calculator */}
-      <section id="calculator" className="max-w-6xl mx-auto px-6 py-14">
-        <div className="bg-slate-900 text-white rounded-3xl p-10 grid md:grid-cols-2 gap-10 items-center">
-          <div>
-            <div className="text-xs font-extrabold uppercase tracking-widest text-violet-400 mb-2">Earnings Estimator</div>
-            <h2 className="text-2xl font-bold mb-3" style={{ fontFamily: "'Fraunces', serif" }}>See what you could take home.</h2>
-            <p className="text-sm text-slate-300 mb-6">Move the slider to match your expected monthly sales.</p>
-            <input
-              type="range" min="10000" max="300000" step="5000"
-              value={monthlySales}
-              onChange={(e) => setMonthlySales(Number(e.target.value))}
-              className="w-full accent-violet-500"
-            />
-            <div className="text-sm text-slate-300 mt-2 font-semibold">Monthly Sales: ₹{monthlySales.toLocaleString()}</div>
-          </div>
-          <div className="bg-white/10 rounded-2xl p-7 backdrop-blur">
-            <div className="text-sm text-slate-300 font-semibold mb-1">Estimated monthly earnings (after 12% commission)</div>
-            <div className="text-4xl font-bold text-violet-300 mb-4" style={{ fontFamily: "'Fraunces', serif" }}>₹{estEarnings.toLocaleString()}</div>
-            <div className="flex justify-between text-sm text-slate-300 border-t border-white/10 pt-3">
-              <span>Gross Sales</span><span className="font-bold text-white">₹{monthlySales.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm text-slate-300 mt-1.5">
-              <span>Platform Commission (12%)</span><span className="font-bold text-white">₹{Math.round(monthlySales * commissionRate).toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="max-w-6xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-violet-600 mb-2">Vendor Stories</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Trusted by local shops.</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
-          {testimonials.map((t, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6">
-              <div className="flex gap-0.5 text-violet-500 mb-3">{[...Array(5)].map((_, s) => <Star key={s} size={13} fill="currentColor" />)}</div>
-              <p className="text-sm text-slate-500 mb-4">"{t.t}"</p>
-              <div className="font-extrabold text-sm">{t.n}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Registration form */}
+      {/* Registration Form */}
       <section id="register" className="max-w-3xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-violet-600 mb-2">Register</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Register your store.</h2>
-        </div>
-        {submitted ? (
-          <div className="bg-white border border-slate-200 rounded-2xl p-10 text-center">
-            <CheckCircle2 size={40} className="text-violet-600 mx-auto mb-4" />
-            <h3 className="font-extrabold text-lg mb-1.5">Registration submitted!</h3>
-            <p className="text-sm text-slate-500">Our team will verify your details and reach out within 24-48 hours.</p>
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 md:p-10 shadow-lg">
+          <div className="mb-8 text-center">
+            <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>Register Your Store</h2>
+            <p className="text-sm text-slate-500">Fill in your details and our merchant team will contact you within 24 hours.</p>
           </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="bg-white border border-slate-200 rounded-2xl p-8 space-y-5">
-            <div className="grid sm:grid-cols-2 gap-5">
-              <div>
-                <label className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><Building2 size={14} /> Store Name</label>
-                <input name="store" required value={form.store} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400" placeholder="e.g. Sharma Kirana Store" />
-              </div>
-              <div>
-                <label className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><User size={14} /> Owner Name</label>
-                <input name="owner" required value={form.owner} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400" placeholder="Your full name" />
-              </div>
-              <div>
-                <label className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><Phone size={14} /> Phone Number</label>
-                <input name="phone" required value={form.phone} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400" placeholder="10-digit mobile number" />
-              </div>
-              <div>
-                <label className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><Mail size={14} /> Email</label>
-                <input name="email" type="email" required value={form.email} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400" placeholder="you@example.com" />
-              </div>
+
+          {submitted ? (
+            <div className="bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center text-teal-800">
+              <CheckCircle2 size={36} className="mx-auto mb-3 text-teal-600" />
+              <h3 className="text-xl font-bold mb-2">Application Submitted!</h3>
+              <p className="text-sm">Thank you for registering <strong>{form.store}</strong>. Our team will call you at <strong>{form.phone}</strong> shortly.</p>
             </div>
-            <div>
-              <label className="text-sm font-bold mb-1.5 block">Store Category</label>
-              <select name="category" value={form.category} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400">
-                {["Grocery", "Fruits & Vegetables", "Pharmacy", "Bakery", "Food & Restaurant", "Electronics"].map((c) => <option key={c}>{c}</option>)}
-              </select>
-            </div>
-            <div>
-              <label className="text-sm font-bold mb-1.5 block">Store Address</label>
-              <textarea name="address" required value={form.address} onChange={handleChange} rows={3} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-violet-400" placeholder="Shop no, street, area, landmark" />
-            </div>
-            <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center text-sm text-slate-400">
-              <Upload size={20} className="mx-auto mb-2" />
-              Upload shop registration / ID proof (drag & drop or click)
-            </div>
-            <button type="submit" className="w-full bg-violet-600 text-white font-bold rounded-full py-3 text-sm">Submit Registration</button>
-          </form>
-        )}
+          ) : (
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Store Name</label>
+                  <input required name="store" value={form.store} onChange={handleChange} placeholder="e.g. Sharma General Store" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Owner Name</label>
+                  <input required name="owner" value={form.owner} onChange={handleChange} placeholder="e.g. Ramesh Sharma" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Phone</label>
+                  <input required type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Store Category</label>
+                  <select name="category" value={form.category} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 bg-white">
+                    <option>Grocery & Kirana</option>
+                    <option>Pharmacy & Medical</option>
+                    <option>Fruits & Vegetables</option>
+                    <option>Bakery & Confectionery</option>
+                    <option>Restaurant & Food</option>
+                    <option>Other</option>
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Store Address / Area</label>
+                <textarea required rows={3} name="address" value={form.address} onChange={handleChange} placeholder="Shop number, street, area, pincode..." className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+              </div>
+
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full py-3 text-sm shadow-md shadow-blue-600/20 transition-all">Submit Registration</button>
+            </form>
+          )}
+        </div>
       </section>
 
       {/* FAQ */}
-      <section className="max-w-2xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-violet-600 mb-2">FAQ</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Common questions.</h2>
+      <section className="max-w-3xl mx-auto px-6 pb-16">
+        <div className="mb-8 text-center">
+          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Vendor FAQ</span>
+          <h2 className="text-2xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Frequently Asked Questions</h2>
         </div>
-        {faqs.map((f, i) => {
-          const open = openFaq === i;
-          return (
-            <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="border-b border-slate-200 py-5 cursor-pointer">
-              <div className="flex justify-between items-center font-bold text-sm">{f.q}<ChevronRight size={16} className={`text-violet-600 transition-transform ${open ? "rotate-90" : ""}`} /></div>
-              {open && <div className="text-sm text-slate-500 mt-2.5">{f.a}</div>}
+        <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+          {faqs.map((f, i) => (
+            <div key={i} className="border-b border-slate-200 py-4 last:border-b-0">
+              <div className="font-bold text-base text-slate-900 mb-1">{f.q}</div>
+              <div className="text-sm text-slate-500">{f.a}</div>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </section>
 
-      {/* Footer */}
       <Footer />
     </div>
   );
