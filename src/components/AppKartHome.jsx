@@ -1,146 +1,86 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import Footer from "./Footer";
-import Navbar from "./Navbar";
 import {
   Truck, Gift, CreditCard, Moon, MapPin, Search, User, ShoppingCart,
   Store, Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed,
   PawPrint, Home, Sparkles, Smartphone, Zap, Navigation, Lock, Star,
   Radar, Wallet, Bell, RotateCcw, Repeat, Plus, QrCode,
-  Download, ChevronRight, ArrowRight, Percent, Clock, Award, ShieldCheck
+  Download, ChevronRight
 } from "lucide-react";
 
-// Primary Service Hubs (Swiggy-style 4-Hub Banners)
-const serviceHubs = [
-  {
-    id: "instamart",
-    title: "FillCarts Instamart",
-    subtitle: "Instant Groceries & Fresh Fruits",
-    badge: "DELIVERED IN MINS",
-    badgeBg: "bg-teal-500",
-    gradient: "from-teal-600 via-emerald-600 to-teal-700",
-    icon: Carrot,
-    link: "/categories?category=grocery",
-    tag: "Groceries & Vegetables"
-  },
-  {
-    id: "food",
-    title: "Food & Restaurants",
-    subtitle: "80+ Local Restaurants & Dishes",
-    badge: "FLAT 50% OFF",
-    badgeBg: "bg-blue-600",
-    gradient: "from-blue-600 via-indigo-600 to-blue-700",
-    icon: UtensilsCrossed,
-    link: "/categories?category=food",
-    tag: "Burgers, Biryani & Pizza"
-  },
-  {
-    id: "subscriptions",
-    title: "Daily Subscriptions",
-    subtitle: "Milk, Bread & Curd at 7 AM",
-    badge: "AUTO-DELIVERED",
-    badgeBg: "bg-violet-600",
-    gradient: "from-violet-600 via-purple-600 to-indigo-700",
-    icon: Repeat,
-    link: "/subscriptions",
-    tag: "Never Run Out"
-  },
-  {
-    id: "pharmacy",
-    title: "Genie & Pharmacy",
-    subtitle: "Medicines & Urgent Packages",
-    badge: "24/7 EXPRESS",
-    badgeBg: "bg-amber-600",
-    gradient: "from-amber-600 via-orange-600 to-amber-700",
-    icon: Pill,
-    link: "/categories?category=pharmacy",
-    tag: "Verified Chemists"
-  }
-];
-
-// "What's on your mind?" (Swiggy Circular Avatars Carousel)
-const whatsOnMind = [
-  { key: "fruits", name: "Fresh Fruits", img: "fresh-fruit-01", count: "180+ Items" },
-  { key: "grocery", name: "Groceries", img: "grocery-basket-01", count: "420+ Items" },
-  { key: "dairy", name: "Milk & Dairy", img: "dairy-milk-01", count: "96+ Items" },
-  { key: "food", name: "Biryani & Food", img: "fastfood-01", count: "80+ Stores" },
-  { key: "bakery", name: "Bakery Bread", img: "bakery-bread-01", count: "74+ Items" },
-  { key: "pharmacy", name: "Medicines", img: "pharmacy-01", count: "260+ Items" },
-  { key: "personal", name: "Personal Care", img: "personalcare-01", count: "210+ Items" },
-  { key: "pet", name: "Pet Food", img: "petcare-01", count: "58+ Items" },
-  { key: "home", name: "Home Essentials", img: "homeessentials-01", count: "132+ Items" },
-  { key: "electronics", name: "Gadgets", img: "gadgets-01", count: "64+ Items" },
-];
-
-// "Top Verified Stores & Restaurants Near You" (Swiggy Store Cards)
-const topStores = [
-  {
-    name: "Sharma Kirana & Supermart",
-    rating: "4.5",
-    time: "15-20 mins",
-    distance: "0.8 km",
-    cuisines: "Groceries, Staples, Daily Needs",
-    offer: "FLAT 20% OFF",
-    offerCode: "USE FILLCARTS20",
-    img: "store-kirana-01"
-  },
-  {
-    name: "Fresh Greens Organic Farm",
-    rating: "4.7",
-    time: "12-18 mins",
-    distance: "1.2 km",
-    cuisines: "Fruits, Vegetables, Organics",
-    offer: "EVERYDAY LOW PRICES",
-    offerCode: "NO CODE NEEDED",
-    img: "store-farm-fresh"
-  },
-  {
-    name: "City Pharmacy & Healthcare",
-    rating: "4.8",
-    time: "15-25 mins",
-    distance: "0.5 km",
-    cuisines: "Medicines, Supplements, First Aid",
-    offer: "FLAT 15% OFF",
-    offerCode: "USE HEALTH15",
-    img: "store-pharmacy-01"
-  },
-  {
-    name: "Bakehouse Fresh Bakery",
-    rating: "4.6",
-    time: "20-25 mins",
-    distance: "1.4 km",
-    cuisines: "Cakes, Cookies, Fresh Bread",
-    offer: "BUY 1 GET 1 FREE",
-    offerCode: "BOGO BAKE",
-    img: "store-bakery-01"
-  }
-];
-
-// Today's Offers & Deals Picked For You
-const todaysDeals = [
-  { name: "Fresh Fruits Combo Pack 1kg", off: "25% OFF", price: 149, mrp: 199, img: "deal-fruits-combo", tag: "bg-blue-600" },
-  { name: "Daily Dairy Essentials Pack", off: "Flat ₹40 OFF", price: 189, mrp: 229, img: "deal-dairy-pack", tag: "bg-teal-600" },
-  { name: "Snacks & Beverage Munchies", off: "Buy 1 Get 1", price: 99, mrp: 180, img: "deal-snacks", tag: "bg-violet-600" },
-  { name: "Pharmacy Health Care Kit", off: "15% OFF", price: 129, mrp: 149, img: "deal-pharmacy", tag: "bg-amber-600" },
+const categories = [
+  { name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
+  { name: "Fruits & Veg", sub: "Fresh daily", icon: Apple, color: "text-teal-600", img: "fresh-fruit-01" },
+  { name: "Dairy", sub: "Milk, curd, paneer", icon: Milk, color: "text-blue-600", img: "dairy-milk-01" },
+  { name: "Bakery", sub: "Fresh baked", icon: Croissant, color: "text-amber-700", img: "bakery-bread-01" },
+  { name: "Pharmacy", sub: "Verified medicines", icon: Pill, color: "text-teal-600", img: "pharmacy-01" },
+  { name: "Food", sub: "80+ restaurants", icon: UtensilsCrossed, color: "text-violet-600", img: "fastfood-01" },
+  { name: "Pet Care", sub: "Food & supplies", icon: PawPrint, color: "text-amber-800", img: "petcare-01" },
+  { name: "Home Essentials", sub: "Daily needs", icon: Home, color: "text-slate-700", img: "homeessentials-01" },
+  { name: "Personal Care", sub: "Health & beauty", icon: Sparkles, color: "text-teal-500", img: "personalcare-01" },
+  { name: "Electronics", sub: "Small gadgets", icon: Smartphone, color: "text-violet-600", img: "gadgets-01" },
 ];
 
 const whyChoose = [
-  { icon: Zap, bg: "bg-blue-50", color: "text-blue-600", title: "Direct Store Dispatch", desc: "Orders are picked fresh and dispatched directly from nearby partner stores." },
-  { icon: Navigation, bg: "bg-teal-50", color: "text-teal-600", title: "Live GPS Tracking", desc: "Watch your delivery rider move on the map live in real time." },
-  { icon: Lock, bg: "bg-emerald-50", color: "text-emerald-600", title: "Encrypted Payments", desc: "UPI, cards, wallet, and Cash on Delivery — 100% secure." },
-  { icon: Moon, bg: "bg-violet-50", color: "text-violet-600", title: "24/7 Night Delivery", desc: "Order essential medicines & snacks even late at night." },
-  { icon: Store, bg: "bg-amber-50", color: "text-amber-700", title: "Support Local Kiranas", desc: "Empower verified neighbourhood merchants in your community." },
-  { icon: Star, bg: "bg-blue-50", color: "text-blue-600", title: "Verified Merchant Ratings", desc: "Every shop is customer-rated for quality and hygiene." },
+  { icon: Zap, bg: "bg-blue-50", color: "text-blue-600", title: "Fast Delivery", desc: "Most orders reach you within 15 minutes." },
+  { icon: Navigation, bg: "bg-teal-50", color: "text-teal-600", title: "Live Tracking", desc: "Watch your order move in real time." },
+  { icon: Lock, bg: "bg-emerald-50", color: "text-emerald-600", title: "Secure Payments", desc: "UPI, cards and wallet — all encrypted." },
+  { icon: Moon, bg: "bg-violet-50", color: "text-violet-600", title: "Night Delivery", desc: "Order essentials even late at night." },
+  { icon: Store, bg: "bg-amber-50", color: "text-amber-700", title: "Local Stores", desc: "Support shops already in your area." },
+  { icon: Star, bg: "bg-blue-50", color: "text-blue-600", title: "Trusted Vendors", desc: "Every seller is verified and rated." },
 ];
 
 const steps = [
-  { title: "Select your category", desc: "Choose groceries, food, medicine or subscriptions." },
-  { title: "Add items to cart", desc: "Pick fresh products directly from nearby local stores." },
-  { title: "Pay in 1 tap", desc: "Use UPI, wallet, cards or Cash on Delivery." },
-  { title: "Live track to doorstep", desc: "Watch your rider deliver directly to your door." },
+  { title: "Choose products", desc: "Browse nearby stores and add items to your cart." },
+  { title: "Place order", desc: "Pick a payment method and confirm in one tap." },
+  { title: "Vendor accepts", desc: "The local store packs your order right away." },
+  { title: "Rider picks up", desc: "A delivery partner collects it within minutes." },
+  { title: "Delivered", desc: "Track it live until it reaches your door." },
 ];
 
+const features = [
+  { icon: Radar, title: "Real-Time Inventory", desc: "See exactly what's in stock before you order." },
+  { icon: Navigation, title: "Live Order Tracking", desc: "Watch your rider move on the map in real time." },
+  { icon: Wallet, title: "Wallet", desc: "Faster checkout with saved balance and refunds." },
+  { icon: CreditCard, title: "Multiple Payments", desc: "UPI, cards, cash on delivery — your choice." },
+  { icon: Bell, title: "Notifications", desc: "Order status updates without opening the app." },
+  { icon: RotateCcw, title: "Easy Returns", desc: "Simple returns on eligible items, no hassle." },
+];
+
+const testimonials = [
+  { n: "Ananya S.", t: "Order 12 minutes me aa gaya, bilkul fresh saaman." },
+  { n: "Rohit K.", t: "Live tracking se pata rehta hai rider kahan hai." },
+  { n: "Priya M.", t: "Night me bhi medicine mil gayi, bahut helpful." },
+];
+
+const faqs = [
+  { q: "How do I order?", a: "Set your location, browse categories or search, add items to cart and checkout." },
+  { q: "How can I pay?", a: "UPI, debit/credit cards, wallet balance, or cash on delivery." },
+  { q: "How fast is delivery?", a: "Most orders reach you within 15 minutes depending on your location." },
+  { q: "Can I return an item?", a: "Yes, eligible items can be returned easily from your order history." },
+];
+
+function Section({ id, eyebrow, title, center, children }) {
+  return (
+    <section id={id} className="py-16 md:py-20">
+      <div className="max-w-6xl mx-auto px-6">
+        {title && (
+          <div className={`mb-9 ${center ? "text-center" : ""}`}>
+            <span className="block text-sm font-extrabold tracking-widest uppercase text-blue-600 mb-2">{eyebrow}</span>
+            <h2 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>{title}</h2>
+          </div>
+        )}
+        {children}
+      </div>
+    </section>
+  );
+}
+
 export default function AppKartHome() {
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [openFeature, setOpenFeature] = useState(null);
+  const [openFaq, setOpenFaq] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
   const stepRefs = useRef([]);
 
@@ -165,250 +105,328 @@ export default function AppKartHome() {
   }, []);
 
   return (
-    <div className="bg-slate-50 text-slate-900 min-h-screen" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <div className="bg-slate-50 text-slate-900 min-h-screen" style={{ fontFamily: "'Manrope', sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
 
-      {/* Shared Swiggy-Style Navbar */}
-      <Navbar />
-
-      {/* 1. SWIGGY-STYLE PRIMARY SERVICE HUBS (4-Grid Gradient Banners) */}
-      <section className="max-w-7xl mx-auto px-6 pt-6 pb-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {serviceHubs.map((hub) => (
-            <Link
-              key={hub.id}
-              to={hub.link}
-              className={`group relative rounded-3xl p-6 text-white bg-gradient-to-br ${hub.gradient} shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden flex flex-col justify-between min-h-[170px]`}
-            >
-              {/* Background Glow Overlay */}
-              <div className="absolute -right-6 -bottom-6 w-32 h-32 bg-white/10 rounded-full blur-xl group-hover:scale-125 transition-transform" />
-
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className={`text-[10px] font-black tracking-wider uppercase px-2.5 py-1 rounded-full text-white ${hub.badgeBg} shadow-xs`}>
-                    {hub.badge}
-                  </span>
-                  <div className="w-9 h-9 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white group-hover:rotate-12 transition-transform">
-                    <hub.icon size={18} />
-                  </div>
-                </div>
-
-                <h2 className="text-xl font-bold tracking-tight text-white mb-1" style={{ fontFamily: "'Fraunces', serif" }}>
-                  {hub.title}
-                </h2>
-                <p className="text-xs text-white/90 font-medium">{hub.subtitle}</p>
-              </div>
-
-              <div className="pt-4 flex items-center justify-between border-t border-white/20 mt-4">
-                <span className="text-[11px] font-extrabold text-white/90">{hub.tag}</span>
-                <div className="w-7 h-7 rounded-full bg-white text-slate-900 flex items-center justify-center group-hover:translate-x-1 transition-transform">
-                  <ArrowRight size={14} />
-                </div>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 2. "WHAT'S ON YOUR MIND?" (Swiggy Circular Avatars Carousel) */}
-      <section className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <span className="block text-xs font-black tracking-widest uppercase text-blue-600 mb-1">Quick Explore</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
-              What's on your mind?
-            </h2>
-          </div>
-          <Link to="/categories" className="text-xs font-extrabold text-blue-600 hover:text-blue-700 flex items-center gap-1">
-            See All Categories <ChevronRight size={14} />
-          </Link>
-        </div>
-
-        <div className="flex gap-6 overflow-x-auto pb-4 no-scrollbar">
-          {whatsOnMind.map((item) => (
-            <Link
-              key={item.key}
-              to={`/categories?category=${item.key}`}
-              className="group flex flex-col items-center flex-shrink-0 cursor-pointer text-center"
-            >
-              <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-white p-1.5 border border-slate-200 shadow-sm group-hover:border-blue-500 group-hover:shadow-md group-hover:scale-105 transition-all duration-300 relative overflow-hidden mb-2">
-                <img
-                  src={`https://picsum.photos/seed/${item.img}/200/200`}
-                  alt={item.name}
-                  className="w-full h-full object-cover rounded-full group-hover:scale-108 transition-transform duration-500"
-                />
-              </div>
-              <span className="font-extrabold text-xs text-slate-900 group-hover:text-blue-600 transition-colors">
-                {item.name}
-              </span>
-              <span className="text-[10px] text-slate-400 font-semibold">{item.count}</span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 3. "TOP STORES & RESTAURANTS NEAR YOU" (Swiggy Store Cards Grid) */}
-      <section className="max-w-7xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <span className="block text-xs font-black tracking-widest uppercase text-blue-600 mb-1">Neighbourhood Favorites</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
-              Top verified stores near you
-            </h2>
-          </div>
-        </div>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {topStores.map((store, idx) => (
-            <Link
-              key={idx}
-              to="/categories"
-              className="group bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xs hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300"
-            >
-              {/* Store Image & Offer Banner Overlay */}
-              <div className="relative aspect-[4/3] bg-slate-100 overflow-hidden">
-                <img
-                  src={`https://picsum.photos/seed/${store.img}/400/300`}
-                  alt={store.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent" />
-
-                {/* Offer Tag Badge on Image */}
-                <div className="absolute bottom-3 left-3 text-white">
-                  <div className="font-black text-sm tracking-tight drop-shadow-md">{store.offer}</div>
-                  <div className="text-[10px] font-bold text-teal-300 drop-shadow-xs">{store.offerCode}</div>
-                </div>
-              </div>
-
-              {/* Store Details */}
-              <div className="p-4">
-                <h3 className="font-extrabold text-base text-slate-900 group-hover:text-blue-600 transition-colors truncate">
-                  {store.name}
-                </h3>
-
-                <div className="flex items-center gap-2 text-xs font-bold text-slate-700 my-1.5">
-                  <span className="bg-emerald-600 text-white px-2 py-0.5 rounded-md flex items-center gap-1 font-extrabold text-[11px]">
-                    <Star size={11} fill="currentColor" /> {store.rating}
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-1 text-slate-600"><Clock size={12} /> {store.time}</span>
-                  <span>•</span>
-                  <span className="text-slate-500">{store.distance}</span>
-                </div>
-
-                <p className="text-xs text-slate-400 font-semibold truncate">{store.cuisines}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 4. TODAY'S OFFERS & DEALS PICKED FOR YOU */}
-      <section id="offers" className="max-w-7xl mx-auto px-6 py-8">
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white rounded-3xl p-8 md:p-10 shadow-2xl relative overflow-hidden mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-6 relative z-10">
-            <div>
-              <span className="text-xs font-black uppercase tracking-widest text-teal-400 flex items-center gap-1.5">
-                <Gift size={14} /> Today's Exclusive Offers
-              </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mt-1" style={{ fontFamily: "'Fraunces', serif" }}>
-                Best deals picked for you.
-              </h2>
+      {/* Utility bar */}
+      <div className="bg-slate-900 text-slate-50 text-xs font-semibold h-9 overflow-hidden flex items-center">
+        <div className="flex whitespace-nowrap animate-[marquee_22s_linear_infinite]">
+          {[...Array(2)].map((_, i) => (
+            <div key={i} className="flex">
+              <span className="px-10 flex items-center gap-2"><Truck size={13} /> Delivery in 15 minutes</span>
+              <span className="px-10 flex items-center gap-2"><Gift size={13} /> Today's offers live now</span>
+              <span className="px-10 flex items-center gap-2"><CreditCard size={13} /> Free delivery above ₹299</span>
+              <span className="px-10 flex items-center gap-2"><Moon size={13} /> Night delivery available</span>
             </div>
-            <Link to="/categories" className="bg-white/10 hover:bg-white/20 text-white text-xs font-extrabold px-5 py-2.5 rounded-full border border-white/20 backdrop-blur-md transition-colors">
-              Explore All Offers
-            </Link>
-          </div>
+          ))}
+        </div>
+      </div>
+      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
 
-          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4 relative z-10">
-            {todaysDeals.map((d, i) => (
-              <div key={i} className="bg-white text-slate-900 rounded-2xl overflow-hidden shadow-md hover:-translate-y-1 transition-all">
-                <div className="relative aspect-square bg-slate-100">
-                  <img src={`https://picsum.photos/seed/${d.img}/300/300`} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
-                  <span className={`absolute top-2 left-2 ${d.tag} text-white text-xs font-extrabold px-2.5 py-1 rounded-full shadow-xs`}>
-                    {d.off}
-                  </span>
-                </div>
-                <div className="p-3.5">
-                  <div className="font-bold text-sm mb-2 leading-snug">{d.name}</div>
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="font-extrabold text-base text-slate-900">₹{d.price}</span>
-                      <span className="text-xs text-slate-400 line-through ml-1.5">₹{d.mrp}</span>
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-slate-50/95 backdrop-blur border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex items-center gap-4">
+          <div className="text-xl font-extrabold tracking-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+            Fill<span className="text-blue-600">Carts</span>
+          </div>
+          <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
+            <MapPin size={14} className="text-blue-600" /> Your Location
+          </div>
+          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
+            <Search size={15} />
+            <input placeholder="Search products, stores..." className="bg-transparent outline-none w-full text-slate-900 text-sm" />
+          </div>
+          <div className="flex items-center gap-2 ml-auto relative">
+            <button onClick={() => setLoginOpen(!loginOpen)} className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center">
+              <User size={16} />
+            </button>
+         {loginOpen && (
+  <div className="absolute top-11 right-24 bg-white border border-slate-200 rounded-xl shadow-lg w-48 p-1.5 z-50">
+    <Link
+      to="/login"
+      onClick={() => setLoginOpen(false)}
+      className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium hover:bg-slate-50"
+    >
+      <ChevronRight size={14} className="text-blue-600" />
+      Customer Login
+    </Link>
+  </div>
+)}
+            <button className="w-9 h-9 rounded-full bg-white border border-slate-200 flex items-center justify-center relative">
+              <ShoppingCart size={16} />
+              <span className="absolute -top-0.5 -right-0.5 w-2 h-2 rounded-full bg-blue-600 border-2 border-slate-50" />
+            </button>
+            <button className="bg-slate-900 text-white text-sm font-bold rounded-full px-5 py-2.5 whitespace-nowrap">Download App</button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Nav */}
+      <nav className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-3 flex gap-7 text-sm font-bold overflow-x-auto">
+          <Link to="/" className="text-blue-600 whitespace-nowrap">Home</Link>
+          <Link to="/categories" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Categories</Link>
+          <a href="#features" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Features</a>
+          <Link to="/become-vendor" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Become Vendor</Link>
+          <Link to="/become-rider" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Become Rider</Link>
+          <Link to="/about" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">About</Link>
+          <Link to="/support" className="text-slate-600 hover:text-blue-600 whitespace-nowrap">Support</Link>
+        </div>
+      </nav>
+
+      {/* Hero */}
+      <section className="max-w-6xl mx-auto px-6 pt-14 pb-4 grid md:grid-cols-2 gap-10 items-center">
+        <div>
+          <div className="inline-flex items-center gap-2 bg-white border border-slate-200 rounded-full px-3.5 py-1.5 text-sm font-bold mb-5">
+            <span className="w-2 h-2 rounded-full bg-blue-600 animate-pulse" /> Fresh groceries · Fast delivery · Trusted local stores
+          </div>
+          <h1 className="text-5xl font-bold mb-4 leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+            Deliver anything<br /><span className="text-blue-600">near you.</span>
+          </h1>
+          <p className="text-slate-500 text-base mb-7 max-w-md font-medium">
+            Groceries, medicines, food and daily essentials — ordered in seconds, at your door in minutes.
+          </p>
+          <div className="flex gap-3 flex-wrap">
+            <button className="bg-slate-900 text-white font-bold rounded-full px-6 py-3 text-sm">Download App</button>
+            <Link to="/categories" className="inline-block bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-sm">Browse Categories</Link>
+          </div>
+        </div>
+        <div className="flex justify-center">
+          <div className="w-56 bg-slate-900 rounded-[36px] p-2.5 shadow-2xl">
+            <div className="bg-white rounded-[26px] overflow-hidden">
+              <div className="bg-blue-600 text-white h-12 flex items-center px-3.5 font-bold text-xs gap-1.5">
+                <MapPin size={13} /> Delivering to your location
+              </div>
+              <div className="p-3 space-y-2.5">
+                {[
+                  { icon: Carrot, label: "Fresh Vegetables", bg: "bg-blue-600" },
+                  { icon: Milk, label: "Dairy & Bakery", bg: "bg-teal-500" },
+                  { icon: Pill, label: "Pharmacy Essentials", bg: "bg-slate-900" },
+                  { icon: UtensilsCrossed, label: "Snacks & Beverages", bg: "bg-violet-500" },
+                ].map((c, i) => (
+                  <div key={i} className="bg-slate-50 rounded-xl p-2 flex items-center gap-2.5 text-sm font-bold">
+                    <div className={`w-7 h-7 rounded-lg ${c.bg} text-white flex items-center justify-center flex-shrink-0`}>
+                      <c.icon size={13} />
                     </div>
-                    <button className="w-8 h-8 rounded-xl bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs transition-colors">
-                      <Plus size={16} />
-                    </button>
+                    {c.label}
                   </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Quick action cards */}
+      <div className="max-w-6xl mx-auto px-6 mt-10 grid md:grid-cols-3 gap-4">
+        {[
+          { icon: ShoppingCart, bg: "bg-blue-50", iconBg: "bg-blue-600", title: "Browse Categories", sub: "Grocery, food & more", to: "/categories" },
+          { icon: Gift, bg: "bg-violet-50", iconBg: "bg-violet-600", title: "Today's Offers", sub: "Best deals near you", to: "#deals" },
+          { icon: Repeat, bg: "bg-teal-50", iconBg: "bg-teal-500", title: "Subscribe & Save", sub: "Auto-delivered essentials", to: "#subscription" },
+        ].map((c, i) =>
+          c.to.startsWith("/") ? (
+            <Link key={i} to={c.to} className={`${c.bg} rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all`}>
+              <div className={`w-12 h-12 rounded-xl ${c.iconBg} text-white flex items-center justify-center flex-shrink-0`}>
+                <c.icon size={20} />
+              </div>
+              <div>
+                <div className="font-extrabold text-base">{c.title}</div>
+                <div className="text-sm font-semibold text-slate-500 flex items-center gap-1">{c.sub} <ChevronRight size={12} /></div>
+              </div>
+            </Link>
+          ) : (
+            <a key={i} href={c.to} className={`${c.bg} rounded-2xl p-6 flex items-center gap-4 cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all`}>
+              <div className={`w-12 h-12 rounded-xl ${c.iconBg} text-white flex items-center justify-center flex-shrink-0`}>
+                <c.icon size={20} />
+              </div>
+              <div>
+                <div className="font-extrabold text-base">{c.title}</div>
+                <div className="text-sm font-semibold text-slate-500 flex items-center gap-1">{c.sub} <ChevronRight size={12} /></div>
+              </div>
+            </a>
+          )
+        )}
+      </div>
+
+      {/* Categories */}
+      <Section id="categories" eyebrow="Shop by category" title="Everything you need, sorted.">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
+          {categories.map((c, i) => (
+            <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all">
+              <div className="relative aspect-square bg-slate-100">
+                <img src={`https://picsum.photos/seed/${c.img}/300/300`} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
+                <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center">
+                  <c.icon size={14} className={c.color} />
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 5. AUTOMATED SUBSCRIPTIONS BANNER */}
-      <section className="max-w-7xl mx-auto px-6 py-4">
-        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-teal-600 text-white rounded-3xl p-8 md:p-12 flex flex-wrap items-center justify-between gap-6 shadow-xl">
-          <div>
-            <div className="text-xs font-black uppercase tracking-widest text-blue-200 mb-2 flex items-center gap-1.5">
-              <Repeat size={14} /> Morning Essentials Service
-            </div>
-            <h2 className="text-2xl md:text-3xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>
-              Never run out of daily milk & fresh bread.
-            </h2>
-            <p className="text-xs md:text-sm text-blue-100 max-w-md font-medium">
-              Set automated daily morning delivery at 7 AM — pause, skip or cancel anytime with zero commitments.
-            </p>
-          </div>
-          <Link to="/subscriptions" className="bg-slate-900 hover:bg-slate-850 text-white font-extrabold rounded-full px-7 py-3.5 text-xs shadow-xl whitespace-nowrap transition-all">
-            Explore Subscriptions
-          </Link>
-        </div>
-      </section>
-
-      {/* 6. WHY CHOOSE FILLCARTS */}
-      <section className="max-w-7xl mx-auto px-6 py-14">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-black tracking-widest uppercase text-blue-600 mb-2">Why FillCarts</span>
-          <h2 className="text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>Why Choose FillCarts?</h2>
-        </div>
-        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-5">
-          {whyChoose.map((w, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 text-left hover:-translate-y-1 hover:shadow-lg transition-all">
-              <div className={`w-11 h-11 rounded-2xl ${w.bg} ${w.color} flex items-center justify-center mb-4`}>
-                <w.icon size={20} />
+              <div className="p-3">
+                <div className="font-bold text-base">{c.name}</div>
+                <div className="text-base text-slate-500 font-semibold">{c.sub}</div>
               </div>
-              <div className="font-extrabold text-base mb-1 text-slate-900">{w.title}</div>
-              <div className="text-xs text-slate-500 font-medium leading-relaxed">{w.desc}</div>
             </div>
           ))}
         </div>
-      </section>
+        <div className="text-center mt-6">
+          <Link to="/categories" className="text-blue-600 font-extrabold text-base inline-flex items-center gap-1">View All Categories <ChevronRight size={15} /></Link>
+        </div>
+      </Section>
 
-      {/* 7. APP DOWNLOAD BANNER */}
-      <section className="max-w-7xl mx-auto px-6 py-6">
-        <div className="bg-slate-900 text-white rounded-3xl p-8 md:p-12 flex flex-wrap items-center justify-between gap-6 shadow-xl">
+      {/* Why choose */}
+      <Section eyebrow="Why FillCarts" title="Why Choose FillCarts?" center>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {whyChoose.map((w, i) => (
+            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6 text-left">
+              <div className={`w-11 h-11 rounded-full ${w.bg} ${w.color} flex items-center justify-center mb-3.5`}>
+                <w.icon size={19} />
+              </div>
+              <div className="font-extrabold text-base mb-1">{w.title}</div>
+              <div className="text-base text-slate-500">{w.desc}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* How it works */}
+      <Section id="how" eyebrow="How it works" title="From tap to doorstep." center>
+        <div className="max-w-xl mx-auto relative">
+          <div className="absolute left-[23px] top-3 bottom-3 w-0.5 bg-slate-200" />
+          {steps.map((s, i) => (
+            <div
+              key={i}
+              ref={(el) => (stepRefs.current[i] = el)}
+              className={`flex gap-5 py-5 transition-all duration-500 ${activeStep === i ? "opacity-100 translate-x-0" : "opacity-40 -translate-x-1"}`}
+            >
+              <div className={`w-12 h-12 rounded-full border-2 flex items-center justify-center font-extrabold flex-shrink-0 z-10 transition-colors duration-500 ${activeStep === i ? "bg-blue-600 border-blue-600 text-white" : "bg-white border-slate-200 text-slate-900"}`} style={{ fontFamily: "'Fraunces', serif" }}>
+                {i + 1}
+              </div>
+              <div>
+                <h3 className="font-extrabold text-base mb-0.5">{s.title}</h3>
+                <p className="text-base text-slate-500">{s.desc}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Features */}
+      <Section id="features" eyebrow="App features" title="Built for speed and trust.">
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {features.map((f, i) => {
+            const open = openFeature === i;
+            return (
+              <div
+                key={i}
+                onClick={() => setOpenFeature(open ? null : i)}
+                className={`rounded-2xl p-5 cursor-pointer border transition-colors ${open ? "bg-blue-50 border-blue-200" : "bg-white border-slate-200"}`}
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-100 text-blue-600 flex items-center justify-center mb-3">
+                  <f.icon size={18} />
+                </div>
+                <div className="font-extrabold text-base">{f.title}</div>
+                {open && <div className="text-base text-slate-500 mt-1.5">{f.desc}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </Section>
+
+      {/* Today's Deals */}
+      <Section id="deals" eyebrow="Today's deals" title="Offers picked for you.">
+        <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
+          {[
+            { name: "Fresh Fruits Combo", off: "25% OFF", price: 149, mrp: 199, img: "deal-fruits-combo", tag: "bg-blue-600" },
+            { name: "Dairy Essentials Pack", off: "Flat ₹40 OFF", price: 189, mrp: 229, img: "deal-dairy-pack", tag: "bg-teal-600" },
+            { name: "Snacks & Beverages", off: "Buy 1 Get 1", price: 99, mrp: 180, img: "deal-snacks", tag: "bg-violet-600" },
+            { name: "Pharmacy Essentials", off: "15% OFF", price: 129, mrp: 149, img: "deal-pharmacy", tag: "bg-amber-700" },
+          ].map((d, i) => (
+            <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
+              <div className="relative aspect-square bg-slate-100">
+                <img src={`https://picsum.photos/seed/${d.img}/300/300`} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
+                <span className={`absolute top-2 left-2 ${d.tag} text-white text-sm font-bold px-2.5 py-1 rounded-full`}>{d.off}</span>
+              </div>
+              <div className="p-3.5">
+                <div className="font-bold text-base mb-1.5">{d.name}</div>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-extrabold text-base">₹{d.price}</span>
+                    <span className="text-sm text-slate-400 line-through ml-1.5">₹{d.mrp}</span>
+                  </div>
+                  <button className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center"><Plus size={15} /></button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Subscription */}
+      <div id="subscription" className="max-w-6xl mx-auto px-6 py-4">
+        <div className="bg-slate-900 text-white rounded-3xl p-10 flex flex-wrap items-center justify-between gap-6">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold max-w-sm leading-tight mb-2" style={{ fontFamily: "'Fraunces', serif" }}>
-              Get the FillCarts app & order in seconds.
-            </h2>
-            <p className="text-xs text-slate-400 font-medium">Available on Google Play & Apple App Store.</p>
+            <div className="text-sm font-extrabold uppercase tracking-widest text-blue-400 mb-2 flex items-center gap-1.5"><Repeat size={13} /> Subscription</div>
+            <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>Never run out of essentials.</h2>
+            <p className="text-sm text-slate-300 max-w-md">Subscribe to your daily milk, bread and groceries — auto-delivered on schedule, cancel anytime.</p>
           </div>
+          <button className="bg-blue-600 text-white font-bold rounded-full px-6 py-3 text-sm whitespace-nowrap">Explore Subscriptions</button>
+        </div>
+      </div>
+
+      {/* Download */}
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="bg-blue-600 text-white rounded-3xl p-10 flex flex-wrap items-center justify-between gap-6">
+          <h2 className="text-2xl font-bold max-w-sm" style={{ fontFamily: "'Fraunces', serif" }}>Get the FillCarts app and order in under a minute.</h2>
           <div className="flex items-center gap-3 flex-wrap">
-            <div className="bg-white/10 border border-white/20 hover:bg-white/20 rounded-2xl px-5 py-3 font-extrabold text-xs flex items-center gap-2 shadow-lg cursor-pointer transition-all">
-              <Download size={16} /> Google Play
-            </div>
-            <div className="bg-white/10 border border-white/20 hover:bg-white/20 rounded-2xl px-5 py-3 font-extrabold text-xs flex items-center gap-2 shadow-lg cursor-pointer transition-all">
-              <Smartphone size={16} /> App Store
-            </div>
-            <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center text-slate-900 shadow-xl">
-              <QrCode size={28} />
-            </div>
+            <div className="bg-slate-900 rounded-xl px-5 py-3 font-bold text-base flex items-center gap-2"><Download size={15} /> Google Play</div>
+            <div className="bg-slate-900 rounded-xl px-5 py-3 font-bold text-base flex items-center gap-2"><Smartphone size={15} /> App Store</div>
+            <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center text-slate-900"><QrCode size={26} /></div>
           </div>
         </div>
-      </section>
+      </div>
+
+      {/* Testimonials */}
+      <Section eyebrow="Testimonials" title="Loved by our customers." center>
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
+          {testimonials.map((t, i) => (
+            <div key={i} className="bg-white border border-slate-200 rounded-2xl p-6">
+              <div className="flex gap-0.5 text-blue-500 mb-3">
+                {[...Array(5)].map((_, s) => <Star key={s} size={13} fill="currentColor" />)}
+              </div>
+              <p className="text-base text-slate-500 mb-4">"{t.t}"</p>
+              <div className="font-extrabold text-base">{t.n}</div>
+            </div>
+          ))}
+        </div>
+      </Section>
+
+      {/* Expansion */}
+      <div className="max-w-6xl mx-auto px-6 py-4">
+        <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center">
+          <h2 className="text-2xl font-bold mb-2" style={{ fontFamily: "'Fraunces', serif" }}>New stores joining your neighbourhood every week.</h2>
+          <p className="text-base text-slate-500 max-w-md mx-auto mb-5">FillCarts keeps adding local shops nearby, so your options keep growing. Enter your area to check what's available.</p>
+          <div className="flex max-w-sm mx-auto gap-2">
+            <input placeholder="Enter your area / pincode" className="flex-1 border border-slate-200 rounded-full px-4 py-2.5 text-sm outline-none" />
+            <button className="bg-slate-900 text-white font-bold rounded-full px-5 py-2.5 text-sm whitespace-nowrap">Check</button>
+          </div>
+        </div>
+      </div>
+
+      {/* FAQ */}
+      <Section id="support" eyebrow="FAQ" title="Frequently Asked Questions" center>
+        <div className="max-w-2xl mx-auto">
+          {faqs.map((f, i) => {
+            const open = openFaq === i;
+            return (
+              <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="border-b border-slate-200 py-5 cursor-pointer">
+                <div className="flex justify-between items-center font-bold text-base">
+                  {f.q}
+                  <Plus size={17} className={`text-blue-600 transition-transform ${open ? "rotate-45" : ""}`} />
+                </div>
+                {open && <div className="text-base text-slate-500 mt-2.5">{f.a}</div>}
+              </div>
+            );
+          })}
+        </div>
+      </Section>
 
       {/* Footer */}
       <Footer />
