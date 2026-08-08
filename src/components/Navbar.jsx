@@ -40,7 +40,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
   const navLinks = [
     { label: "Home", to: "/" },
     { label: "Categories", to: "/categories" },
-    { label: "Features", to: "/#features", isAnchor: true },
+    { label: "Features", to: "/features" },
     { label: "Become Vendor", to: "/become-vendor" },
     { label: "Become Rider", to: "/become-rider" },
     { label: "About", to: "/about" },

@@ -25,7 +25,7 @@ const categories = [
 ];
 
 const whyChoose = [
-  { icon: Zap, bg: "bg-blue-50", color: "text-blue-600", title: "Fast Delivery", desc: "Most orders reach you within 15 minutes." },
+  { icon: Zap, bg: "bg-blue-50", color: "text-blue-600", title: "Fast Local Delivery", desc: "Orders are dispatched directly from nearby trusted local stores." },
   { icon: Navigation, bg: "bg-teal-50", color: "text-teal-600", title: "Live Tracking", desc: "Watch your order move in real time." },
   { icon: Lock, bg: "bg-emerald-50", color: "text-emerald-600", title: "Secure Payments", desc: "UPI, cards and wallet — all encrypted." },
   { icon: Moon, bg: "bg-violet-50", color: "text-violet-600", title: "Night Delivery", desc: "Order essentials even late at night." },
@@ -51,7 +51,7 @@ const features = [
 ];
 
 const testimonials = [
-  { n: "Ananya S.", t: "Order 12 minutes me aa gaya, bilkul fresh saaman." },
+  { n: "Ananya S.", t: "Order bahut jaldi aa gaya, bilkul fresh saaman." },
   { n: "Rohit K.", t: "Live tracking se pata rehta hai rider kahan hai." },
   { n: "Priya M.", t: "Night me bhi medicine mil gayi, bahut helpful." },
 ];
@@ -59,7 +59,7 @@ const testimonials = [
 const faqs = [
   { q: "How do I order?", a: "Set your location, browse categories or search, add items to cart and checkout." },
   { q: "How can I pay?", a: "UPI, debit/credit cards, wallet balance, or cash on delivery." },
-  { q: "How fast is delivery?", a: "Most orders reach you within 15 minutes depending on your location." },
+  { q: "How fast is delivery?", a: "Orders are dispatched directly from nearby partner stores as soon as you order." },
   { q: "Can I return an item?", a: "Yes, eligible items can be returned easily from your order history." },
 ];
 
