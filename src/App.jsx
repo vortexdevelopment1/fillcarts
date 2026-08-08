@@ -10,6 +10,32 @@ import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
 import SubscriptionPage from "./components/SubscriptionPage";
 import CareersPage from "./components/CareersPage";
 import BlogPage from "./components/BlogPage";
+import CartPage from "./components/CartPage";
+import UserProfilePage from "./components/UserProfilePage";
+import { CartProvider } from "./context/CartContext";
+
+function App() {
+  return (
+    <CartProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/login" element={<CustomerLoginPage />} />
+          <Route path="/register" element={<CustomerRegistrationPage />} />
+          <Route path="/" element={<AppKartHome />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/become-vendor" element={<BecomeVendorPage />} />
+          <Route path="/become-rider" element={<BecomeRiderPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/login/customer" element={<CustomerLoginPage />} />
+          <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/cart" element={<CartPage />} />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
 import FeaturesPage from "./components/FeaturesPage";
 
 function App() {

@@ -4,9 +4,10 @@ import Footer from "./Footer";
 import Navbar from "./Navbar";
 import {
   Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed, PawPrint, Home,
-  Sparkles, Smartphone, Search, SlidersHorizontal, Star, Plus, ChevronRight,
+  Sparkles, Smartphone, Search, SlidersHorizontal, Star, Plus, Minus, ChevronRight,
   ChevronDown, MapPin, ShoppingCart, User, ArrowUpDown, X
 } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
 const categories = [
   { key: "grocery", name: "Grocery", icon: Carrot, color: "text-blue-600", bg: "bg-blue-50", count: 420 },
@@ -49,6 +50,7 @@ function genProducts(catKey) {
 const sortOptions = ["Popularity", "Price: Low to High", "Price: High to Low", "Rating"];
 
 export default function CategoriesPage() {
+  const { cart, addToCart, removeFromCart } = useCart();
   const [active, setActive] = useState("grocery");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("Popularity");
@@ -224,9 +226,33 @@ export default function CategoriesPage() {
                         <span className="font-extrabold text-base">₹{p.price}</span>
                         <span className="text-xs text-slate-400 line-through ml-1.5">₹{p.mrp}</span>
                       </div>
-                      <button className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center">
-                        <Plus size={15} />
-                      </button>
+                      {(() => {
+                        const inCart = cart.find((item) => item.id === p.id);
+                        return inCart ? (
+                          <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full p-0.5">
+                            <button
+                              onClick={() => removeFromCart(p.id)}
+                              className="w-6 h-6 rounded-full bg-white text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+                            >
+                              <Minus size={11} />
+                            </button>
+                            <span className="w-4 text-center text-xs font-bold text-slate-900">{inCart.quantity}</span>
+                            <button
+                              onClick={() => addToCart(p)}
+                              className="w-6 h-6 rounded-full bg-white text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+                            >
+                              <Plus size={11} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => addToCart(p)}
+                            className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors active:scale-95"
+                          >
+                            <Plus size={15} />
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 </div>

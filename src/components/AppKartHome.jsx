@@ -6,9 +6,10 @@ import {
   Truck, Gift, CreditCard, Moon, MapPin, Search, User, ShoppingCart,
   Store, Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed,
   PawPrint, Home, Sparkles, Smartphone, Zap, Navigation, Lock, Star,
-  Radar, Wallet, Bell, RotateCcw, Repeat, Plus, QrCode,
+  Radar, Wallet, Bell, RotateCcw, Repeat, Plus, Minus, QrCode,
   Download, ChevronRight
 } from "lucide-react";
+import { useCart } from "../context/CartContext";
 
 const categories = [
   { name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
@@ -79,6 +80,7 @@ function Section({ id, eyebrow, title, center, children }) {
 }
 
 export default function AppKartHome() {
+  const { cart, addToCart, removeFromCart } = useCart();
   const [openFeature, setOpenFeature] = useState(null);
   const [openFaq, setOpenFaq] = useState(0);
   const [activeStep, setActiveStep] = useState(0);
@@ -271,15 +273,15 @@ export default function AppKartHome() {
       <Section id="deals" eyebrow="Today's deals" title="Offers picked for you.">
         <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-4">
           {[
-            { name: "Fresh Fruits Combo", off: "25% OFF", price: 149, mrp: 199, img: "deal-fruits-combo", tag: "bg-blue-600" },
-            { name: "Dairy Essentials Pack", off: "Flat ₹40 OFF", price: 189, mrp: 229, img: "deal-dairy-pack", tag: "bg-teal-600" },
-            { name: "Snacks & Beverages", off: "Buy 1 Get 1", price: 99, mrp: 180, img: "deal-snacks", tag: "bg-violet-600" },
-            { name: "Pharmacy Essentials", off: "15% OFF", price: 129, mrp: 149, img: "deal-pharmacy", tag: "bg-amber-700" },
+            { id: "deal-fruits-combo", name: "Fresh Fruits Combo", off: "25% OFF", price: 149, mrp: 199, img: "deal-fruits-combo", tag: "bg-blue-600" },
+            { id: "deal-dairy-pack", name: "Dairy Essentials Pack", off: "Flat ₹40 OFF", price: 189, mrp: 229, img: "deal-dairy-pack", tag: "bg-teal-600" },
+            { id: "deal-snacks", name: "Snacks & Beverages", off: "Buy 1 Get 1", price: 99, mrp: 180, img: "deal-snacks", tag: "bg-violet-600" },
+            { id: "deal-pharmacy", name: "Pharmacy Essentials", off: "15% OFF", price: 129, mrp: 149, img: "deal-pharmacy", tag: "bg-amber-700" },
           ].map((d, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
               <div className="relative aspect-square bg-slate-100">
                 <img src={`https://picsum.photos/seed/${d.img}/300/300`} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
-                <span className={`absolute top-2 left-2 ${d.tag} text-white text-sm font-bold px-2.5 py-1 rounded-full`}>{d.off}</span>
+                <span className={`absolute top-2 left-2 ${d.tag} text-white text-xs font-bold px-2.5 py-1 rounded-full`}>{d.off}</span>
               </div>
               <div className="p-3.5">
                 <div className="font-bold text-base mb-1.5">{d.name}</div>
@@ -288,7 +290,33 @@ export default function AppKartHome() {
                     <span className="font-extrabold text-base">₹{d.price}</span>
                     <span className="text-sm text-slate-400 line-through ml-1.5">₹{d.mrp}</span>
                   </div>
-                  <button className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center"><Plus size={15} /></button>
+                  {(() => {
+                    const inCart = cart.find((item) => item.id === d.id);
+                    return inCart ? (
+                      <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 rounded-full p-0.5">
+                        <button
+                          onClick={() => removeFromCart(d.id)}
+                          className="w-6 h-6 rounded-full bg-white text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+                        >
+                          <Minus size={11} />
+                        </button>
+                        <span className="w-4 text-center text-xs font-bold text-slate-900">{inCart.quantity}</span>
+                        <button
+                          onClick={() => addToCart(d)}
+                          className="w-6 h-6 rounded-full bg-white text-slate-600 flex items-center justify-center hover:bg-slate-100 transition-colors shadow-sm"
+                        >
+                          <Plus size={11} />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => addToCart(d)}
+                        className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center hover:bg-blue-700 transition-colors active:scale-95"
+                      >
+                        <Plus size={15} />
+                      </button>
+                    );
+                  })()}
                 </div>
               </div>
             </div>

@@ -22,6 +22,7 @@ export default function CustomerRegistrationPage() {
     email: "",
     password: "",
     address: "",
+    pincode: "",
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -31,7 +32,11 @@ export default function CustomerRegistrationPage() {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "phone" ? value.replace(/\D/g, "").slice(0, 10) : value,
+      [name]: name === "phone"
+        ? value.replace(/\D/g, "").slice(0, 10)
+        : name === "pincode"
+          ? value.replace(/\D/g, "").slice(0, 6)
+          : value,
     }));
   };
 
@@ -40,13 +45,18 @@ export default function CustomerRegistrationPage() {
     setError("");
     setSuccess("");
 
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.password.trim()) {
+    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.password.trim() || !form.address.trim() || !form.pincode.trim()) {
       setError("Please complete all required fields.");
       return;
     }
 
     if (form.phone.length !== 10) {
       setError("Enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    if (form.pincode.length !== 6) {
+      setError("Enter a valid 6-digit pincode.");
       return;
     }
 
@@ -113,7 +123,13 @@ export default function CustomerRegistrationPage() {
 
               <label className="block">
                 <span className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><MapPin size={14} /> Delivery Address</span>
-                <textarea name="address" value={form.address} onChange={handleChange} className="w-full px-3.5 py-3 text-sm border border-slate-200 rounded-xl outline-none focus:border-blue-400 min-h-24" placeholder="House number, street, area, city" />
+                <textarea name="address" value={form.address} onChange={handleChange} className="w-full px-3.5 py-3 text-sm border border-slate-200 rounded-xl outline-none focus:border-blue-400 min-h-24" placeholder="House number, street, area, city" required />
+              </label>
+
+              <label className="block">
+                <span className="text-sm font-bold mb-1.5 flex items-center gap-1.5"><MapPin size={14} /> Pincode</span>
+                <input name="pincode" value={form.pincode} onChange={handleChange} className="w-full px-3.5 py-3 text-sm border border-slate-200 rounded-xl outline-none focus:border-blue-400 font-semibold" placeholder="e.g. 110001" required />
+                <span className="text-[10px] text-slate-400 mt-1 block">Enter your 6-digit delivery pincode.</span>
               </label>
 
               {error && <p className="text-sm text-red-500">{error}</p>}
