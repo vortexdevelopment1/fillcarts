@@ -3,6 +3,26 @@ const jwt = require("jsonwebtoken");
 const router = express.Router();
 
 const db = require("../db");
+
+// Proactive database column check to ensure columns exist
+db.query("SHOW COLUMNS FROM customers LIKE 'pincode'", (err, results) => {
+  if (!err && results && results.length === 0) {
+    db.query("ALTER TABLE customers ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
+      if (alterErr) console.error("Proactive alter customers failed:", alterErr.message);
+      else console.log("Proactive check: added pincode column to customers table");
+    });
+  }
+});
+
+db.query("SHOW COLUMNS FROM saved_addresses LIKE 'pincode'", (err, results) => {
+  if (!err && results && results.length === 0) {
+    db.query("ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
+      if (alterErr) console.error("Proactive alter saved_addresses failed:", alterErr.message);
+      else console.log("Proactive check: added pincode column to saved_addresses table");
+    });
+  }
+});
+
 const generateOTP = require("../utils/otpGenerator");
 const sendEmail = require("../services/emailService");
 const sendSMS = require("../services/smsService");
@@ -38,10 +58,15 @@ const normalizeIdentifier = (value) => (value || "").trim();
 
 // REGISTER CUSTOMER PROFILE
 router.post("/register-customer", (req, res) => {
-  const { name, phone, email, password, address } = req.body;
+  const { name, phone, email, password, address, pincode } = req.body;
 
-  if (!name || !phone || !email || !password) {
-    return res.status(400).send("Please fill all required fields");
+  if (!name || !phone || !email || !password || !address || !pincode) {
+    return res.status(400).send("Please fill all required fields, including address and pincode");
+  }
+
+  const cleanPincode = (pincode || "").trim();
+  if (!/^\d{6}$/.test(cleanPincode)) {
+    return res.status(400).send("Pincode must be exactly 6 digits");
   }
 
   db.query(
@@ -58,8 +83,8 @@ router.post("/register-customer", (req, res) => {
       }
 
       db.query(
-        "INSERT INTO customers (name, phone, email, password, address) VALUES (?, ?, ?, ?, ?)",
-        [name.trim(), phone.trim(), email.trim(), password, address?.trim() || ""],
+        "INSERT INTO customers (name, phone, email, password, address, pincode) VALUES (?, ?, ?, ?, ?, ?)",
+        [name.trim(), phone.trim(), email.trim(), password, address.trim(), cleanPincode],
         (insertErr) => {
           if (insertErr) {
             console.error(insertErr);
@@ -83,7 +108,7 @@ router.post("/login-customer", (req, res) => {
   }
 
   db.query(
-    "SELECT id, name, phone, email, address, created_at FROM customers WHERE (phone = ? OR email = ?) AND password = ?",
+    "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE (phone = ? OR email = ?) AND password = ?",
     [identifier, identifier, password],
     (err, results) => {
       if (err) {
@@ -211,7 +236,7 @@ router.post("/verify-otp", (req, res) => {
       db.query("DELETE FROM otp_verification WHERE contact=?", [targetContact]);
 
       db.query(
-        "SELECT id, name, phone, email, address, created_at FROM customers WHERE phone = ? OR email = ?",
+        "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE phone = ? OR email = ?",
         [targetContact, targetContact],
         (customerErr, customerResults) => {
           if (customerErr) {
@@ -232,6 +257,449 @@ router.post("/verify-otp", (req, res) => {
           });
         }
       );
+    }
+  );
+});
+
+// PUT /profile
+router.put("/profile", authMiddleware, (req, res) => {
+  const { name, phone, email, address, pincode } = req.body;
+  const customerId = req.user.id;
+
+  if (!name || !phone || !email || !address || !pincode) {
+    return res.status(400).send("Please fill all required fields, including address and pincode");
+  }
+
+  const cleanPincode = (pincode || "").trim();
+  if (!/^\d{6}$/.test(cleanPincode)) {
+    return res.status(400).send("Pincode must be exactly 6 digits");
+  }
+
+  db.query(
+    "UPDATE customers SET name = ?, phone = ?, email = ?, address = ?, pincode = ? WHERE id = ?",
+    [name.trim(), phone.trim(), email.trim(), address.trim(), cleanPincode, customerId],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+
+      db.query(
+        "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE id = ?",
+        [customerId],
+        (fetchErr, results) => {
+          if (fetchErr || results.length === 0) {
+            return res.status(500).send("Database Error");
+          }
+          return res.send({
+            message: "Profile updated successfully",
+            customer: results[0],
+          });
+        }
+      );
+    }
+  );
+});
+
+// DELETE /profile (Account deletion)
+router.delete("/profile", authMiddleware, (req, res) => {
+  const customerId = req.user.id;
+  db.query("DELETE FROM customers WHERE id = ?", [customerId], (err) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database Error");
+    }
+    res.clearCookie("token");
+    return res.send({ message: "Account deleted successfully" });
+  });
+});
+
+// GET /cart
+router.get("/cart", authMiddleware, (req, res) => {
+  db.query("SELECT items FROM customer_carts WHERE customer_id = ?", [req.user.id], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).send("Database Error");
+    }
+    if (results.length === 0) {
+      return res.send({ cart: [] });
+    }
+    try {
+      return res.send({ cart: JSON.parse(results[0].items) });
+    } catch (e) {
+      return res.send({ cart: [] });
+    }
+  });
+});
+
+// POST /cart
+router.post("/cart", authMiddleware, (req, res) => {
+  const { cart } = req.body;
+  const itemsStr = JSON.stringify(cart || []);
+  db.query(
+    "INSERT INTO customer_carts (customer_id, items) VALUES (?, ?) ON DUPLICATE KEY UPDATE items = ?",
+    [req.user.id, itemsStr, itemsStr],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ message: "Cart saved successfully" });
+    }
+  );
+});
+
+// GET /orders
+router.get("/orders", authMiddleware, (req, res) => {
+  db.query(
+    "SELECT id, items, total, status, payment_method, delivery_address, created_at FROM orders WHERE customer_id = ? ORDER BY id DESC",
+    [req.user.id],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      const orders = results.map(row => {
+        try {
+          return { ...row, items: JSON.parse(row.items) };
+        } catch (e) {
+          return { ...row, items: [] };
+        }
+      });
+      return res.send({ orders });
+    }
+  );
+});
+
+// POST /orders
+router.post("/orders", authMiddleware, (req, res) => {
+  const { items, total, payment_method, delivery_address } = req.body;
+  if (!items || !total || !payment_method || !delivery_address) {
+    return res.status(400).send("Missing order details");
+  }
+
+  const itemsStr = JSON.stringify(items);
+  db.query(
+    "INSERT INTO orders (customer_id, items, total, payment_method, delivery_address) VALUES (?, ?, ?, ?, ?)",
+    [req.user.id, itemsStr, total, payment_method, delivery_address],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+
+      // Clear customer cart on order success
+      db.query("DELETE FROM customer_carts WHERE customer_id = ?", [req.user.id], (cartErr) => {
+        if (cartErr) console.error("Failed to clear cart database:", cartErr);
+        return res.status(201).send({
+          message: "Order placed successfully",
+          orderId: result.insertId
+        });
+      });
+    }
+  );
+});
+
+// GET /addresses
+router.get("/addresses", authMiddleware, (req, res) => {
+  db.query(
+    "SELECT id, type, address_line, phone, pincode FROM saved_addresses WHERE customer_id = ? ORDER BY id DESC",
+    [req.user.id],
+    (err, results) => {
+      if (err) {
+        console.error("GET addresses failed, trying to auto-repair table:", err);
+        if (err.code === "ER_BAD_FIELD_ERROR") {
+          db.query("ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
+            if (alterErr) {
+              return res.status(500).send("Database Error: " + err.message);
+            }
+            db.query(
+              "SELECT id, type, address_line, phone, pincode FROM saved_addresses WHERE customer_id = ? ORDER BY id DESC",
+              [req.user.id],
+              (retryErr, retryResults) => {
+                if (retryErr) {
+                  return res.status(500).send("Database Error: " + retryErr.message);
+                }
+                return res.send({ addresses: retryResults });
+              }
+            );
+          });
+        } else {
+          return res.status(500).send("Database Error: " + err.message);
+        }
+      } else {
+        return res.send({ addresses: results });
+      }
+    }
+  );
+});
+
+// POST /addresses
+router.post("/addresses", authMiddleware, (req, res) => {
+  const { type, address_line, phone, pincode } = req.body;
+  if (!type || !address_line || !phone || !pincode) {
+    return res.status(400).send("Missing address details");
+  }
+
+  const cleanPincode = (pincode || "").trim();
+  if (!/^\d{6}$/.test(cleanPincode)) {
+    return res.status(400).send("Pincode must be exactly 6 digits");
+  }
+
+  db.query(
+    "INSERT INTO saved_addresses (customer_id, type, address_line, phone, pincode) VALUES (?, ?, ?, ?, ?)",
+    [req.user.id, type.trim(), address_line.trim(), phone.trim(), cleanPincode],
+    (err, result) => {
+      if (err) {
+        console.error("POST address failed, trying to auto-repair table:", err);
+        if (err.code === "ER_BAD_FIELD_ERROR") {
+          db.query("ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
+            if (alterErr) {
+              return res.status(500).send("Database Error: " + err.message);
+            }
+            db.query(
+              "INSERT INTO saved_addresses (customer_id, type, address_line, phone, pincode) VALUES (?, ?, ?, ?, ?)",
+              [req.user.id, type.trim(), address_line.trim(), phone.trim(), cleanPincode],
+              (retryErr, retryResult) => {
+                if (retryErr) {
+                  return res.status(500).send("Database Error: " + retryErr.message);
+                }
+                return res.status(201).send({
+                  message: "Address added successfully (after auto-repair)",
+                  addressId: retryResult.insertId
+                });
+              }
+            );
+          });
+        } else {
+          return res.status(500).send("Database Error: " + err.message);
+        }
+      } else {
+        return res.status(201).send({
+          message: "Address added successfully",
+          addressId: result.insertId
+        });
+      }
+    }
+  );
+});
+
+// PUT /addresses/:id
+router.put("/addresses/:id", authMiddleware, (req, res) => {
+  const { type, address_line, phone, pincode } = req.body;
+  const addressId = req.params.id;
+
+  if (!type || !address_line || !phone || !pincode) {
+    return res.status(400).send("Missing address details");
+  }
+
+  const cleanPincode = (pincode || "").trim();
+  if (!/^\d{6}$/.test(cleanPincode)) {
+    return res.status(400).send("Pincode must be exactly 6 digits");
+  }
+
+  db.query(
+    "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
+    [type.trim(), address_line.trim(), phone.trim(), cleanPincode, addressId, req.user.id],
+    (err) => {
+      if (err) {
+        console.error("PUT address failed, trying to auto-repair table:", err);
+        if (err.code === "ER_BAD_FIELD_ERROR") {
+          db.query("ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
+            if (alterErr) {
+              return res.status(500).send("Database Error: " + err.message);
+            }
+            db.query(
+              "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
+              [type.trim(), address_line.trim(), phone.trim(), cleanPincode, addressId, req.user.id],
+              (retryErr) => {
+                if (retryErr) {
+                  return res.status(500).send("Database Error: " + retryErr.message);
+                }
+                return res.send({ message: "Address updated successfully (after auto-repair)" });
+              }
+            );
+          });
+        } else {
+          return res.status(500).send("Database Error: " + err.message);
+        }
+      } else {
+        return res.send({ message: "Address updated successfully" });
+      }
+    }
+  );
+});
+
+// DELETE /addresses/:id
+router.delete("/addresses/:id", authMiddleware, (req, res) => {
+  const addressId = req.params.id;
+  db.query(
+    "DELETE FROM saved_addresses WHERE id = ? AND customer_id = ?",
+    [addressId, req.user.id],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ message: "Address deleted successfully" });
+    }
+  );
+});
+
+// GET /subscriptions
+router.get("/subscriptions", authMiddleware, (req, res) => {
+  db.query(
+    "SELECT id, plan_key, plan_name, price, unit, status, next_delivery, created_at FROM subscriptions WHERE customer_id = ? ORDER BY id DESC",
+    [req.user.id],
+    (err, results) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ subscriptions: results });
+    }
+  );
+});
+
+// POST /subscriptions
+router.post("/subscriptions", authMiddleware, (req, res) => {
+  const { plan_key, plan_name, price, unit, next_delivery } = req.body;
+  if (!plan_key || !plan_name || !unit || !next_delivery) {
+    return res.status(400).send("Missing subscription details");
+  }
+
+  db.query(
+    "INSERT INTO subscriptions (customer_id, plan_key, plan_name, price, unit, next_delivery) VALUES (?, ?, ?, ?, ?, ?)",
+    [req.user.id, plan_key, plan_name, price || null, unit, next_delivery],
+    (err, result) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.status(201).send({
+        message: "Subscription activated successfully",
+        subscriptionId: result.insertId
+      });
+    }
+  );
+});
+
+// PUT /subscriptions/:id/status
+router.put("/subscriptions/:id/status", authMiddleware, (req, res) => {
+  const { status } = req.body;
+  const subscriptionId = req.params.id;
+  if (!status) {
+    return res.status(400).send("Missing status");
+  }
+
+  db.query(
+    "UPDATE subscriptions SET status = ? WHERE id = ? AND customer_id = ?",
+    [status, subscriptionId, req.user.id],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ message: `Subscription status updated to ${status}` });
+    }
+  );
+});
+
+// DELETE /subscriptions/:id
+router.delete("/subscriptions/:id", authMiddleware, (req, res) => {
+  const subscriptionId = req.params.id;
+  db.query(
+    "DELETE FROM subscriptions WHERE id = ? AND customer_id = ?",
+    [subscriptionId, req.user.id],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ message: "Subscription cancelled successfully" });
+    }
+  );
+});
+
+// GET /giftcard
+router.get("/giftcard", authMiddleware, (req, res) => {
+  db.query(
+    "SELECT gift_card_balance FROM customers WHERE id = ?",
+    [req.user.id],
+    (err, results) => {
+      if (err || results.length === 0) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+      return res.send({ balance: results[0].gift_card_balance });
+    }
+  );
+});
+
+// POST /giftcard/redeem
+router.post("/giftcard/redeem", authMiddleware, (req, res) => {
+  const { code } = req.body;
+  if (!code) {
+    return res.status(400).send("Missing promo/gift card code");
+  }
+
+  const upperCode = code.trim().toUpperCase();
+  let amount = 0;
+  if (upperCode === "GIFT50") amount = 50.00;
+  else if (upperCode === "GIFT100") amount = 100.00;
+  else if (upperCode === "GIFT500") amount = 500.00;
+  else {
+    return res.status(400).send("Invalid gift card or promo code");
+  }
+
+  db.query(
+    "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
+    [amount, req.user.id],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+
+      db.query("SELECT gift_card_balance FROM customers WHERE id = ?", [req.user.id], (fetchErr, results) => {
+        if (fetchErr || results.length === 0) {
+          return res.status(500).send("Database Error");
+        }
+        return res.send({
+          message: `Successfully redeemed ₹${amount}!`,
+          balance: results[0].gift_card_balance
+        });
+      });
+    }
+  );
+});
+
+// POST /giftcard/buy
+router.post("/giftcard/buy", authMiddleware, (req, res) => {
+  const { amount } = req.body;
+  const numAmount = parseFloat(amount);
+  if (isNaN(numAmount) || numAmount <= 0) {
+    return res.status(400).send("Invalid purchase amount");
+  }
+
+  db.query(
+    "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
+    [numAmount, req.user.id],
+    (err) => {
+      if (err) {
+        console.error(err);
+        return res.status(500).send("Database Error");
+      }
+
+      db.query("SELECT gift_card_balance FROM customers WHERE id = ?", [req.user.id], (fetchErr, results) => {
+        if (fetchErr || results.length === 0) {
+          return res.status(500).send("Database Error");
+        }
+        return res.send({
+          message: `Successfully purchased ₹${numAmount} credits!`,
+          balance: results[0].gift_card_balance
+        });
+      });
     }
   );
 });

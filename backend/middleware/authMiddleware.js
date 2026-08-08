@@ -12,7 +12,7 @@ const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET || "fillcarts-dev-secret");
 
     db.query(
-      "SELECT id, name, phone, email, address, created_at FROM customers WHERE id = ?",
+      "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE id = ?",
       [decoded.id],
       (err, results) => {
         if (err) {

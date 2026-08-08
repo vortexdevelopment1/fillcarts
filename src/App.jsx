@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import AppKartHome from "./components/AppKartHome";
 import CategoriesPage from "./components/CategoriesPage";
 import BecomeVendorPage from "./components/BecomeVendorPage";
@@ -10,31 +11,49 @@ import CustomerRegistrationPage from "./components/CustomerRegistrationPage";
 import SubscriptionPage from "./components/SubscriptionPage";
 import CareersPage from "./components/CareersPage";
 import BlogPage from "./components/BlogPage";
+import CartPage from "./components/CartPage";
+import UserProfilePage from "./components/UserProfilePage";
+import { CartProvider } from "./context/CartContext";
 import FeaturesPage from "./components/FeaturesPage";
-import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
 import TermsPage from "./components/TermsPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<CustomerLoginPage />} />
-        <Route path="/register" element={<CustomerRegistrationPage />} />
-        <Route path="/" element={<AppKartHome />} />
-        <Route path="/categories" element={<CategoriesPage />} />
-        <Route path="/features" element={<FeaturesPage />} />
-        <Route path="/become-vendor" element={<BecomeVendorPage />} />
-        <Route path="/become-rider" element={<BecomeRiderPage />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/support" element={<SupportPage />} />
-        <Route path="/login/customer" element={<CustomerLoginPage />} />
-        <Route path="/subscriptions" element={<SubscriptionPage />} />
-        <Route path="/careers" element={<CareersPage />} />
-        <Route path="/blog" element={<BlogPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
-        <Route path="/terms" element={<TermsPage />} />
-      </Routes>
-    </BrowserRouter>
+    <CartProvider>
+      <BrowserRouter>
+        <ScrollToTop />
+        <Routes>
+          <Route path="/profile" element={<UserProfilePage />} />
+          <Route path="/login" element={<CustomerLoginPage />} />
+          <Route path="/register" element={<CustomerRegistrationPage />} />
+          <Route path="/" element={<AppKartHome />} />
+          <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/features" element={<FeaturesPage />} />
+          <Route path="/become-vendor" element={<BecomeVendorPage />} />
+          <Route path="/become-rider" element={<BecomeRiderPage />} />
+          <Route path="/about" element={<AboutPage />} />
+          <Route path="/support" element={<SupportPage />} />
+          <Route path="/login/customer" element={<CustomerLoginPage />} />
+          <Route path="/subscriptions" element={<SubscriptionPage />} />
+          <Route path="/careers" element={<CareersPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/cart" element={<CartPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
+        </Routes>
+      </BrowserRouter>
+    </CartProvider>
   );
 }
 

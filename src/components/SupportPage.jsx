@@ -50,7 +50,7 @@ const faqsByTopic = {
   ],
 };
 
-export default function SupportPage() {
+export function SupportContent() {
   const [activeTopic, setActiveTopic] = useState("orders");
   const [query, setQuery] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
@@ -64,21 +64,7 @@ export default function SupportPage() {
   const activeTopicData = helpTopics.find((t) => t.key === activeTopic);
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
-      {/* Shared Common Navbar */}
-      <Navbar searchPlaceholder="Search help articles..." onSearchChange={(val) => setQuery(val)} />
-
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
-          <Link to="/" className="hover:text-blue-600">Home</Link>
-          <ChevronRight size={13} />
-          <span className="text-slate-900 font-bold">Support & Help Center</span>
-        </div>
-      </div>
-
+    <div>
       {/* Hero */}
       <section className="max-w-4xl mx-auto px-6 py-14 text-center">
         <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Help Center</span>
@@ -103,9 +89,8 @@ export default function SupportPage() {
               <div
                 key={t.key}
                 onClick={() => setActiveTopic(t.key)}
-                className={`p-6 rounded-2xl border cursor-pointer transition-all ${
-                  isActive ? "bg-white border-blue-600 shadow-md" : "bg-white border-slate-200 hover:border-slate-300"
-                }`}
+                className={`p-6 rounded-2xl border cursor-pointer transition-all ${isActive ? "bg-white border-blue-600 shadow-md" : "bg-white border-slate-200 hover:border-slate-300"
+                  }`}
               >
                 <div className={`w-11 h-11 rounded-full ${t.bg} ${t.color} flex items-center justify-center mb-3.5`}>
                   <t.icon size={19} />
@@ -134,12 +119,12 @@ export default function SupportPage() {
             filteredFaqs.map((f, i) => {
               const open = openFaq === i;
               return (
-                <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="border-b border-slate-200 py-4 cursor-pointer last:border-b-0">
+                <div key={i} onClick={() => setOpenFaq(open ? null : i)} className="border-b border-slate-200 py-4 cursor-pointer last:border-b-0 animate-[fadeIn_0.2s_ease-out]">
                   <div className="flex justify-between items-center font-bold text-sm text-slate-900">
                     {f.q}
                     <Plus size={16} className={`text-blue-600 transition-transform ${open ? "rotate-45" : ""}`} />
                   </div>
-                  {open && <div className="text-sm text-slate-500 mt-2.5">{f.a}</div>}
+                  {open && <div className="text-sm text-slate-500 mt-2.5 leading-relaxed">{f.a}</div>}
                 </div>
               );
             })
@@ -154,7 +139,7 @@ export default function SupportPage() {
             <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-3"><MessageCircle size={20} /></div>
             <h3 className="font-extrabold text-base mb-1">Live Chat</h3>
             <p className="text-sm text-slate-500 mb-4">Chat with our 24/7 support team.</p>
-            <button className="bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-full">Start Chat</button>
+            <button className="bg-blue-600 text-white font-bold text-xs px-5 py-2.5 rounded-full cursor-pointer hover:bg-blue-700 transition-colors">Start Chat</button>
           </div>
           <div className="bg-white border border-slate-200 rounded-2xl p-6 text-center">
             <div className="w-11 h-11 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center mx-auto mb-3"><Phone size={20} /></div>
@@ -170,6 +155,28 @@ export default function SupportPage() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+export default function SupportPage() {
+  return (
+    <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
+      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+      {/* Shared Common Navbar */}
+      <Navbar />
+
+      {/* Breadcrumb */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-6xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center gap-1.5">
+          <Link to="/" className="hover:text-blue-600">Home</Link>
+          <ChevronRight size={13} />
+          <span className="text-slate-900 font-bold">Support & Help Center</span>
+        </div>
+      </div>
+
+      <SupportContent />
 
       {/* Footer */}
       <Footer />

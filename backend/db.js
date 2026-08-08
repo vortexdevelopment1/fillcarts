@@ -21,9 +21,27 @@ const createRequiredTables = () => {
       email VARCHAR(150) NOT NULL UNIQUE,
       password VARCHAR(255) NOT NULL,
       address TEXT,
+      pincode VARCHAR(10),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     )
   `);
+
+  db.query(`
+    ALTER TABLE customers ADD COLUMN gift_card_balance DECIMAL(10, 2) DEFAULT 0.00
+  `, (err) => {
+    // Ignore error if column already exists (Error 1060: Duplicate column name)
+    if (err && err.errno !== 1060) {
+      console.error("Error adding gift_card_balance column:", err.message);
+    }
+  });
+
+  db.query(`
+    ALTER TABLE customers ADD COLUMN pincode VARCHAR(10)
+  `, (err) => {
+    if (err && err.errno !== 1060) {
+      console.error("Error adding pincode column to customers:", err.message);
+    }
+  });
 
   db.query(`
     CREATE TABLE IF NOT EXISTS otp_verification (
@@ -32,6 +50,65 @@ const createRequiredTables = () => {
       otp VARCHAR(10) NOT NULL,
       expires_at BIGINT NOT NULL,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
+  db.query(`
+    CREATE TABLE IF NOT EXISTS orders (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id INT NOT NULL,
+      items TEXT NOT NULL,
+      total DECIMAL(10, 2) NOT NULL,
+      status VARCHAR(50) DEFAULT 'Delivered',
+      payment_method VARCHAR(50) NOT NULL,
+      delivery_address TEXT NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.query(`
+    CREATE TABLE IF NOT EXISTS saved_addresses (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id INT NOT NULL,
+      type VARCHAR(50) NOT NULL,
+      address_line TEXT NOT NULL,
+      phone VARCHAR(20) NOT NULL,
+      pincode VARCHAR(10) DEFAULT '',
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.query(`
+    ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''
+  `, (err) => {
+    if (err && err.errno !== 1060) {
+      console.error("Error adding pincode column to saved_addresses:", err.message);
+    }
+  });
+
+  db.query(`
+    CREATE TABLE IF NOT EXISTS subscriptions (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      customer_id INT NOT NULL,
+      plan_key VARCHAR(100) NOT NULL,
+      plan_name VARCHAR(150) NOT NULL,
+      price DECIMAL(10, 2),
+      unit VARCHAR(50) NOT NULL,
+      status VARCHAR(50) DEFAULT 'Active',
+      next_delivery VARCHAR(100) NOT NULL,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
+    )
+  `);
+
+  db.query(`
+    CREATE TABLE IF NOT EXISTS customer_carts (
+      customer_id INT PRIMARY KEY,
+      items TEXT NOT NULL,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
     )
   `);
 };

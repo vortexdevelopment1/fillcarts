@@ -5,10 +5,10 @@ const footerColumns = [
   {
     h: "Company",
     links: [
-      { l: "About", to: "/about" },
+      { l: "About Us", to: "/about" },
       { l: "Careers", to: "/careers" },
       { l: "Blog", to: "/blog" },
-      { l: "Contact", to: "/support" },
+      { l: "Contact Support", to: "/support" },
     ],
   },
   {
@@ -19,12 +19,12 @@ const footerColumns = [
     ],
   },
   {
-    h: "Support",
+    h: "Legal & Support",
     links: [
+      { l: "Terms & Conditions", to: "/terms" },
+      { l: "Privacy Policy", to: "/privacy" },
       { l: "Help Center", to: "/support" },
       { l: "Refund Policy", to: "/terms#refunds-cancellations" },
-      { l: "Privacy", to: "/privacy" },
-      { l: "Terms", to: "/terms" },
     ],
   },
   {
@@ -64,7 +64,20 @@ export default function Footer() {
             </div>
           ))}
         </div>
-        <div className="border-t border-slate-700 pt-5 text-sm font-medium text-slate-500 text-center">© 2026 FillCarts. All rights reserved.</div>
+        <div className="border-t border-slate-700 pt-5 text-sm font-medium text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>© 2026 FillCarts. All rights reserved.</div>
+          <div className="flex flex-wrap gap-6 text-xs text-slate-400">
+            <Link to="/terms" className="hover:text-white transition-colors">
+              Terms & Conditions
+            </Link>
+            <Link to="/privacy" className="hover:text-white transition-colors">
+              Privacy Policy
+            </Link>
+            <Link to="/terms#refunds-cancellations" className="hover:text-white transition-colors">
+              Refund Policy
+            </Link>
+          </div>
+        </div>
       </div>
     </footer>
   );

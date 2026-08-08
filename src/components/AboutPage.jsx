@@ -14,6 +14,7 @@ const values = [
 ];
 
 const journey = [
+  
   { year: "The Idea", text: "FillCarts started with a simple question — why should local shops be left out of fast delivery?" },
   { year: "Building the Network", text: "We onboarded local vendors and riders neighbourhood by neighbourhood, not city by city." },
   { year: "Today", text: "A growing network of shops, riders and customers connected through one simple app." },
