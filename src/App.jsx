@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { useEffect } from "react";
+import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import AppKartHome from "./components/AppKartHome";
 import CategoriesPage from "./components/CategoriesPage";
 import BecomeVendorPage from "./components/BecomeVendorPage";
@@ -14,11 +15,24 @@ import CartPage from "./components/CartPage";
 import UserProfilePage from "./components/UserProfilePage";
 import { CartProvider } from "./context/CartContext";
 import FeaturesPage from "./components/FeaturesPage";
+import TermsPage from "./components/TermsPage";
+import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
+}
 
 function App() {
   return (
     <CartProvider>
       <BrowserRouter>
+        <ScrollToTop />
         <Routes>
           <Route path="/profile" element={<UserProfilePage />} />
           <Route path="/login" element={<CustomerLoginPage />} />
@@ -35,6 +49,8 @@ function App() {
           <Route path="/careers" element={<CareersPage />} />
           <Route path="/blog" element={<BlogPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/terms" element={<TermsPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
         </Routes>
       </BrowserRouter>
     </CartProvider>
