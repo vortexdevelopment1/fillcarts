@@ -117,9 +117,8 @@ export default function CategoriesPage() {
               <button
                 key={c.key}
                 onClick={() => handleCategorySelect(c.key)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap border transition-colors flex-shrink-0 ${
-                  isActive ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
-                }`}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap border transition-colors flex-shrink-0 ${isActive ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
+                  }`}
               >
                 <c.icon size={15} className={isActive ? "text-white" : c.color} />
                 {c.name}
@@ -142,9 +141,8 @@ export default function CategoriesPage() {
                   <button
                     key={c.key}
                     onClick={() => handleCategorySelect(c.key)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${
-                      isActive ? `${c.bg} ${c.color}` : "hover:bg-slate-50 text-slate-700"
-                    }`}
+                    className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${isActive ? `${c.bg} ${c.color}` : "hover:bg-slate-50 text-slate-700"
+                      }`}
                   >
                     <span className="flex items-center gap-2.5">
                       <c.icon size={16} className={isActive ? c.color : "text-slate-400"} />

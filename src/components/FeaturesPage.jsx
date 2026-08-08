@@ -181,11 +181,10 @@ export default function FeaturesPage() {
             <button
               key={idx}
               onClick={() => setActiveTab(idx)}
-              className={`px-5 py-3 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${
-                activeTab === idx
-                  ? "bg-slate-900 text-white border-slate-900 shadow-md"
-                  : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
-              }`}
+              className={`px-5 py-3 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${activeTab === idx
+                ? "bg-slate-900 text-white border-slate-900 shadow-md"
+                : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
+                }`}
             >
               {pillar.category}
             </button>
