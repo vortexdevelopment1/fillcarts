@@ -32,12 +32,18 @@ export default function CustomerRegistrationPage() {
     const { name, value } = e.target;
     setForm((prev) => ({
       ...prev,
-      [name]: name === "phone"
-        ? value.replace(/\D/g, "").slice(0, 10)
-        : name === "pincode"
-          ? value.replace(/\D/g, "").slice(0, 6)
-          : value,
+      [name]:
+        name === "name"
+          ? value.replace(/[^a-zA-Z\s]/g, "")
+          : name === "phone"
+            ? value.replace(/\D/g, "").slice(0, 10)
+            : name === "email"
+              ? value.replace(/[^a-zA-Z0-9._%+-@]/g, "")
+              : name === "pincode"
+                ? value.replace(/\D/g, "").slice(0, 6)
+                : value,
     }));
+    setError("");
   };
 
   const handleSubmit = async (e) => {
@@ -45,25 +51,60 @@ export default function CustomerRegistrationPage() {
     setError("");
     setSuccess("");
 
-    if (!form.name.trim() || !form.phone.trim() || !form.email.trim() || !form.password.trim() || !form.address.trim() || !form.pincode.trim()) {
+    if (
+      !form.name.trim() ||
+      !form.phone.trim() ||
+      !form.email.trim() ||
+      !form.password.trim() ||
+      !form.address.trim() ||
+      !form.pincode.trim()
+    ) {
       setError("Please complete all required fields.");
       return;
     }
 
-    if (form.phone.length !== 10) {
-      setError("Enter a valid 10-digit mobile number.");
+    if (form.name.trim().length < 2) {
+      setError("Full Name must contain at least 2 letters.");
       return;
     }
 
-    if (form.pincode.length !== 6) {
-      setError("Enter a valid 6-digit pincode.");
+    if (!/^\d{10}$/.test(form.phone.trim())) {
+      setError("Mobile Number must be exactly 10 digits (no letters or symbols).");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setError("Please enter a valid email format (e.g. name@gmail.com).");
+      return;
+    }
+
+    if (form.password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(form.pincode.trim())) {
+      setError("Pincode must be exactly 6 digits.");
+      return;
+    }
+
+    if (form.address.trim().length < 5) {
+      setError("Please enter a complete delivery address.");
       return;
     }
 
     setIsSubmitting(true);
 
     try {
-      const res = await api.post("/register-customer", form);
+      const res = await api.post("/register-customer", {
+        ...form,
+        name: form.name.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        address: form.address.trim(),
+        pincode: form.pincode.trim(),
+      });
       setSuccess(res.data || "Customer profile created successfully.");
       setTimeout(() => navigate("/login"), 1200);
     } catch (err) {

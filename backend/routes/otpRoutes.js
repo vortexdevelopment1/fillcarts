@@ -60,18 +60,35 @@ const normalizeIdentifier = (value) => (value || "").trim();
 router.post("/register-customer", (req, res) => {
   const { name, phone, email, password, address, pincode } = req.body;
 
-  if (!name || !phone || !email || !password || !address || !pincode) {
+  const cleanName = (name || "").trim();
+  const cleanPhone = (phone || "").trim();
+  const cleanEmail = (email || "").trim();
+  const cleanPincode = (pincode || "").trim();
+
+  if (!cleanName || !cleanPhone || !cleanEmail || !password || !address || !cleanPincode) {
     return res.status(400).send("Please fill all required fields, including address and pincode");
   }
 
-  const cleanPincode = (pincode || "").trim();
+  if (cleanName.length < 2) {
+    return res.status(400).send("Name must contain at least 2 letters");
+  }
+
+  if (!/^\d{10}$/.test(cleanPhone)) {
+    return res.status(400).send("Mobile number must be exactly 10 digits (digits only)");
+  }
+
+  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+  if (!emailRegex.test(cleanEmail)) {
+    return res.status(400).send("Please enter a valid email format (e.g. name@gmail.com)");
+  }
+
   if (!/^\d{6}$/.test(cleanPincode)) {
     return res.status(400).send("Pincode must be exactly 6 digits");
   }
 
   db.query(
     "SELECT id FROM customers WHERE phone = ? OR email = ?",
-    [phone, email],
+    [cleanPhone, cleanEmail],
     (err, results) => {
       if (err) {
         console.error(err);
