@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import {
@@ -50,6 +50,7 @@ function genProducts(catKey) {
 const sortOptions = ["Popularity", "Price: Low to High", "Price: High to Low", "Rating"];
 
 export default function CategoriesPage() {
+  const navigate = useNavigate();
   const { cart, addToCart, removeFromCart } = useCart();
   const [active, setActive] = useState("grocery");
   const [query, setQuery] = useState("");
@@ -210,16 +211,23 @@ export default function CategoriesPage() {
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {products.map((p) => (
-                <div key={p.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
-                  <div className="aspect-square bg-slate-100">
-                    <img src={`https://picsum.photos/seed/${p.img}/300/300`} alt={p.name} className="w-full h-full object-cover" loading="lazy" />
+                <Link
+                  key={p.id}
+                  to={`/product/${p.id}`}
+                  className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group block text-slate-900"
+                >
+                  <div className="aspect-square bg-slate-100 relative overflow-hidden">
+                    <img src={`https://picsum.photos/seed/${p.img}/300/300`} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
+                      View Details →
+                    </span>
                   </div>
                   <div className="p-3.5">
                     <div className="flex items-center gap-1 text-sm text-blue-600 font-bold mb-1">
                       <Star size={12} fill="currentColor" /> {p.rating}
                     </div>
                     <div className="font-bold text-sm mb-2 leading-snug">{p.name}</div>
-                    <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                       <div>
                         <span className="font-extrabold text-base">₹{p.price}</span>
                         <span className="text-xs text-slate-400 line-through ml-1.5">₹{p.mrp}</span>
@@ -253,7 +261,7 @@ export default function CategoriesPage() {
                       })()}
                     </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           )}
