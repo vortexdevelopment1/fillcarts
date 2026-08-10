@@ -10,6 +10,7 @@ import {
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import { useCart } from "../context/CartContext";
+import { getProductImage } from "../utils/productImages";
 import api from "../api";
 
 // Sourced directly from CategoriesPage for 100% category consistency
@@ -595,7 +596,7 @@ export default function SubscriptionPage() {
                         <div>
                           <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3 relative">
                             <img
-                              src={`https://picsum.photos/seed/${p.img}/300/300`}
+                              src={getProductImage(p.name, p.categoryKey || activeCategory)}
                               alt={p.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                               loading="lazy"

@@ -10,6 +10,7 @@ import {
   Download, ChevronRight
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
 
 const categories = [
   { key: "grocery", name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
@@ -197,7 +198,7 @@ export default function AppKartHome() {
               className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all block text-slate-900 group"
             >
               <div className="relative aspect-square bg-slate-100 overflow-hidden">
-                <img src={`https://picsum.photos/seed/${c.img}/300/300`} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                <img src={CATEGORY_IMAGE_MAP[c.key] || CATEGORY_IMAGE_MAP.grocery} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                 <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow flex items-center justify-center">
                   <c.icon size={14} className={c.color} />
                 </div>
@@ -284,7 +285,7 @@ export default function AppKartHome() {
           ].map((d, i) => (
             <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all">
               <div className="relative aspect-square bg-slate-100">
-                <img src={`https://picsum.photos/seed/${d.img}/300/300`} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
+                <img src={getProductImage(d.name, d.id.includes("fruits") ? "fruits" : d.id.includes("dairy") ? "dairy" : d.id.includes("pharmacy") ? "pharmacy" : "grocery")} alt={d.name} className="w-full h-full object-cover" loading="lazy" />
                 <span className={`absolute top-2 left-2 ${d.tag} text-white text-xs font-bold px-2.5 py-1 rounded-full`}>{d.off}</span>
               </div>
               <div className="p-3.5">
