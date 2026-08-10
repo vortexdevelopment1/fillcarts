@@ -4,7 +4,7 @@ import {
   ChevronRight, Repeat, Clock, Milk, ShoppingBasket,
   Sparkles, Star, Plus, Trash2,
   X, Search, SlidersHorizontal, ShieldCheck, Download, Smartphone, QrCode,
-  ArrowRight, Carrot, Apple, Croissant, Pill, UtensilsCrossed, Home, FileText, CheckCircle2, Info,
+  ArrowRight, ArrowLeft, Carrot, Apple, Croissant, Pill, UtensilsCrossed, Home, FileText, CheckCircle2, Info,
   Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle
 } from "lucide-react";
 import Footer from "./Footer";
@@ -48,7 +48,6 @@ function genProducts(catKey) {
   }));
 }
 
-// Default Seed Subscription Orders if localStorage is empty
 const initialSeedOrders = [
   {
     orderId: "SUB-ORD-9021",
@@ -59,6 +58,7 @@ const initialSeedOrders = [
     ],
     frequency: "Daily",
     timeSlot: "6:30 AM - 7:30 AM",
+    duration: "10 Aug 2026 to 10 Sep 2026 (1 Month)",
     status: "Active Schedule",
     nextDate: "Tomorrow (7:00 AM Slot)",
     orderDate: "Created on 6 Aug 2026",
@@ -74,6 +74,7 @@ const initialSeedOrders = [
     ],
     frequency: "Weekly (Sundays)",
     timeSlot: "8:00 AM - 9:00 AM",
+    duration: "10 Aug 2026 to 10 Nov 2026 (3 Months)",
     status: "App Setup Pending",
     nextDate: "Sunday (8:30 AM Slot)",
     orderDate: "Created on 4 Aug 2026",
@@ -93,10 +94,36 @@ export default function SubscriptionPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [frequency, setFrequency] = useState("Daily");
   const [timeSlot, setTimeSlot] = useState("6:30 AM - 7:30 AM");
+
+  // Subscription Date Range (Kab se Kab tak)
+  const todayDefault = new Date().toISOString().split("T")[0];
+  const oneMonthDefault = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+
+  const [startDate, setStartDate] = useState(todayDefault);
+  const [endDate, setEndDate] = useState(oneMonthDefault);
+  const [durationType, setDurationType] = useState("1_month"); // 7_days | 1_month | 3_months | until_cancelled | custom
+
+  const handleDurationTypeChange = (type) => {
+    setDurationType(type);
+    const start = new Date(startDate || todayDefault);
+    if (type === "7_days") {
+      const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000);
+      setEndDate(end.toISOString().split("T")[0]);
+    } else if (type === "1_month") {
+      const end = new Date(start.getTime() + 30 * 24 * 60 * 60 * 1000);
+      setEndDate(end.toISOString().split("T")[0]);
+    } else if (type === "3_months") {
+      const end = new Date(start.getTime() + 90 * 24 * 60 * 60 * 1000);
+      setEndDate(end.toISOString().split("T")[0]);
+    } else if (type === "until_cancelled") {
+      setEndDate("");
+    }
+  };
+
   const [customCardTitle, setCustomCardTitle] = useState("");
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [userAddress, setUserAddress] = useState("Flat 402, Green Valley Apartments, Bengaluru");
-  
+
   // Modals & Navigation state
   const [showAppInstallModal, setShowAppInstallModal] = useState(false);
   const [selectedCardForAppInstall, setSelectedCardForAppInstall] = useState(null);
@@ -216,16 +243,26 @@ export default function SubscriptionPage() {
       year: "numeric"
     });
 
+    let durationFormatted = "Until Cancelled (Flexible)";
+    if (durationType !== "until_cancelled") {
+      const sStr = new Date(startDate || todayDefault).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+      const eStr = endDate ? new Date(endDate).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
+      durationFormatted = eStr ? `${sStr} to ${eStr}` : `Starts ${sStr}`;
+    }
+
     const newOrderCard = {
       orderId: newOrderId,
       name: defaultTitle,
       items: basket.map(b => ({ name: b.name, qty: b.qty, price: b.price })),
       frequency,
       timeSlot,
+      duration: durationFormatted,
+      startDate,
+      endDate,
       status: "App Setup Pending",
       nextDate: "Tomorrow (7:00 AM Slot)",
       orderDate: `Created on ${todayStr}`,
-      address: userAddress,
+      address: typeof userAddress === "object" ? (userAddress?.address_line || "Home Address") : String(userAddress || "Home Address"),
       total: calculatedTotal
     };
 
@@ -333,17 +370,15 @@ export default function SubscriptionPage() {
           <div className="bg-slate-800/90 border border-slate-700 p-1.5 rounded-2xl flex gap-2 shadow-xl backdrop-blur-md shrink-0">
             <button
               onClick={() => setViewTab("create")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                viewTab === "create" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
-              }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${viewTab === "create" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
+                }`}
             >
               <Plus size={14} /> Build Subscription Card
             </button>
             <button
               onClick={() => setViewTab("my_subscriptions")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                viewTab === "my_subscriptions" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
-              }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${viewTab === "my_subscriptions" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
+                }`}
             >
               <FileText size={14} /> Dynamic Order Tracking ({myOrders.length})
             </button>
@@ -357,7 +392,7 @@ export default function SubscriptionPage() {
         {/* TAB 1: BUILD SUBSCRIPTION CARD */}
         {viewTab === "create" && (
           <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
-            
+
             {/* Left Column: Sticky Subscription Summary & Card Checkout Panel */}
             <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-lg sticky top-6 space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
@@ -448,12 +483,68 @@ export default function SubscriptionPage() {
                   <select
                     value={timeSlot}
                     onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
                   >
                     <option value="6:30 AM - 7:30 AM">6:30 AM - 7:30 AM (Express Morning)</option>
                     <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
                     <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
                   </select>
+                </div>
+
+                {/* Subscription Duration */}
+                <div>
+                  <label className="block font-bold text-slate-700 mb-1 flex items-center gap-1">
+                    <Calendar size={13} className="text-blue-600" /> Subscription Duration
+                  </label>
+                  <select
+                    value={durationType}
+                    onChange={(e) => handleDurationTypeChange(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500 mb-2 cursor-pointer"
+                  >
+                    <option value="1_month">1 Month (30 Days Plan)</option>
+                    <option value="7_days">7 Days Plan</option>
+                    <option value="3_months">3 Months Plan</option>
+                    <option value="until_cancelled">Until Cancelled (Flexible)</option>
+                    <option value="custom">Custom Date Range (Pick Dates)</option>
+                  </select>
+
+                  {/* Start Date & End Date Inputs */}
+                  <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200/90 p-2.5 rounded-xl">
+                    <div>
+                      <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">Start Date</span>
+                      <input
+                        type="date"
+                        value={startDate}
+                        onChange={(e) => {
+                          setStartDate(e.target.value);
+                          if (durationType !== "custom" && durationType !== "until_cancelled") {
+                            const start = new Date(e.target.value);
+                            const days = durationType === "7_days" ? 7 : durationType === "3_months" ? 90 : 30;
+                            const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
+                            setEndDate(end.toISOString().split("T")[0]);
+                          }
+                        }}
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
+                      />
+                    </div>
+
+                    <div>
+                      <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">End Date</span>
+                      {durationType === "until_cancelled" ? (
+                        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold py-1 px-2 rounded-lg text-center truncate mt-0.5">
+                          Until Cancelled
+                        </div>
+                      ) : (
+                        <input
+                          type="date"
+                          value={endDate}
+                          readOnly={durationType !== "custom"}
+                          onChange={(e) => setEndDate(e.target.value)}
+                          className={`w-full border rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none ${durationType === "custom" ? "bg-white border-slate-200 focus:border-blue-500 cursor-pointer" : "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"}`}
+                        />
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {/* Delivery Address Section (Fetched dynamically from Account) */}
@@ -533,7 +624,7 @@ export default function SubscriptionPage() {
 
             {/* Right Column: Categories Selector & Product Grid */}
             <div className="space-y-6">
-              
+
               {/* Category Chips Bar */}
               <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
@@ -547,11 +638,10 @@ export default function SubscriptionPage() {
                       <button
                         key={c.key}
                         onClick={() => setActiveCategory(c.key)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer ${
-                          isActive
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer ${isActive
                             ? "bg-slate-900 text-white border-slate-900 shadow-md"
                             : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
-                        }`}
+                          }`}
                       >
                         <IconComp size={14} className={isActive ? "text-white" : c.color} />
                         {c.name}
@@ -649,7 +739,7 @@ export default function SubscriptionPage() {
         {/* TAB 2: DYNAMIC ORDER TRACKING & SUBSCRIPTION RECORDS DASHBOARD */}
         {viewTab === "my_subscriptions" && (
           <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
-            
+
             {/* Header Metrics Bar */}
             <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white rounded-3xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
               <div>
@@ -689,11 +779,10 @@ export default function SubscriptionPage() {
                   <button
                     key={st}
                     onClick={() => setOrderFilter(st)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap cursor-pointer ${
-                      orderFilter === st
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap cursor-pointer ${orderFilter === st
                         ? "bg-slate-900 text-white border-slate-900"
                         : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
-                    }`}
+                      }`}
                   >
                     {st}
                   </button>
@@ -730,7 +819,7 @@ export default function SubscriptionPage() {
               ) : (
                 filteredOrders.map((ord) => (
                   <div key={ord.orderId} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-5 relative overflow-hidden">
-                    
+
                     {/* Header: Order ID, Status & Quick Controls */}
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                       <div className="flex items-center gap-3">
@@ -812,6 +901,11 @@ export default function SubscriptionPage() {
                         </div>
                         <div className="text-slate-700 font-semibold">Frequency: <strong>{ord.frequency}</strong></div>
                         <div className="text-slate-700 font-semibold">Morning Slot: <strong>{ord.timeSlot}</strong></div>
+                        {ord.duration && (
+                          <div className="text-blue-700 font-semibold text-[11px] bg-blue-50/90 border border-blue-200/90 px-2.5 py-1 rounded-xl">
+                            📅 Period: <strong>{ord.duration}</strong>
+                          </div>
+                        )}
                         <div className="text-teal-700 font-bold bg-teal-50 border border-teal-200 p-2 rounded-xl mt-1">
                           Next Scheduled: {ord.nextDate}
                         </div>
@@ -846,7 +940,7 @@ export default function SubscriptionPage() {
 
                       <button
                         onClick={() => handleSelectCardForApp(ord)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
                       >
                         <Smartphone size={14} /> Select Card to Purchase ({ord.orderId}) <ArrowRight size={14} />
                       </button>
@@ -860,95 +954,147 @@ export default function SubscriptionPage() {
         )}
       </main>
 
-      {/* DYNAMIC MOBILE APP DOWNLOAD & PURCHASE MODAL */}
+      {/* FULL-SCREEN BEAUTIFUL & SPACIOUS SUBSCRIPTION CONFIRMATION OVERLAY (NO SCROLLBAR) */}
       {showAppInstallModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center relative shadow-2xl border border-slate-200 animate-scale-up space-y-5">
-            
+        <div className="fixed inset-0 z-50 bg-[#FAF8F5] text-slate-900 overflow-hidden flex flex-col justify-between p-4 sm:p-8 md:p-12 animate-fade-in">
+          
+          {/* Top Bar */}
+          <div className="max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 pb-2 border-b border-slate-200/80">
             <button
               onClick={() => setShowAppInstallModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
+              className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-full shadow-xs"
             >
-              <X size={20} />
+              <ArrowLeft size={16} /> Back to Subscription Builder
             </button>
 
-            {/* Header Icon */}
-            <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto shadow-inner">
-              <Smartphone size={32} />
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full">
+              <CheckCircle2 size={15} /> Card Added to Order Tracking
+            </span>
+
+            <button
+              onClick={() => setShowAppInstallModal(false)}
+              className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+              title="Close"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
+          {/* Center Main View (2-Column Spacious Grid) */}
+          <div className="max-w-6xl w-full mx-auto my-auto py-4 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
+            
+            {/* LEFT COLUMN: Confirmation Info & Card Details */}
+            <div className="space-y-5">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3.5 py-1 rounded-full text-xs font-extrabold">
+                  <Smartphone size={15} /> FillCarts App Purchase
+                </div>
+
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+                  Complete Purchase via FillCarts App
+                </h2>
+
+                <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+                  Aapka subscription card successfully order tracking mein add ho gaya hai! Mobile App download karke 1-tap AutoPay complete karein aur apni regular delivery start karein.
+                </p>
+              </div>
+
+              {/* Card Summary Box */}
+              {selectedCardForAppInstall && (
+                <div className="bg-white border border-slate-200/90 rounded-3xl p-5 md:p-6 shadow-sm space-y-3 text-xs">
+                  <div className="flex justify-between items-center pb-3 border-b border-slate-100">
+                    <span className="font-extrabold text-sm text-slate-900">{selectedCardForAppInstall.name || "Subscription Card"}</span>
+                    <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                      {selectedCardForAppInstall.orderId || "SUB-ORD"}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <span className="text-slate-400 font-semibold block text-[11px]">Selected Products</span>
+                      <span className="text-slate-900 font-bold">{selectedCardForAppInstall.items?.length || 0} Items Subscribed</span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 font-semibold block text-[11px]">Delivery Frequency</span>
+                      <span className="text-blue-600 font-bold">{selectedCardForAppInstall.frequency || "Daily"}</span>
+                    </div>
+                  </div>
+
+                  {selectedCardForAppInstall.duration && (
+                    <div className="pt-2 border-t border-slate-100">
+                      <span className="text-slate-400 font-semibold block text-[11px]">Subscription Validity</span>
+                      <span className="text-blue-700 font-bold block">
+                        📅 {selectedCardForAppInstall.duration}
+                      </span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-slate-100">
+                    <span className="text-slate-400 font-semibold block text-[11px]">Slot & Address</span>
+                    <span className="text-slate-800 font-bold truncate block">
+                      {selectedCardForAppInstall.timeSlot || "Morning Slot"} • {typeof selectedCardForAppInstall.address === "object" ? (selectedCardForAppInstall.address?.address_line || "Home Address") : String(selectedCardForAppInstall.address || "Home Address")}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-900 font-extrabold text-sm">
+                    <span>Recurring Total per Cycle</span>
+                    <span className="text-blue-600 font-mono text-lg">₹{selectedCardForAppInstall.total || 0}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
-            <div>
-              <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                FillCarts Mobile App Purchase
-              </span>
+            {/* RIGHT COLUMN: QR Code Card & App Install Action */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
               
-              <h3 className="text-2xl font-bold text-slate-900 mt-3" style={{ fontFamily: "'Fraunces', serif" }}>
-                Purchase Subscription via FillCarts App
-              </h3>
-              
-              <p className="text-xs text-slate-600 font-medium leading-relaxed mt-2">
-                Aapka subscription card successfully order tracking mein add ho gaya hai! FillCarts Mobile App download karke 1-tap AutoPay complete karein aur apni delivery start karein.
-              </p>
-            </div>
+              <div className="space-y-3">
+                <div className="w-32 h-32 bg-slate-50 p-2.5 rounded-3xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto">
+                  <QrCode size={110} className="text-slate-900" />
+                </div>
 
-            {/* Selected Card Summary inside Modal */}
-            {selectedCardForAppInstall && (
-              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2">
-                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
-                  <span className="font-bold text-slate-900">{selectedCardForAppInstall.name}</span>
-                  <span className="font-mono text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
-                    {selectedCardForAppInstall.orderId}
-                  </span>
-                </div>
-                <div className="flex justify-between text-slate-500 font-semibold">
-                  <span>Selected Products:</span>
-                  <span className="text-slate-900 font-bold">{selectedCardForAppInstall.items.length} Items</span>
-                </div>
-                <div className="flex justify-between text-slate-500 font-semibold">
-                  <span>Schedule & Slot:</span>
-                  <span className="text-blue-600 font-bold">{selectedCardForAppInstall.frequency} ({selectedCardForAppInstall.timeSlot})</span>
-                </div>
-                <div className="flex justify-between text-slate-900 font-extrabold text-sm pt-2 border-t border-slate-200">
-                  <span>Recurring Total:</span>
-                  <span className="text-blue-600 font-mono">₹{selectedCardForAppInstall.total} / Cycle</span>
-                </div>
-              </div>
-            )}
-
-            {/* QR Code & Direct Install Buttons */}
-            <div className="pt-1 space-y-4">
-              <div className="flex items-center justify-center gap-4">
-                <div className="w-24 h-24 bg-white p-2 rounded-2xl border border-slate-200 shadow-md flex items-center justify-center shrink-0">
-                  <QrCode size={80} className="text-slate-900" />
-                </div>
-                <div className="text-left text-xs space-y-1">
-                  <div className="font-extrabold text-slate-900">Scan QR to Install</div>
-                  <div className="text-slate-500 text-[11px]">Point phone camera to install FillCarts App directly.</div>
-                  <div className="text-teal-600 font-bold text-[11px]">✓ Instant Sync with your Account</div>
+                <div>
+                  <div className="font-extrabold text-slate-900 text-base">Scan QR to Install App</div>
+                  <div className="text-slate-500 text-xs mt-1">Point phone camera to install FillCarts directly on Android & iOS.</div>
+                  <div className="text-emerald-600 font-bold text-xs mt-2 inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    <CheckCircle2 size={14} /> Instant Account Sync Enabled
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <a
-                  href="#download-playstore"
-                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-                >
-                  <Download size={15} /> Google Play
-                </a>
-                <a
-                  href="#download-appstore"
-                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-                >
-                  <Smartphone size={15} /> App Store
-                </a>
-              </div>
-            </div>
+              <div className="space-y-3 pt-4 border-t border-slate-100">
+                <div className="grid grid-cols-2 gap-3">
+                  <a
+                    href="#download-playstore"
+                    onClick={() => alert("Downloading FillCarts for Android...")}
+                    className="bg-slate-900 hover:bg-slate-950 text-white py-3.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Download size={16} /> Google Play
+                  </a>
+                  <a
+                    href="#download-appstore"
+                    onClick={() => alert("Downloading FillCarts for iOS...")}
+                    className="bg-slate-900 hover:bg-slate-950 text-white py-3.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                  >
+                    <Smartphone size={16} /> App Store
+                  </a>
+                </div>
 
-            <div className="text-[11px] text-slate-400 font-medium">
-              Your subscription card items will automatically sync when you log in to the FillCarts App.
+                <p className="text-[11px] text-slate-400 font-semibold">
+                  Available for Android & iOS · Log in with your registered phone number to view active cards.
+                </p>
+              </div>
+
             </div>
 
           </div>
+
+          {/* Bottom Notice */}
+          <div className="max-w-6xl w-full mx-auto text-center shrink-0 pt-2 border-t border-slate-200/80">
+            <p className="text-[11px] text-slate-400 font-semibold">
+              🔒 AutoPay setup required in Mobile App to start scheduled deliveries. Card saved in your Order Tracking tab.
+            </p>
+          </div>
+
         </div>
       )}
 
