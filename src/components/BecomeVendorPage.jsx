@@ -42,12 +42,64 @@ export default function BecomeVendorPage() {
   const commissionRate = 0.12;
   const estEarnings = Math.round(monthlySales * (1 - commissionRate));
 
-  const [form, setForm] = useState({ store: "", owner: "", phone: "", email: "", category: "Grocery", address: "" });
+  const [form, setForm] = useState({ store: "", owner: "", phone: "", email: "", category: "Grocery & Kirana", address: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState("");
   const [openFaq, setOpenFaq] = useState(0);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
-  const handleSubmit = (e) => { e.preventDefault(); setSubmitted(true); };
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]:
+        name === "owner"
+          ? value.replace(/[^a-zA-Z\s]/g, "")
+          : name === "phone"
+            ? value.replace(/\D/g, "").slice(0, 10)
+            : name === "email"
+              ? value.replace(/[^a-zA-Z0-9._%+-@]/g, "")
+              : value,
+    }));
+    setError("");
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!form.store.trim() || !form.owner.trim() || !form.phone.trim() || !form.email.trim() || !form.address.trim()) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+
+    if (form.store.trim().length < 2) {
+      setError("Store Name must contain at least 2 characters.");
+      return;
+    }
+
+    if (form.owner.trim().length < 2) {
+      setError("Owner Name must contain at least 2 letters.");
+      return;
+    }
+
+    if (!/^\d{10}$/.test(form.phone.trim())) {
+      setError("Mobile Phone must be exactly 10 digits (digits only, no letters).");
+      return;
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(form.email.trim())) {
+      setError("Please enter a valid email address (e.g. store@gmail.com).");
+      return;
+    }
+
+    if (form.address.trim().length < 5) {
+      setError("Please enter a complete store address.");
+      return;
+    }
+
+    setSubmitted(true);
+  };
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
@@ -186,38 +238,45 @@ export default function BecomeVendorPage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Store Name</label>
-                  <input required name="store" value={form.store} onChange={handleChange} placeholder="e.g. Sharma General Store" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                  <input required name="store" value={form.store} onChange={handleChange} placeholder="e.g. Sharma General Store" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 font-semibold" />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Owner Name</label>
-                  <input required name="owner" value={form.owner} onChange={handleChange} placeholder="e.g. Ramesh Sharma" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                  <input required name="owner" value={form.owner} onChange={handleChange} placeholder="e.g. Ramesh Sharma" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 font-semibold" />
                 </div>
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Phone</label>
-                  <input required type="tel" name="phone" value={form.phone} onChange={handleChange} placeholder="+91 98765 43210" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Phone (10 Digits)</label>
+                  <input required type="text" maxLength={10} name="phone" value={form.phone} onChange={handleChange} placeholder="9876543210" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 font-semibold" />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Store Category</label>
-                  <select name="category" value={form.category} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 bg-white">
-                    <option>Grocery & Kirana</option>
-                    <option>Pharmacy & Medical</option>
-                    <option>Fruits & Vegetables</option>
-                    <option>Bakery & Confectionery</option>
-                    <option>Restaurant & Food</option>
-                    <option>Other</option>
-                  </select>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Email Address</label>
+                  <input required type="email" name="email" value={form.email} onChange={handleChange} placeholder="store@example.com" className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 font-semibold" />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Store Address / Area</label>
-                <textarea required rows={3} name="address" value={form.address} onChange={handleChange} placeholder="Shop number, street, area, pincode..." className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600" />
+                <label className="block text-xs font-bold text-slate-700 mb-1">Store Category</label>
+                <select name="category" value={form.category} onChange={handleChange} className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 bg-white font-semibold">
+                  <option>Grocery & Kirana</option>
+                  <option>Pharmacy & Medical</option>
+                  <option>Fruits & Vegetables</option>
+                  <option>Bakery & Confectionery</option>
+                  <option>Restaurant & Food</option>
+                  <option>Other</option>
+                </select>
               </div>
 
-              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full py-3 text-sm shadow-md shadow-blue-600/20 transition-all">Submit Registration</button>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Store Address / Area</label>
+                <textarea required rows={3} name="address" value={form.address} onChange={handleChange} placeholder="Shop number, street, area, pincode..." className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-blue-600 font-medium" />
+              </div>
+
+              {error && <p className="text-xs font-bold text-red-600 bg-red-50 p-3 rounded-xl border border-red-100">{error}</p>}
+
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full py-3 text-sm shadow-md shadow-blue-600/20 transition-all cursor-pointer">Submit Registration</button>
             </form>
           )}
         </div>

@@ -61,9 +61,27 @@ export default function UserProfilePage() {
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    if (profileForm.name.trim().length < 2) {
+      showMessage("Name must contain at least 2 letters.", "error");
+      return;
+    }
+    if (!/^\d{6}$/.test(profileForm.pincode.trim())) {
+      showMessage("Pincode must be exactly 6 digits.", "error");
+      return;
+    }
+    if (profileForm.address.trim().length < 5) {
+      showMessage("Please enter a valid delivery address.", "error");
+      return;
+    }
+
     setIsUpdatingProfile(true);
     try {
-      const res = await api.put("/profile", profileForm);
+      const res = await api.put("/profile", {
+        ...profileForm,
+        name: profileForm.name.trim(),
+        address: profileForm.address.trim(),
+        pincode: profileForm.pincode.trim()
+      });
       setUser(res.data.customer);
       showMessage("Profile updated successfully!");
     } catch (err) {
@@ -161,12 +179,36 @@ export default function UserProfilePage() {
   const handleAddressSubmit = async (e) => {
     e.preventDefault();
     setModalError("");
+
+    if (!/^\d{10}$/.test(addressForm.phone.trim())) {
+      setModalError("Phone Number must be exactly 10 digits (digits only).");
+      return;
+    }
+    if (!/^\d{6}$/.test(addressForm.pincode.trim())) {
+      setModalError("Pincode must be exactly 6 digits.");
+      return;
+    }
+    if (addressForm.address_line.trim().length < 5) {
+      setModalError("Please enter a complete address line.");
+      return;
+    }
+
     try {
       if (editingAddress) {
-        await api.put(`/addresses/${editingAddress.id}`, addressForm);
+        await api.put(`/addresses/${editingAddress.id}`, {
+          ...addressForm,
+          phone: addressForm.phone.trim(),
+          pincode: addressForm.pincode.trim(),
+          address_line: addressForm.address_line.trim()
+        });
         showMessage("Address updated successfully!");
       } else {
-        await api.post("/addresses", addressForm);
+        await api.post("/addresses", {
+          ...addressForm,
+          phone: addressForm.phone.trim(),
+          pincode: addressForm.pincode.trim(),
+          address_line: addressForm.address_line.trim()
+        });
         showMessage("Address added successfully!");
       }
       setShowAddressModal(false);

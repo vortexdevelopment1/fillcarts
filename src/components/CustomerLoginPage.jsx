@@ -13,6 +13,10 @@ import {
 import api from "../api";
 import { useCart } from "../context/CartContext";
 
+const isValidEmail = (email) => {
+  return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email.trim());
+};
+
 const getErrorMessage = (err) => {
   const responseData = err?.response?.data;
 
@@ -42,29 +46,62 @@ export default function CustomerLoginPage() {
     return () => clearTimeout(t);
   }, [step, timer]);
 
-  const handlePasswordLogin = async (e) => {
-    e.preventDefault();
+  const handleContactChange = (e) => {
+    const raw = e.target.value;
+    // If input contains any non-digit character (letters, @, etc.), treat as email
+    const hasNonDigit = /[^0-9]/.test(raw);
 
-    if (!contact.trim()) {
-      setError("Enter a valid mobile number or email address");
-      return;
+    let normalized = "";
+    if (hasNonDigit) {
+      normalized = raw.replace(/[^a-zA-Z0-9._%+-@]/g, "");
+    } else {
+      normalized = raw.slice(0, 10);
     }
 
-    const isEmail = contact.includes("@");
-    if (!isEmail && contact.length !== 10) {
-      setError("Enter a valid 10-digit mobile number");
+    setContact(normalized);
+    setError("");
+  };
+
+  const validateContactInput = (inputVal) => {
+    const trimmed = inputVal.trim();
+    if (!trimmed) {
+      return "Please enter your mobile number or email address.";
+    }
+
+    const isEmail = trimmed.includes("@") || /[a-zA-Z]/.test(trimmed);
+    if (isEmail) {
+      if (!isValidEmail(trimmed)) {
+        return "Please enter a valid email format (e.g. name@gmail.com).";
+      }
+    } else {
+      if (!/^\d{10}$/.test(trimmed)) {
+        return "Please enter a valid 10-digit mobile number.";
+      }
+    }
+    return null;
+  };
+
+  const handlePasswordLogin = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    const validationError = validateContactInput(contact);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     if (!password.trim()) {
-      setError("Enter your account password");
+      setError("Please enter your account password.");
       return;
     }
 
+    const isEmail = contact.includes("@");
+
     try {
       await api.post("/login-customer", {
-        phone: isEmail ? "" : contact,
-        email: isEmail ? contact : "",
+        phone: isEmail ? "" : contact.trim(),
+        email: isEmail ? contact.trim() : "",
         password,
       });
 
@@ -85,21 +122,19 @@ export default function CustomerLoginPage() {
 
   const handleSendOtp = async (e) => {
     e.preventDefault();
+    setError("");
 
-    if (!contact.trim()) {
-      setError("Enter a valid mobile number or email address");
+    const validationError = validateContactInput(contact);
+    if (validationError) {
+      setError(validationError);
       return;
     }
 
     const isEmail = contact.includes("@");
-    if (!isEmail && contact.length !== 10) {
-      setError("Enter a valid 10-digit mobile number");
-      return;
-    }
 
     try {
       await api.post("/send-otp", {
-        contact,
+        contact: contact.trim(),
         type: isEmail ? "email" : "sms",
       });
 
@@ -216,12 +251,8 @@ export default function CustomerLoginPage() {
                         <span className="px-3.5 py-3 text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200">@</span>
                         <input
                           value={contact}
-                          onChange={(e) => {
-                            const raw = e.target.value;
-                            const normalized = raw.includes("@") ? raw : raw.replace(/\D/g, "").slice(0, 10);
-                            setContact(normalized);
-                          }}
-                          placeholder="9876543210 or you@example.com"
+                          onChange={handleContactChange}
+                          placeholder="9876543210 or you@gmail.com"
                           className="w-full px-3.5 py-3 text-sm outline-none"
                         />
                       </div>
@@ -239,8 +270,8 @@ export default function CustomerLoginPage() {
                         <span className="px-3.5 py-3 text-sm font-semibold text-slate-500 bg-slate-50 border-r border-slate-200">@</span>
                         <input
                           value={contact}
-                          onChange={(e) => setContact(e.target.value)}
-                          placeholder="9876543210 or you@example.com"
+                          onChange={handleContactChange}
+                          placeholder="9876543210 or you@gmail.com"
                           className="w-full px-3.5 py-3 text-sm outline-none"
                         />
                       </div>
