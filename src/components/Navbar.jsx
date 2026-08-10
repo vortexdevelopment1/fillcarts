@@ -224,8 +224,11 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               )}
             </Link>
 
-            <button className="bg-slate-900 hover:bg-slate-800 text-white text-sm font-bold rounded-full px-5 py-2.5 whitespace-nowrap transition-colors">
-              Download App
+            <button
+              onClick={() => openAppModal("Download FillCarts App", "Scan the QR code below with your smartphone camera to download our mobile app for express 15-minute delivery & exclusive discounts!")}
+              className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-extrabold rounded-full px-5 py-2.5 whitespace-nowrap transition-colors cursor-pointer shadow-sm flex items-center gap-2"
+            >
+              <QrCode size={15} /> Download App
             </button>
           </div>
         </div>
@@ -267,40 +270,52 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
           <div className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl relative overflow-hidden text-center animate-[scaleUp_0.3s_ease-out]">
             <button
               onClick={() => setShowAppModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
             >
               <X size={14} />
             </button>
 
             <div className="mt-2 mb-5">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <User size={22} />
+              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <QrCode size={26} />
               </div>
-              <h2 className="text-lg font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
-                {modalTitle} on our App
+              <h2 className="text-xl font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
+                {modalTitle}
               </h2>
-              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[240px] mx-auto leading-relaxed">
+              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[260px] mx-auto leading-relaxed">
                 {modalDesc}
               </p>
             </div>
 
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center mb-5">
-              <div className="relative p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm mb-2.5">
-                <QrCode size={110} className="text-slate-900" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center border border-white shadow">
-                  <span className="text-[8px] font-black text-white leading-none">FC</span>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center mb-5">
+              <div className="relative p-3 bg-white border border-slate-200 rounded-2xl shadow-sm mb-2.5">
+                <QrCode size={120} className="text-slate-900" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center border-2 border-white shadow">
+                  <span className="text-[9px] font-black text-white leading-none">FC</span>
                 </div>
               </div>
-              <div className="text-[11px] font-extrabold text-slate-900 mb-0.5">Scan with phone camera</div>
-              <div className="text-[9px] font-semibold text-slate-400">Download FillCarts App</div>
+              <div className="text-xs font-extrabold text-slate-900 mb-0.5">Scan with phone camera</div>
+              <div className="text-[10px] font-semibold text-slate-400">Instantly download FillCarts App</div>
             </div>
 
-            <button
-              onClick={() => setShowAppModal(false)}
-              className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3 rounded-xl text-xs transition-colors"
-            >
-              Got it
-            </button>
+            <div className="flex gap-2">
+              <a
+                href="https://apps.apple.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors inline-block shadow-sm"
+              >
+                App Store
+              </a>
+              <a
+                href="https://play.google.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors inline-block shadow-sm shadow-blue-100"
+              >
+                Google Play
+              </a>
+            </div>
           </div>
         </div>
       )}
