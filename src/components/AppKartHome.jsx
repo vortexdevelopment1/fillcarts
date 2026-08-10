@@ -12,16 +12,16 @@ import {
 import { useCart } from "../context/CartContext";
 
 const categories = [
-  { name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
-  { name: "Fruits & Veg", sub: "Fresh daily", icon: Apple, color: "text-teal-600", img: "fresh-fruit-01" },
-  { name: "Dairy", sub: "Milk, curd, paneer", icon: Milk, color: "text-blue-600", img: "dairy-milk-01" },
-  { name: "Bakery", sub: "Fresh baked", icon: Croissant, color: "text-amber-700", img: "bakery-bread-01" },
-  { name: "Pharmacy", sub: "Verified medicines", icon: Pill, color: "text-teal-600", img: "pharmacy-01" },
-  { name: "Food", sub: "80+ restaurants", icon: UtensilsCrossed, color: "text-violet-600", img: "fastfood-01" },
-  { name: "Pet Care", sub: "Food & supplies", icon: PawPrint, color: "text-amber-800", img: "petcare-01" },
-  { name: "Home Essentials", sub: "Daily needs", icon: Home, color: "text-slate-700", img: "homeessentials-01" },
-  { name: "Personal Care", sub: "Health & beauty", icon: Sparkles, color: "text-teal-500", img: "personalcare-01" },
-  { name: "Electronics", sub: "Small gadgets", icon: Smartphone, color: "text-violet-600", img: "gadgets-01" },
+  { key: "grocery", name: "Grocery", sub: "420+ items", icon: Carrot, color: "text-blue-600", img: "grocery-basket-01" },
+  { key: "fruits", name: "Fruits & Veg", sub: "Fresh daily", icon: Apple, color: "text-teal-600", img: "fresh-fruit-01" },
+  { key: "dairy", name: "Dairy", sub: "Milk, curd, paneer", icon: Milk, color: "text-blue-600", img: "dairy-milk-01" },
+  { key: "bakery", name: "Bakery", sub: "Fresh baked", icon: Croissant, color: "text-amber-700", img: "bakery-bread-01" },
+  { key: "pharmacy", name: "Pharmacy", sub: "Verified medicines", icon: Pill, color: "text-teal-600", img: "pharmacy-01" },
+  { key: "food", name: "Food", sub: "80+ restaurants", icon: UtensilsCrossed, color: "text-violet-600", img: "fastfood-01" },
+  { key: "pet", name: "Pet Care", sub: "Food & supplies", icon: PawPrint, color: "text-amber-800", img: "petcare-01" },
+  { key: "home", name: "Home Essentials", sub: "Daily needs", icon: Home, color: "text-slate-700", img: "homeessentials-01" },
+  { key: "personal", name: "Personal Care", sub: "Health & beauty", icon: Sparkles, color: "text-teal-500", img: "personalcare-01" },
+  { key: "electronics", name: "Electronics", sub: "Small gadgets", icon: Smartphone, color: "text-violet-600", img: "gadgets-01" },
 ];
 
 const whyChoose = [
@@ -191,18 +191,22 @@ export default function AppKartHome() {
       <Section id="categories" eyebrow="Shop by category" title="Everything you need, sorted.">
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4">
           {categories.map((c, i) => (
-            <div key={i} className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all">
-              <div className="relative aspect-square bg-slate-100">
-                <img src={`https://picsum.photos/seed/${c.img}/300/300`} alt={c.name} className="w-full h-full object-cover" loading="lazy" />
-                <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white shadow flex items-center justify-center">
+            <Link
+              key={i}
+              to={`/categories?cat=${c.key}`}
+              className="bg-white border border-slate-200 rounded-2xl overflow-hidden cursor-pointer hover:-translate-y-1 hover:shadow-lg transition-all block text-slate-900 group"
+            >
+              <div className="relative aspect-square bg-slate-100 overflow-hidden">
+                <img src={`https://picsum.photos/seed/${c.img}/300/300`} alt={c.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                <div className="absolute top-2 left-2 w-8 h-8 rounded-full bg-white/90 backdrop-blur-md shadow flex items-center justify-center">
                   <c.icon size={14} className={c.color} />
                 </div>
               </div>
               <div className="p-3">
                 <div className="font-bold text-base">{c.name}</div>
-                <div className="text-base text-slate-500 font-semibold">{c.sub}</div>
+                <div className="text-xs text-slate-500 font-semibold">{c.sub}</div>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         <div className="text-center mt-6">

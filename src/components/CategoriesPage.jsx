@@ -1,5 +1,5 @@
-import React, { useState, useMemo } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useMemo, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
 import {
@@ -51,12 +51,20 @@ const sortOptions = ["Popularity", "Price: Low to High", "Price: High to Low", "
 
 export default function CategoriesPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const catParam = searchParams.get("cat");
   const { cart, addToCart, removeFromCart } = useCart();
-  const [active, setActive] = useState("grocery");
+  const [active, setActive] = useState(catParam || "grocery");
   const [query, setQuery] = useState("");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortOpen, setSortOpen] = useState(false);
   const [priceMax, setPriceMax] = useState(300);
+
+  useEffect(() => {
+    if (catParam && categories.some((c) => c.key === catParam)) {
+      setActive(catParam);
+    }
+  }, [catParam]);
 
   const activeCat = categories.find((c) => c.key === active);
 
@@ -95,8 +103,11 @@ export default function CategoriesPage() {
             return (
               <button
                 key={c.key}
-                onClick={() => setActive(c.key)}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap border transition-colors flex-shrink-0 ${isActive ? "bg-slate-900 text-white border-slate-900" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
+                onClick={() => {
+                  setActive(c.key);
+                  setSearchParams({ cat: c.key });
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold whitespace-nowrap border transition-colors flex-shrink-0 cursor-pointer ${isActive ? "bg-slate-900 text-white border-slate-900 shadow-xs" : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
                   }`}
               >
                 <c.icon size={15} className={isActive ? "text-white" : c.color} />
@@ -108,87 +119,34 @@ export default function CategoriesPage() {
       </div>
 
       {/* Body */}
-      <div className="max-w-6xl mx-auto px-6 py-8 grid md:grid-cols-[240px_1fr] gap-8">
-        {/* Sidebar */}
-        <aside className="space-y-6">
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <h3 className="font-extrabold text-base mb-4 flex items-center gap-2"><SlidersHorizontal size={16} /> All Categories</h3>
-            <div className="space-y-1">
-              {categories.map((c) => {
-                const isActive = active === c.key;
-                return (
-                  <button
-                    key={c.key}
-                    onClick={() => setActive(c.key)}
-                    className={`w-full flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm font-semibold text-left transition-colors ${isActive ? `${c.bg} ${c.color}` : "hover:bg-slate-50 text-slate-700"
-                      }`}
-                  >
-                    <span className="flex items-center gap-2.5">
-                      <c.icon size={16} className={isActive ? c.color : "text-slate-400"} />
-                      {c.name}
-                    </span>
-                    <span className="text-xs text-slate-400 font-bold">{c.count}</span>
-                  </button>
-                );
-              })}
-            </div>
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-8 space-y-6">
+        {/* Header & Sort Bar */}
+        <div className="flex items-center justify-between flex-wrap gap-4 bg-white border border-slate-200/80 p-5 rounded-3xl shadow-xs">
+          <div>
+            <h2 className="text-2xl font-bold flex items-center gap-2.5 text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+              <span className={`w-10 h-10 rounded-2xl ${activeCat.bg} ${activeCat.color} flex items-center justify-center shadow-xs`}>
+                <activeCat.icon size={20} />
+              </span>
+              {activeCat.name}
+            </h2>
+            <p className="text-xs text-slate-500 font-semibold mt-1">Showing {products.length} fresh products</p>
           </div>
 
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <h3 className="font-extrabold text-base mb-4">Price Range</h3>
-            <input
-              type="range"
-              min="40"
-              max="300"
-              value={priceMax}
-              onChange={(e) => setPriceMax(Number(e.target.value))}
-              className="w-full accent-blue-600"
-            />
-            <div className="flex justify-between text-sm text-slate-500 font-semibold mt-2">
-              <span>₹0</span>
-              <span>Up to ₹{priceMax}</span>
-            </div>
-          </div>
-
-          <div className="bg-white border border-slate-200 rounded-2xl p-5">
-            <h3 className="font-extrabold text-base mb-3">Minimum Rating</h3>
-            <div className="flex flex-wrap gap-2">
-              {[3, 3.5, 4, 4.5].map((r) => (
-                <span key={r} className="flex items-center gap-1 border border-slate-200 rounded-full px-3 py-1.5 text-sm font-semibold text-slate-600 cursor-pointer hover:border-blue-400">
-                  <Star size={12} className="text-blue-500" fill="currentColor" /> {r}+
-                </span>
-              ))}
-            </div>
-          </div>
-        </aside>
-
-        {/* Product grid */}
-        <div>
-          <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
-            <div>
-              <h2 className="text-2xl font-bold flex items-center gap-2.5" style={{ fontFamily: "'Fraunces', serif" }}>
-                <span className={`w-9 h-9 rounded-xl ${activeCat.bg} ${activeCat.color} flex items-center justify-center`}>
-                  <activeCat.icon size={18} />
-                </span>
-                {activeCat.name}
-              </h2>
-              <p className="text-sm text-slate-500 mt-1">{products.length} products found</p>
-            </div>
-
+          <div className="flex items-center gap-3">
             <div className="relative">
               <button
                 onClick={() => setSortOpen(!sortOpen)}
-                className="flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2.5 text-sm font-bold"
+                className="flex items-center gap-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full px-4 py-2.5 text-xs font-bold cursor-pointer transition-colors"
               >
-                <ArrowUpDown size={14} /> {sortBy} <ChevronDown size={14} />
+                <ArrowUpDown size={14} /> Sort: {sortBy} <ChevronDown size={14} />
               </button>
               {sortOpen && (
-                <div className="absolute right-0 top-11 bg-white border border-slate-200 rounded-xl shadow-lg w-52 p-1.5 z-30">
+                <div className="absolute right-0 top-12 bg-white border border-slate-200 rounded-2xl shadow-xl w-52 p-2 z-30 space-y-1">
                   {sortOptions.map((o) => (
                     <button
                       key={o}
                       onClick={() => { setSortBy(o); setSortOpen(false); }}
-                      className={`w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold hover:bg-slate-50 ${sortBy === o ? "text-blue-600" : "text-slate-700"}`}
+                      className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold hover:bg-slate-50 cursor-pointer ${sortBy === o ? "text-amber-600 bg-amber-50" : "text-slate-700"}`}
                     >
                       {o}
                     </button>
@@ -197,19 +155,20 @@ export default function CategoriesPage() {
               )}
             </div>
           </div>
+        </div>
 
-          {query && (
-            <div className="mb-4 inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-sm font-semibold px-3 py-1.5 rounded-full">
-              "{query}" <X size={13} className="cursor-pointer" onClick={() => setQuery("")} />
-            </div>
-          )}
+        {query && (
+          <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 text-xs font-bold px-3.5 py-1.5 rounded-full border border-blue-200">
+            "{query}" <X size={13} className="cursor-pointer hover:text-blue-900" onClick={() => setQuery("")} />
+          </div>
+        )}
 
-          {products.length === 0 ? (
-            <div className="bg-white border border-slate-200 rounded-2xl p-14 text-center text-slate-500">
-              No products match your filters. Try adjusting price range or search.
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+        {products.length === 0 ? (
+          <div className="bg-white border border-slate-200 rounded-3xl p-14 text-center text-slate-500 font-semibold shadow-xs">
+            No products match your search. Try searching for something else.
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-5">
               {products.map((p) => (
                 <Link
                   key={p.id}
@@ -265,7 +224,6 @@ export default function CategoriesPage() {
               ))}
             </div>
           )}
-        </div>
       </div>
 
       <Footer />
