@@ -5,7 +5,7 @@ import Navbar from "./Navbar";
 import {
   Store, User, ChevronRight, TrendingUp,
   Users, LayoutDashboard, Wallet, CheckCircle2, Star, ClipboardList,
-  PackageCheck, Bell, Banknote, Building2, Phone, Mail, Upload
+  PackageCheck, Bell, Banknote, Building2, Phone, Mail, Upload, QrCode, Smartphone
 } from "lucide-react";
 
 const benefits = [
@@ -228,10 +228,62 @@ export default function BecomeVendorPage() {
           </div>
 
           {submitted ? (
-            <div className="bg-teal-50 border border-teal-200 rounded-2xl p-8 text-center text-teal-800">
-              <CheckCircle2 size={36} className="mx-auto mb-3 text-teal-600" />
-              <h3 className="text-xl font-bold mb-2">Application Submitted!</h3>
-              <p className="text-sm">Thank you for registering <strong>{form.store}</strong>. Our team will call you at <strong>{form.phone}</strong> shortly.</p>
+            <div className="bg-emerald-50/60 border border-emerald-200 rounded-3xl p-6 md:p-8 text-center text-slate-900 animate-[scaleUp_0.3s_ease-out]">
+              <div className="w-16 h-16 bg-emerald-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-emerald-600/30">
+                <CheckCircle2 size={36} strokeWidth={2.5} />
+              </div>
+
+              <h3 className="text-2xl font-black text-slate-900 mb-1" style={{ fontFamily: "'Fraunces', serif" }}>
+                Store Registration Complete! 🎉
+              </h3>
+              <p className="text-xs text-slate-600 font-semibold max-w-md mx-auto mb-6">
+                Congratulations <strong>{form.owner}</strong>! Your store <strong>{form.store}</strong> is registered on FillCarts.
+              </p>
+
+              {/* QR Code Container */}
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-sm mx-auto shadow-md mb-6">
+                <div className="text-xs font-black text-blue-600 uppercase tracking-wider mb-3 flex items-center justify-center gap-1.5">
+                  <Smartphone size={16} /> Download FillCarts Merchant App
+                </div>
+
+                <div className="relative p-3 bg-slate-50 border border-slate-200 rounded-2xl w-fit mx-auto shadow-inner mb-3">
+                  <QrCode size={140} className="text-slate-900" />
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center border-2 border-white shadow-md">
+                    <span className="text-[10px] font-black text-white leading-none">FC</span>
+                  </div>
+                </div>
+
+                <div className="text-xs font-extrabold text-slate-900 mb-1">
+                  Scan QR code with your phone camera
+                </div>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed">
+                  Scan to download <strong>FillCarts Merchant App</strong>. Log in using <strong>+91 {form.phone}</strong> or <strong>{form.email}</strong> to upload GST/FSSAI documents and start accepting orders!
+                </p>
+              </div>
+
+              {/* App Store Download Badges */}
+              <div className="flex justify-center gap-3 max-w-xs mx-auto mb-4">
+                <a
+                  href="https://apps.apple.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3 rounded-xl text-xs transition-colors shadow-sm inline-block"
+                >
+                  App Store
+                </a>
+                <a
+                  href="https://play.google.com"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3 rounded-xl text-xs transition-colors shadow-sm inline-block"
+                >
+                  Google Play
+                </a>
+              </div>
+
+              <p className="text-[11px] text-slate-400 font-semibold">
+                Our onboarding executive will also call you at <strong>+91 {form.phone}</strong> for physical store verification.
+              </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
