@@ -3,138 +3,55 @@ import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import {
-  Zap, Navigation, Radar, Repeat, Wallet, CreditCard, Bell, RotateCcw,
-  Store, Moon, ShieldCheck, ChevronRight, CheckCircle2, ArrowRight,
-  Smartphone, QrCode, Download, Sparkles, Star, MapPin, Search, Lock
+  Zap, Navigation, Radar, Repeat, Wallet, RotateCcw,
+  Store, CheckCircle2, ArrowRight, Smartphone, QrCode, Download,
+  Sparkles, Star, Pause, Play, ChevronRight
 } from "lucide-react";
 
-const featurePillars = [
+// 6 Core Small Feature Cards (Simple, Clean & USP-Focused)
+const mainFeatures = [
   {
-    category: "Hyperlocal Speed & Dispatch",
-    badge: "Express Dispatch",
-    badgeColor: "bg-blue-50 text-blue-600 border-blue-200",
-    features: [
-      {
-        icon: Zap,
-        bg: "bg-blue-50",
-        color: "text-blue-600",
-        title: "Direct Store-to-Door Express Delivery",
-        desc: "Orders are picked fresh from your nearest trusted neighbourhood Kirana or pharmacy and dispatched immediately by local riders with zero warehouse delay."
-      },
-      {
-        icon: Navigation,
-        bg: "bg-teal-50",
-        color: "text-teal-600",
-        title: "Live GPS Order Tracking",
-        desc: "Watch your delivery partner move live on the interactive map from vendor pickup to your doorstep with exact ETA."
-      },
-      {
-        icon: Moon,
-        bg: "bg-violet-50",
-        color: "text-violet-600",
-        title: "24/7 Night Delivery Zones",
-        desc: "Need medicines, baby food, or snacks at 2 AM? Our verified 24/7 partner stores fulfill urgent late-night orders."
-      }
-    ]
+    icon: Radar,
+    bg: "bg-blue-50 text-blue-600 border-blue-100",
+    title: "1. Real-Time Inventory",
+    desc: "Know instantly if products are in stock at your local vendor before placing an order."
   },
   {
-    category: "Smart Inventory & Shopping",
-    badge: "Real-Time Sync",
-    badgeColor: "bg-teal-50 text-teal-600 border-teal-200",
-    features: [
-      {
-        icon: Radar,
-        bg: "bg-teal-50",
-        color: "text-teal-600",
-        title: "Real-Time Kirana Stock Sync",
-        desc: "See exact item availability before placing an order. Our merchant app updates store inventory instantly to prevent out-of-stock items."
-      },
-      {
-        icon: Repeat,
-        bg: "bg-violet-50",
-        color: "text-violet-600",
-        title: "Automated Daily Subscriptions",
-        desc: "Never run out of daily essentials. Subscribe to morning milk, fresh bread, and curd with automated 7 AM delivery. Pause or skip anytime."
-      },
-      {
-        icon: Store,
-        bg: "bg-amber-50",
-        color: "text-amber-700",
-        title: "Empowering Local Vendors",
-        desc: "Every order supports local Kirana shopkeepers and neighbourhood vendors in your immediate community."
-      }
-    ]
+    icon: Navigation,
+    bg: "bg-teal-50 text-teal-600 border-teal-100",
+    title: "2. Live Delivery Tracking",
+    desc: "Track your assigned local rider live on the GPS map in real-time right to your doorstep."
   },
   {
     icon: Wallet,
-    category: "Instant Payments & Wallet",
-    badge: "100% Secure",
-    badgeColor: "bg-emerald-50 text-emerald-600 border-emerald-200",
-    features: [
-      {
-        icon: Wallet,
-        bg: "bg-emerald-50",
-        color: "text-emerald-600",
-        title: "FillCarts Digital Wallet",
-        desc: "Experience 1-tap checkout with saved wallet balance. Enjoy instant refunds directly credited within seconds for cancelled items."
-      },
-      {
-        icon: Lock,
-        bg: "bg-blue-50",
-        color: "text-blue-600",
-        title: "Encrypted Multiple Payment Options",
-        desc: "Pay seamlessly via UPI (GPay, PhonePe, Paytm), Debit/Credit cards, Netbanking, or Cash on Delivery with end-to-end security."
-      },
-      {
-        icon: Bell,
-        bg: "bg-amber-50",
-        color: "text-amber-700",
-        title: "Smart Push Notifications",
-        desc: "Receive real-time order status updates (Store Accepted, Packing, Out for Delivery) without needing to keep the app open."
-      }
-    ]
+    bg: "bg-emerald-50 text-emerald-600 border-emerald-100",
+    title: "3. Flexible & Secure Payments",
+    desc: "Multiple payment modes (UPI, cards, netbanking, COD) plus Digital Wallet for 1-tap checkout & instant refunds."
   },
   {
-    category: "Customer Trust & Protection",
-    badge: "Quality Assured",
-    badgeColor: "bg-violet-50 text-violet-600 border-violet-200",
-    features: [
-      {
-        icon: ShieldCheck,
-        bg: "bg-violet-50",
-        color: "text-violet-600",
-        title: "100% Freshness Guarantee",
-        desc: "Fresh fruits, vegetables, and dairy are sourced daily from verified local mandis with stringent quality checks."
-      },
-      {
-        icon: RotateCcw,
-        bg: "bg-teal-50",
-        color: "text-teal-600",
-        title: "Hassle-Free Easy Returns",
-        desc: "Not satisfied with an item? Initiate a simple 24-hour return request directly from your order history for instant resolution."
-      },
-      {
-        icon: Star,
-        bg: "bg-blue-50",
-        color: "text-blue-600",
-        title: "Verified Merchant Ratings",
-        desc: "Every merchant on FillCarts is rated by local neighbours, ensuring top-tier service, packaging, and product hygiene."
-      }
-    ]
+    icon: RotateCcw,
+    bg: "bg-amber-50 text-amber-700 border-amber-100",
+    title: "4. Instant Returns",
+    desc: "Product issue? Initiate quick & hassle-free returns with instant credit back to your account."
+  },
+  {
+    icon: Store,
+    bg: "bg-violet-50 text-violet-600 border-violet-100",
+    title: "5. Local & Trusted Vendors",
+    desc: "Order directly from nearby neighbourhood shops and support your local community businesses."
+  },
+  {
+    icon: Zap,
+    bg: "bg-blue-50 text-blue-600 border-blue-100",
+    title: "6. Fast Local Delivery",
+    desc: "Everyday grocery & medicine orders picked fresh and delivered fast by local neighbourhood riders."
   }
 ];
 
-const comparisonData = [
-  { feature: "Delivery Speed", fillcarts: "Direct Store Dispatch (Fastest)", traditional: "2 - 5 Days", darkstore: "Standard Quick Hub" },
-  { feature: "Inventory Source", fillcarts: "Local Neighbourhood Kiranas", traditional: "Centralized Distant Hubs", darkstore: "Company Warehouses" },
-  { feature: "Support Local Vendors", fillcarts: "100% Empowered", traditional: "No Impact", darkstore: "Displaces Local Shops" },
-  { feature: "Produce Freshness", fillcarts: "Sourced Daily at 4 AM", traditional: "Cold Stored 3-7 Days", darkstore: "Stored in Warehouses" },
-  { feature: "Daily Subscriptions (Milk/Bread)", fillcarts: "Automated 7 AM Delivery", traditional: "Not Available", darkstore: "Limited" },
-  { feature: "Instant Refund System", fillcarts: "Immediate Wallet Credit", traditional: "5-7 Business Days", darkstore: "1-3 Days" },
-];
-
 export default function FeaturesPage() {
-  const [activeTab, setActiveTab] = useState(0);
+  // Interactive state for the Subscription Flow Mockup Demo
+  const [demoState, setDemoState] = useState("active"); // active | paused
+  const [demoSchedule, setDemoSchedule] = useState("Daily"); // Daily | Weekly
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
@@ -152,116 +69,208 @@ export default function FeaturesPage() {
         </div>
       </div>
 
-      {/* Hero Section */}
-      <section className="max-w-4xl mx-auto px-6 py-16 text-center">
-        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-3.5 py-1.5 text-sm font-bold mb-5">
-          <Sparkles size={14} className="text-blue-600" /> Engineered for Speed & Local Trust
+      {/* HERO SECTION */}
+      <section className="max-w-4xl mx-auto px-6 pt-14 pb-12 text-center">
+        <div className="inline-flex items-center gap-2 bg-blue-50 border border-blue-200 text-blue-700 rounded-full px-4 py-1.5 text-xs font-extrabold mb-5 shadow-2xs">
+          <Sparkles size={14} className="text-blue-600" /> Hyperlocal Speed & Automated Essentials
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold mb-4 leading-tight text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
-          Built for direct store dispatch,<br /><span className="text-blue-600">live tracking & local trust.</span>
+
+        <h1 className="text-4xl md:text-5xl font-extrabold mb-4 leading-tight text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+          Everything You Need for Easier Local Delivery
         </h1>
+
         <p className="text-slate-500 text-base md:text-lg max-w-2xl mx-auto font-medium leading-relaxed mb-8">
-          Explore the powerful technology and customer-first features that make FillCarts the preferred hyperlocal delivery platform for thousands of households.
+          Shop from local vendors, track your delivery, and automate your everyday essentials.
         </p>
 
         <div className="flex gap-3 justify-center flex-wrap">
-          <Link to="/categories" className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-7 py-3.5 text-sm shadow-md shadow-blue-600/20 transition-all">
+          <Link
+            to="/subscriptions"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-full px-7 py-3.5 text-sm shadow-md shadow-blue-600/20 transition-all flex items-center gap-2"
+          >
+            <Star size={15} fill="currentColor" className="text-amber-300" /> ⭐ Explore Subscriptions
+          </Link>
+          <Link
+            to="/categories"
+            className="bg-slate-900 hover:bg-slate-950 text-white font-bold rounded-full px-7 py-3.5 text-sm shadow-md transition-all"
+          >
             Browse Categories
           </Link>
-          <a href="#comparison" className="bg-white border border-slate-200 hover:border-blue-500 text-slate-800 font-bold rounded-full px-7 py-3.5 text-sm shadow-2xs transition-all">
-            Compare Features
-          </a>
         </div>
       </section>
 
-      {/* Feature Pillar Tabs */}
-      <section className="max-w-6xl mx-auto px-6 pb-16">
-        <div className="flex gap-2 overflow-x-auto pb-4 justify-center">
-          {featurePillars.map((pillar, idx) => (
-            <button
-              key={idx}
-              onClick={() => setActiveTab(idx)}
-              className={`px-5 py-3 rounded-full text-xs font-bold whitespace-nowrap border transition-all ${activeTab === idx
-                ? "bg-slate-900 text-white border-slate-900 shadow-md"
-                : "bg-white border-slate-200 text-slate-600 hover:border-slate-400"
-                }`}
+      {/* 6 MAIN FEATURE CARDS */}
+      <section className="max-w-6xl mx-auto px-6 py-8">
+        <div className="mb-8 text-center">
+          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-1.5">Core Features</span>
+          <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+            Simple, Fast & Reliable Customer Features
+          </h2>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Everything designed to make neighbourhood shopping effortless.</p>
+        </div>
+
+        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+          {mainFeatures.map((feat, i) => (
+            <div
+              key={i}
+              className="bg-white border border-slate-200 rounded-3xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all flex flex-col justify-between"
             >
-              {pillar.category}
-            </button>
+              <div>
+                <div className={`w-12 h-12 rounded-2xl ${feat.bg} flex items-center justify-center mb-4 border`}>
+                  <feat.icon size={22} />
+                </div>
+                <h3 className="text-base font-extrabold text-slate-900 mb-2 leading-snug">{feat.title}</h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">{feat.desc}</p>
+              </div>
+
+              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-1.5 text-[11px] font-bold text-blue-600">
+                <CheckCircle2 size={13} /> Active Feature
+              </div>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* Active Pillar Features Grid */}
-        <div className="mt-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <span className={`inline-block text-xs font-bold px-3 py-1 rounded-full border mb-2 ${featurePillars[activeTab].badgeColor}`}>
-                {featurePillars[activeTab].badge}
-              </span>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
-                {featurePillars[activeTab].category}
+      {/* ⭐ HERO FEATURE: SUBSCRIPTION SERVICE */}
+      <section className="max-w-6xl mx-auto px-6 py-10">
+        <div className="bg-slate-900 text-white rounded-[32px] p-8 md:p-10 shadow-xl border border-slate-800 relative overflow-hidden">
+          
+          <div className="grid lg:grid-cols-[1fr_340px] gap-8 items-center">
+            
+            <div className="space-y-4">
+              <div className="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/30 text-amber-300 rounded-full px-3.5 py-1 text-xs font-extrabold uppercase tracking-wider">
+                <Star size={13} fill="currentColor" /> Standout Feature
+              </div>
+
+              <h2 className="text-3xl md:text-4xl font-extrabold leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+                Your Everyday Essentials, On Autopilot
               </h2>
-            </div>
-          </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {featurePillars[activeTab].features.map((feat, i) => (
-              <div
-                key={i}
-                className="bg-white border border-slate-200 rounded-2xl p-7 hover:-translate-y-1 hover:shadow-lg transition-all flex flex-col justify-between"
-              >
-                <div>
-                  <div className={`w-12 h-12 rounded-2xl ${feat.bg} ${feat.color} flex items-center justify-center mb-5`}>
-                    <feat.icon size={22} />
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2 leading-snug">{feat.title}</h3>
-                  <p className="text-xs text-slate-500 font-medium leading-relaxed mb-4">{feat.desc}</p>
+              <p className="text-slate-300 text-sm font-medium leading-relaxed max-w-xl">
+                Automated morning deliveries for staples like <strong>Milk 🥛, Bakery Bread 🥐, and Water 💧</strong>. Guaranteed 7 AM doorstep drops with 1-tap Pause & Resume controls.
+              </p>
+
+              <div className="grid sm:grid-cols-3 gap-3 pt-2">
+                <div className="bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl">
+                  <div className="font-extrabold text-white text-xs mb-0.5">📅 Daily / Weekly</div>
+                  <div className="text-[11px] text-slate-400">Flexible schedule options</div>
                 </div>
 
-                <div className="pt-3 border-t border-slate-100 flex items-center gap-1 text-xs font-bold text-blue-600">
-                  <CheckCircle2 size={14} /> Active on FillCarts App
+                <div className="bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl">
+                  <div className="font-extrabold text-teal-300 text-xs mb-0.5">🌅 7:00 AM Delivery</div>
+                  <div className="text-[11px] text-slate-400">Fresh morning drops</div>
+                </div>
+
+                <div className="bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl">
+                  <div className="font-extrabold text-amber-300 text-xs mb-0.5">⏸️ Pause & Resume</div>
+                  <div className="text-[11px] text-slate-400">1-tap pause anytime</div>
                 </div>
               </div>
-            ))}
+
+              <div className="pt-2">
+                <Link
+                  to="/subscriptions"
+                  className="bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs px-6 py-3.5 rounded-xl shadow-lg transition-all inline-flex items-center gap-2"
+                >
+                  Build Your Subscription Now <ArrowRight size={15} />
+                </Link>
+              </div>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-3.5 shadow-2xl">
+              <div className="flex justify-between items-center pb-2 border-b border-slate-800 text-xs">
+                <div className="font-extrabold text-white flex items-center gap-1.5">
+                  <Repeat size={15} className="text-blue-400" /> Morning Staples Basket
+                </div>
+                <span className="text-[10px] font-mono text-teal-400 font-bold bg-teal-500/10 border border-teal-500/20 px-2 py-0.5 rounded-full">
+                  {demoSchedule} 7:00 AM
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-1.5 text-[11px] font-semibold text-slate-300">
+                <span className="bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">🥛 Fresh Milk</span>
+                <span className="bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">🥐 Bread</span>
+                <span className="bg-slate-800 border border-slate-700 px-2.5 py-1 rounded-lg">💧 Water</span>
+              </div>
+
+              <div className="bg-slate-900 p-3 rounded-xl border border-slate-800 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-medium text-[11px]">Schedule Status:</span>
+                  {demoState === "active" ? (
+                    <span className="text-emerald-400 font-bold text-[11px] flex items-center gap-1">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" /> Active Schedule
+                    </span>
+                  ) : (
+                    <span className="text-amber-400 font-bold text-[11px] flex items-center gap-1">
+                      ⏸️ Delivery Paused
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <button
+                    onClick={() => setDemoState(demoState === "active" ? "paused" : "active")}
+                    className={`flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 cursor-pointer ${
+                      demoState === "active"
+                        ? "bg-amber-500 hover:bg-amber-600 text-slate-950"
+                        : "bg-emerald-500 hover:bg-emerald-600 text-slate-950"
+                    }`}
+                  >
+                    {demoState === "active" ? <><Pause size={13} /> Pause Delivery</> : <><Play size={13} /> Resume Delivery</>}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </section>
+
+      {/* SIMPLE 3-STEP SECTION */}
+      <section className="max-w-6xl mx-auto px-6 py-12">
+        <div className="mb-10 text-center">
+          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-1.5">Easy Process</span>
+          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>
+            How It Works in 3 Simple Steps
+          </h2>
+          <p className="text-xs md:text-sm text-slate-500 font-medium mt-1">Get everyday items or automated subscriptions delivered effortlessly.</p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-4 hover:-translate-y-1 hover:shadow-lg transition-all">
+            <div className="w-14 h-14 bg-blue-50 text-blue-600 font-extrabold rounded-2xl flex items-center justify-center mx-auto text-xl" style={{ fontFamily: "'Fraunces', serif" }}>
+              1
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Choose Products</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Select fresh milk, bakery items, vegetables, or groceries directly from verified nearby Kirana stores.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-4 hover:-translate-y-1 hover:shadow-lg transition-all">
+            <div className="w-14 h-14 bg-teal-50 text-teal-600 font-extrabold rounded-2xl flex items-center justify-center mx-auto text-xl" style={{ fontFamily: "'Fraunces', serif" }}>
+              2
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Subscribe & Schedule</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Choose one-time delivery or set a Daily / Weekly recurring schedule with 1-tap AutoPay setup.
+            </p>
+          </div>
+
+          <div className="bg-white border border-slate-200 rounded-3xl p-8 text-center space-y-4 hover:-translate-y-1 hover:shadow-lg transition-all">
+            <div className="w-14 h-14 bg-emerald-50 text-emerald-600 font-extrabold rounded-2xl flex items-center justify-center mx-auto text-xl" style={{ fontFamily: "'Fraunces', serif" }}>
+              3
+            </div>
+            <h3 className="text-lg font-bold text-slate-900">Receive & Control</h3>
+            <p className="text-xs text-slate-500 font-medium leading-relaxed">
+              Enjoy 7 AM morning doorstep delivery. Track riders live or <strong>Pause & Resume</strong> anytime you travel.
+            </p>
           </div>
         </div>
       </section>
 
-      {/* Feature Comparison Table */}
-      <section id="comparison" className="max-w-6xl mx-auto px-6 py-16">
-        <div className="mb-9 text-center">
-          <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-2">Why We Stand Out</span>
-          <h2 className="text-3xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>How FillCarts Compares</h2>
-          <p className="text-sm text-slate-500 font-medium mt-1">See why hyperlocal Kirana delivery offers better freshness and speed.</p>
-        </div>
-
-        <div className="bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs font-semibold">
-              <thead className="bg-slate-900 text-white uppercase text-[11px] tracking-wider">
-                <tr>
-                  <th className="p-4 md:p-5">Platform Capability</th>
-                  <th className="p-4 md:p-5 text-blue-400 font-extrabold bg-slate-800">FillCarts (Hyperlocal)</th>
-                  <th className="p-4 md:p-5 text-slate-300">Mega Dark-Store Apps</th>
-                  <th className="p-4 md:p-5 text-slate-400">Traditional E-Commerce</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {comparisonData.map((row, i) => (
-                  <tr key={i} className="hover:bg-slate-50 transition-colors">
-                    <td className="p-4 md:p-5 font-bold text-slate-900">{row.feature}</td>
-                    <td className="p-4 md:p-5 font-extrabold text-blue-600 bg-blue-50/50">{row.fillcarts}</td>
-                    <td className="p-4 md:p-5 text-slate-600">{row.darkstore}</td>
-                    <td className="p-4 md:p-5 text-slate-500">{row.traditional}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      {/* App Download Banner */}
+      {/* APP DOWNLOAD BANNER */}
       <section className="max-w-6xl mx-auto px-6 py-12">
         <div className="bg-blue-600 text-white rounded-3xl p-8 md:p-12 flex flex-wrap items-center justify-between gap-6 shadow-xl">
           <div>
