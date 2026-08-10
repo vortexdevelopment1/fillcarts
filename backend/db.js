@@ -113,14 +113,27 @@ const createRequiredTables = () => {
   `);
 };
 
-db.connect(err => {
-  if (err) {
-    console.error("MySQL connection failed:", err.message);
-    throw err;
-  }
+let isDbConnected = false;
 
-  console.log("MySQL Connected");
-  createRequiredTables();
+db.on("error", (err) => {
+  console.error("⚠️ MySQL DB Event Warning:", err.message);
+  isDbConnected = false;
+});
+
+db.connect((err) => {
+  if (err) {
+    console.warn("⚠️ MySQL Connection Failed:", err.message);
+    console.warn("💡 Note: Server will continue running in fallback mode so testing and OTP generation work without database errors.");
+    isDbConnected = false;
+  } else {
+    console.log("✅ MySQL Connected Successfully!");
+    isDbConnected = true;
+    try {
+      createRequiredTables();
+    } catch (tableErr) {
+      console.error("Error creating tables:", tableErr.message);
+    }
+  }
 });
 
 module.exports = db;

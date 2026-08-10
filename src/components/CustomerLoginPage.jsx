@@ -97,6 +97,7 @@ export default function CustomerLoginPage() {
       });
 
       setError("");
+      setOtp(["", "", "", "", "", ""]);
       setStep("otp");
       setTimer(30);
     } catch (err) {
@@ -262,6 +263,7 @@ export default function CustomerLoginPage() {
               <>
                 <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Verify OTP</h1>
                 <p className="text-sm text-slate-500 mb-7">Enter the 6-digit code sent to {contact}</p>
+
                 <form onSubmit={handleVerify} className="space-y-5">
                   <div className="flex gap-3 justify-center">
                     {otp.map((val, i) => (

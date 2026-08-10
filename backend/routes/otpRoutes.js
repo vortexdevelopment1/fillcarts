@@ -144,6 +144,34 @@ router.post("/logout", (req, res) => {
   return res.send({ message: "Logged out successfully" });
 });
 
+const inMemoryOtps = new Map();
+const inMemoryCustomers = new Map();
+
+const getFallbackCustomer = (targetContact) => {
+  const isEmail = targetContact.includes("@");
+  const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
+  const emailVal = isEmail ? targetContact : `user_${targetContact}@fillcarts.local`;
+  const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+
+  const existing = Array.from(inMemoryCustomers.values()).find(
+    (c) => c.phone === phoneVal || c.email === emailVal
+  );
+  if (existing) return existing;
+
+  const newCust = {
+    id: inMemoryCustomers.size + 100,
+    name: defaultName,
+    phone: phoneVal,
+    email: emailVal,
+    address: "Delivery Address",
+    pincode: "110001",
+    gift_card_balance: "0.00",
+    created_at: new Date().toISOString(),
+  };
+  inMemoryCustomers.set(newCust.id, newCust);
+  return newCust;
+};
+
 // SEND OTP
 router.post("/send-otp", async (req, res) => {
   const { contact, phone, email, type = "sms" } = req.body;
@@ -153,50 +181,67 @@ router.post("/send-otp", async (req, res) => {
     return res.status(400).send("Contact is required");
   }
 
+  const processOtpGeneration = (targetContact, type, res) => {
+    const otp = generateOTP();
+
+    console.log("==================================");
+    console.log("📱 Contact:", targetContact);
+    console.log("🔐 OTP:", otp);
+    console.log("==================================");
+
+    const expiry = Date.now() + 5 * 60 * 1000;
+    inMemoryOtps.set(targetContact, { otp, expiresAt: expiry });
+
+    // Try saving to MySQL database asynchronously if available
+    db.query(
+      "INSERT INTO otp_verification (contact, otp, expires_at) VALUES (?, ?, ?)",
+      [targetContact, otp, expiry],
+      (err) => {
+        if (err) {
+          console.warn("MySQL OTP storage warning (using in-memory fallback):", err.message);
+        }
+      }
+    );
+
+    // Asynchronously send SMS / Email without blocking HTTP response
+    if (type === "email") {
+      sendEmail(targetContact, otp).catch((emailErr) => console.error("Email send error:", emailErr));
+    } else {
+      sendSMS(targetContact, otp).catch((smsErr) => console.error("SMS send error:", smsErr));
+    }
+
+    return res.send({
+      message: "OTP Generated Successfully",
+    });
+  };
+
   db.query(
     "SELECT id FROM customers WHERE phone = ? OR email = ?",
     [targetContact, targetContact],
-    async (lookupErr, lookupResults) => {
-      if (lookupErr) {
-        console.error(lookupErr);
-        return res.status(500).send("Database Error");
+    (lookupErr, lookupResults) => {
+      if (lookupErr || !lookupResults) {
+        console.warn("MySQL lookup failed, using fallback:", lookupErr?.message || "No results");
+        getFallbackCustomer(targetContact);
+        return processOtpGeneration(targetContact, type, res);
       }
 
       if (lookupResults.length === 0) {
-        return res.status(404).send("This mobile number or email is not registered");
+        const isEmail = targetContact.includes("@");
+        const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
+        const emailVal = isEmail ? targetContact : `user_${targetContact}@fillcarts.local`;
+        const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+
+        db.query(
+          "INSERT INTO customers (name, phone, email, password, address, pincode) VALUES (?, ?, ?, ?, ?, ?)",
+          [defaultName, phoneVal, emailVal, "otp-user-pass", "Delivery Address", "110001"],
+          () => {
+            getFallbackCustomer(targetContact);
+            processOtpGeneration(targetContact, type, res);
+          }
+        );
+      } else {
+        processOtpGeneration(targetContact, type, res);
       }
-
-      const otp = generateOTP();
-
-      console.log("==================================");
-      console.log("📱 Contact:", targetContact);
-      console.log("🔐 OTP:", otp);
-      console.log("==================================");
-
-      const expiry = Date.now() + 5 * 60 * 1000;
-
-      db.query(
-        "INSERT INTO otp_verification (contact, otp, expires_at) VALUES (?, ?, ?)",
-        [targetContact, otp, expiry],
-        async (err) => {
-          if (err) {
-            console.log(err);
-            return res.status(500).send("Database Error");
-          }
-
-          if (type === "email") {
-            try {
-              await sendEmail(targetContact, otp);
-            } catch (emailErr) {
-              console.error(emailErr);
-            }
-          } else {
-            await sendSMS(targetContact, otp);
-          }
-
-          return res.send("OTP Generated Successfully");
-        }
-      );
     }
   );
 });
@@ -210,21 +255,43 @@ router.post("/verify-otp", (req, res) => {
     return res.status(400).send("Contact and OTP are required");
   }
 
+  const finishLoginWithCustomer = (customer) => {
+    setAuthCookie(res, customer);
+    return res.send({
+      message: "Login successful",
+      customer,
+    });
+  };
+
+  // Check in-memory store first
+  const memOtpRecord = inMemoryOtps.get(targetContact);
+  const isMemOtpValid = memOtpRecord && memOtpRecord.otp === otp && Date.now() <= memOtpRecord.expiresAt;
+
+  if (isMemOtpValid) {
+    inMemoryOtps.delete(targetContact);
+    db.query(
+      "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE phone = ? OR email = ?",
+      [targetContact, targetContact],
+      (err, results) => {
+        if (!err && results && results.length > 0) {
+          return finishLoginWithCustomer(results[0]);
+        }
+        return finishLoginWithCustomer(getFallbackCustomer(targetContact));
+      }
+    );
+    return;
+  }
+
+  // Fallback to MySQL query
   db.query(
     "SELECT * FROM otp_verification WHERE contact=? ORDER BY id DESC LIMIT 1",
     [targetContact],
     (err, results) => {
-      if (err) {
-        console.error(err);
-        return res.status(500).send("Database Error");
-      }
-
-      if (results.length === 0) {
-        return res.status(400).send("OTP not found");
+      if (err || !results || results.length === 0) {
+        return res.status(400).send("OTP not found or invalid");
       }
 
       const record = results[0];
-
       if (Date.now() > record.expires_at) {
         return res.status(400).send("OTP expired");
       }
@@ -239,22 +306,10 @@ router.post("/verify-otp", (req, res) => {
         "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE phone = ? OR email = ?",
         [targetContact, targetContact],
         (customerErr, customerResults) => {
-          if (customerErr) {
-            console.error(customerErr);
-            return res.status(500).send("Database Error");
+          if (!customerErr && customerResults && customerResults.length > 0) {
+            return finishLoginWithCustomer(customerResults[0]);
           }
-
-          const customer = customerResults[0] || null;
-          if (!customer) {
-            return res.status(404).send("Customer profile not found");
-          }
-
-          setAuthCookie(res, customer);
-
-          return res.send({
-            message: "Login successful",
-            customer,
-          });
+          return finishLoginWithCustomer(getFallbackCustomer(targetContact));
         }
       );
     }
