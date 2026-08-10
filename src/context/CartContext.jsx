@@ -34,12 +34,20 @@ export function CartProvider({ children }) {
   useEffect(() => {
     const syncCart = async () => {
       if (user) {
+        const userKey = `fillcarts_cart_${user.phone || user.email || user.id}`;
+        const localUserStored = localStorage.getItem(userKey);
+        const parsedLocalUserCart = localUserStored ? JSON.parse(localUserStored) : [];
+
         try {
           const res = await api.get("/cart");
-          if (res.data && res.data.cart && res.data.cart.length > 0) {
+          if (res.data && Array.isArray(res.data.cart) && res.data.cart.length > 0) {
             setCart(res.data.cart);
+            localStorage.setItem(userKey, JSON.stringify(res.data.cart));
+          } else if (parsedLocalUserCart.length > 0) {
+            setCart(parsedLocalUserCart);
+            await api.post("/cart", { cart: parsedLocalUserCart });
           } else {
-            // Check if there is a local guest cart and sync it to server
+            // Transfer guest cart if present
             const guestKey = "fillcarts_guest_cart";
             const localStored = localStorage.getItem(guestKey);
             if (localStored) {
@@ -47,6 +55,7 @@ export function CartProvider({ children }) {
               if (parsed.length > 0) {
                 await api.post("/cart", { cart: parsed });
                 setCart(parsed);
+                localStorage.setItem(userKey, JSON.stringify(parsed));
                 localStorage.removeItem(guestKey);
                 return;
               }
@@ -55,9 +64,7 @@ export function CartProvider({ children }) {
           }
         } catch (e) {
           console.error("Failed to fetch cart from server", e);
-          const userKey = `fillcarts_cart_${user.phone || user.email}`;
-          const stored = localStorage.getItem(userKey);
-          setCart(stored ? JSON.parse(stored) : []);
+          setCart(parsedLocalUserCart);
         }
       } else {
         setCart([]);
@@ -169,6 +176,7 @@ export function CartProvider({ children }) {
         setUser,
         loadingUser,
         logoutUser,
+        checkUserProfile,
         setShowLoginModal
       }}
     >
