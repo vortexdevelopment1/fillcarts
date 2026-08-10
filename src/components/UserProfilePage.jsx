@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User, ShoppingBag, MapPin, Gift, ShieldAlert,
-  ArrowLeft, Edit3, Trash2, Plus, Check, Loader2, Sparkles, AlertCircle, Eye, Repeat, PlayCircle, PauseCircle, LifeBuoy
+  ArrowLeft, Edit3, Trash2, Plus, Check, Loader2, Sparkles, AlertCircle, Eye, Repeat, PlayCircle, PauseCircle, LifeBuoy, ExternalLink
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import Navbar from "./Navbar";
@@ -242,12 +242,59 @@ export default function UserProfilePage() {
 
   const fetchSubscriptions = async () => {
     setIsLoadingSubscriptions(true);
+    let combinedSubscriptions = [];
+
+    // 1. Fetch from LocalStorage (Fillcarts Subscription Page Storage)
+    try {
+      const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+      if (storedLocal) {
+        const parsed = JSON.parse(storedLocal);
+        if (Array.isArray(parsed)) {
+          combinedSubscriptions = parsed.map((item) => ({
+            id: item.orderId,
+            orderId: item.orderId,
+            plan_name: item.name,
+            frequency: item.frequency || "Daily",
+            timeSlot: item.timeSlot || "6:30 AM - 7:30 AM",
+            price: item.total,
+            unit: `/${(item.frequency || "Daily").toLowerCase()}`,
+            next_delivery: item.nextDate || "Tomorrow 7:00 AM",
+            status: item.status?.includes("Active") || item.status === "Active" ? "Active" : "Paused",
+            rawStatus: item.status || "Active Schedule",
+            items: item.items || [],
+            created_at: item.orderDate || new Date().toISOString(),
+            isLocalCard: true,
+          }));
+        }
+      }
+    } catch (e) {
+      console.warn("LocalStorage subscription parse warning:", e);
+    }
+
+    // 2. Fetch from Backend API
     try {
       const res = await api.get("/subscriptions");
-      setSubscriptions(res.data.subscriptions || []);
+      const apiSubs = (res.data.subscriptions || []).map((sub) => ({
+        id: sub.id,
+        orderId: `SUB-ORD-${sub.id}`,
+        plan_name: sub.plan_name,
+        frequency: sub.plan_key?.includes("daily") ? "Daily" : "Weekly",
+        timeSlot: "6:30 AM - 7:30 AM",
+        price: sub.price,
+        unit: sub.unit || "/month",
+        next_delivery: sub.next_delivery || "Tomorrow",
+        status: sub.status || "Active",
+        rawStatus: sub.status || "Active",
+        items: [],
+        created_at: sub.created_at || new Date().toISOString(),
+        isLocalCard: false,
+      }));
+
+      combinedSubscriptions = [...combinedSubscriptions, ...apiSubs];
     } catch (err) {
-      console.error(err);
+      console.warn("Backend subscriptions warning:", err?.message);
     } finally {
+      setSubscriptions(combinedSubscriptions);
       setIsLoadingSubscriptions(false);
     }
   };
@@ -289,6 +336,31 @@ export default function UserProfilePage() {
 
   const handleToggleSubscriptionStatus = async (sub) => {
     const nextStatus = sub.status === "Active" ? "Paused" : "Active";
+
+    if (sub.isLocalCard) {
+      try {
+        const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+        if (storedLocal) {
+          const parsed = JSON.parse(storedLocal);
+          const updated = parsed.map((item) => {
+            if (item.orderId === sub.orderId) {
+              return {
+                ...item,
+                status: nextStatus === "Active" ? "Active Schedule" : "Paused by User",
+              };
+            }
+            return item;
+          });
+          localStorage.setItem("fillcarts_subscription_orders", JSON.stringify(updated));
+        }
+        showMessage(`Subscription ${nextStatus === "Active" ? "resumed" : "paused"} successfully!`);
+        fetchSubscriptions();
+        return;
+      } catch (e) {
+        console.error("Local toggle error:", e);
+      }
+    }
+
     try {
       await api.put(`/subscriptions/${sub.id}/status`, { status: nextStatus });
       showMessage(`Subscription ${nextStatus === "Active" ? "resumed" : "paused"} successfully!`);
@@ -299,10 +371,27 @@ export default function UserProfilePage() {
     }
   };
 
-  const handleCancelSubscription = async (id) => {
+  const handleCancelSubscription = async (sub) => {
     if (!window.confirm("Are you sure you want to cancel this subscription?")) return;
+
+    if (sub.isLocalCard) {
+      try {
+        const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+        if (storedLocal) {
+          const parsed = JSON.parse(storedLocal);
+          const filtered = parsed.filter((item) => item.orderId !== sub.orderId);
+          localStorage.setItem("fillcarts_subscription_orders", JSON.stringify(filtered));
+        }
+        showMessage("Subscription cancelled successfully.");
+        fetchSubscriptions();
+        return;
+      } catch (e) {
+        console.error("Local cancel error:", e);
+      }
+    }
+
     try {
-      await api.delete(`/subscriptions/${id}`);
+      await api.delete(`/subscriptions/${sub.id}`);
       showMessage("Subscription cancelled successfully.");
       fetchSubscriptions();
     } catch (err) {
@@ -871,91 +960,144 @@ export default function UserProfilePage() {
             {/* TAB 4: MY SUBSCRIPTIONS */}
             {currentTab === "subscriptions" && (
               <div>
-                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>My Subscriptions</h1>
-                <p className="text-xs text-slate-400 font-semibold mb-6">Manage your auto-delivery subscription routines or activate new subscription plans.</p>
-
-                {/* Subscriptions Catalog List */}
-                <h3 className="font-extrabold text-sm text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center gap-1.5">
-                  <Sparkles size={14} className="text-blue-600 animate-pulse" /> Available Subscription Plans
-                </h3>
-
-                <div className="grid sm:grid-cols-3 gap-4 mb-8">
-                  {[
-                    { key: "daily-milk", name: "Daily Milk & Dairy", desc: "Fresh milk, curd & paneer delivered daily.", price: 45, unit: "/day" },
-                    { key: "grocery-essentials", name: "Weekly Grocery Essentials", desc: "Your custom weekly grocery list items.", price: 599, unit: "/week" },
-                    { key: "custom-plan", name: "Custom Essentials Plan", desc: "Subscribe to custom picked staples.", price: 199, unit: "/week" }
-                  ].map((plan) => (
-                    <div key={plan.key} className="border border-slate-200 rounded-2xl p-4 flex flex-col justify-between hover:shadow-md transition-shadow bg-slate-50/50">
-                      <div>
-                        <h4 className="text-xs font-bold text-slate-800" style={{ fontFamily: "'Fraunces', serif" }}>{plan.name}</h4>
-                        <p className="text-[10px] text-slate-400 mt-1 font-semibold leading-relaxed">{plan.desc}</p>
-                      </div>
-                      <div className="mt-3.5 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                        <span className="text-xs font-extrabold text-slate-900">₹{plan.price}{plan.unit}</span>
-                        <button
-                          onClick={() => handleCreateSubscription(plan)}
-                          disabled={isSubmittingSubscription}
-                          className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-3 py-1.5 rounded-lg text-[10px] transition-colors cursor-pointer"
-                        >
-                          Subscribe
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Fraunces', serif" }}>My Subscriptions</h1>
+                    <p className="text-xs text-slate-400 font-semibold">Track auto-deliveries, modify frequencies, and manage subscription cards.</p>
+                  </div>
+                  <Link
+                    to="/subscriptions"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2.5 rounded-full text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+                  >
+                    <span>Build & Track Subscriptions</span>
+                    <ArrowLeft size={14} className="rotate-180" />
+                  </Link>
                 </div>
 
-                {/* Active Subscriptions List */}
-                <h3 className="font-extrabold text-sm text-slate-800 mb-4 border-b border-slate-100 pb-2">Active Subscriptions</h3>
+                {/* Subscription Builder Link Banner */}
+                <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-2xl p-5 mb-6 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 bg-blue-500/30 text-blue-200 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2 border border-blue-400/30">
+                      <Sparkles size={12} className="text-amber-300 animate-pulse" /> Live Tracking & Builder Page
+                    </div>
+                    <h3 className="text-base font-extrabold text-white leading-tight">
+                      Want to build custom subscription routines or track deliveries live?
+                    </h3>
+                    <p className="text-xs text-slate-300 font-medium mt-1">
+                      Customize daily milk, fresh fruits, vegetables, and pantry baskets on our dedicated Subscriptions Tracking Dashboard.
+                    </p>
+                  </div>
+                  <Link
+                    to="/subscriptions"
+                    className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-4 py-2.5 rounded-xl text-xs whitespace-nowrap transition-colors shadow-sm shrink-0 cursor-pointer"
+                  >
+                    Open Subscriptions Dashboard ➔
+                  </Link>
+                </div>
+
+                {/* Subscriptions List */}
+                <h3 className="font-extrabold text-sm text-slate-800 mb-4 border-b border-slate-100 pb-2 flex items-center justify-between">
+                  <span>Active & Tracked Subscription Cards ({subscriptions.length})</span>
+                  <span className="text-xs text-slate-400 font-semibold">Real-time synced</span>
+                </h3>
+
                 {isLoadingSubscriptions ? (
-                  <div className="py-6 flex justify-center">
-                    <Loader2 size={20} className="animate-spin text-blue-600" />
+                  <div className="py-8 flex justify-center">
+                    <Loader2 size={24} className="animate-spin text-blue-600" />
                   </div>
                 ) : subscriptions.length === 0 ? (
-                  <div className="text-center py-8 bg-slate-50 border border-slate-100 rounded-2xl">
-                    <p className="text-xs text-slate-400 font-bold">No active subscriptions yet.</p>
-                    <p className="text-[10px] text-slate-400 mt-0.5">Pick a plan above to never run out of daily essentials!</p>
+                  <div className="text-center py-10 bg-slate-50 border border-slate-200 rounded-2xl p-6">
+                    <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                      <Repeat size={24} />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-800">No active subscriptions found</h4>
+                    <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto font-medium">
+                      Create your first automated subscription card to get fresh milk, vegetables, or pantry staples delivered automatically.
+                    </p>
+                    <Link
+                      to="/subscriptions"
+                      className="mt-4 inline-block bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-5 py-2.5 rounded-full text-xs transition-colors shadow-sm cursor-pointer"
+                    >
+                      Build Subscription Card ➔
+                    </Link>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {subscriptions.map((sub) => (
-                      <div key={sub.id} className="border border-slate-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 shadow-sm bg-white animate-[scaleUp_0.2s_ease-out]">
-                        <div className="flex items-start gap-3">
-                          <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 border border-blue-100">
-                            <Repeat size={18} />
+                      <div key={sub.id} className="border border-slate-200 rounded-2xl p-5 shadow-sm bg-white hover:border-slate-300 transition-all animate-[scaleUp_0.2s_ease-out]">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+                          <div className="flex items-center gap-2.5">
+                            <div className="w-9 h-9 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0 border border-blue-100">
+                              <Repeat size={18} />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <h4 className="text-sm font-extrabold text-slate-900">{sub.plan_name}</h4>
+                                <span className="text-[9px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                  {sub.orderId}
+                                </span>
+                              </div>
+                              <span className="text-[11px] text-slate-500 font-semibold block mt-0.5">
+                                Frequency: <strong className="text-slate-800 font-bold">{sub.frequency}</strong> ({sub.timeSlot})
+                              </span>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="text-xs font-bold text-slate-900">{sub.plan_name}</h4>
-                            <span className="text-[10px] text-slate-400 font-bold block mt-0.5">
-                              Cost: ₹{sub.price}{sub.unit} · Next Delivery: <strong className="text-slate-600 font-extrabold">{sub.next_delivery}</strong>
+
+                          <div className="flex items-center gap-2 self-start sm:self-auto">
+                            <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${
+                              sub.status === "Active"
+                                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                                : "bg-amber-100 text-amber-800 border border-amber-200"
+                            }`}>
+                              ● {sub.rawStatus || sub.status}
                             </span>
-                            <span className="text-[9px] text-slate-400 font-semibold block">Activated: {new Date(sub.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-2 border-t sm:border-t-0 pt-3 sm:pt-0 shrink-0">
-                          <span className={`text-[10px] font-black px-2 py-0.5 rounded-full mr-2 uppercase ${sub.status === "Active"
-                              ? "bg-emerald-100 text-emerald-800"
-                              : "bg-amber-100 text-amber-800"
-                            }`}>
-                            {sub.status}
-                          </span>
+                        {/* Items preview if available */}
+                        {sub.items && sub.items.length > 0 && (
+                          <div className="py-2.5 flex flex-wrap gap-1.5 border-b border-slate-100">
+                            {sub.items.map((item, idx) => (
+                              <span key={idx} className="bg-slate-50 text-slate-700 border border-slate-200 text-[10px] font-bold px-2.5 py-1 rounded-lg">
+                                {item.name} {item.qty ? `(x${item.qty})` : ''}
+                              </span>
+                            ))}
+                          </div>
+                        )}
 
-                          <button
-                            onClick={() => handleToggleSubscriptionStatus(sub)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors cursor-pointer border ${sub.status === "Active"
-                                ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                                : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                        <div className="pt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                          <div className="text-slate-600 font-medium">
+                            <span>Next Scheduled Delivery: </span>
+                            <strong className="text-blue-600 font-extrabold">{sub.next_delivery}</strong>
+                            <span className="text-slate-400 font-bold ml-2">· ₹{sub.price}{sub.unit}</span>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Link
+                              to="/subscriptions"
+                              className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-3 py-1.5 rounded-lg text-[11px] transition-colors inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              <ExternalLink size={12} /> Track on Subscription Page
+                            </Link>
+
+                            <button
+                              onClick={() => handleToggleSubscriptionStatus(sub)}
+                              className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${
+                                sub.status === "Active"
+                                  ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                                  : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                               }`}
-                          >
-                            {sub.status === "Active" ? "Pause" : "Resume"}
-                          </button>
+                            >
+                              {sub.status === "Active" ? "Pause" : "Resume"}
+                            </button>
 
-                          <button
-                            onClick={() => handleCancelSubscription(sub.id)}
-                            className="bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-3 py-1.5 rounded-lg text-[10px] font-bold transition-colors cursor-pointer"
-                          >
-                            Cancel
-                          </button>
+                            <button
+                              onClick={() => handleCancelSubscription(sub)}
+                              className="bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer"
+                            >
+                              Cancel
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))}
