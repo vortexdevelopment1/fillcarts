@@ -1,14 +1,16 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   ChevronRight, Repeat, Clock, Milk, ShoppingBasket,
   Sparkles, Star, Plus, Trash2,
   X, Search, SlidersHorizontal, ShieldCheck, Download, Smartphone, QrCode,
   ArrowRight, Carrot, Apple, Croissant, Pill, UtensilsCrossed, Home, FileText, CheckCircle2, Info,
-  Filter, Calendar, MapPin, ExternalLink
+  Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle
 } from "lucide-react";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
+import { useCart } from "../context/CartContext";
+import api from "../api";
 
 // Sourced directly from CategoriesPage for 100% category consistency
 const categories = [
@@ -46,8 +48,8 @@ function genProducts(catKey) {
   }));
 }
 
-// Order Records Dataset for Tracking User Subscription Orders
-const initialSubscriptionOrders = [
+// Default Seed Subscription Orders if localStorage is empty
+const initialSeedOrders = [
   {
     orderId: "SUB-ORD-9021",
     name: "Daily Fresh Dairy Routine",
@@ -61,7 +63,7 @@ const initialSubscriptionOrders = [
     nextDate: "Tomorrow (7:00 AM Slot)",
     orderDate: "Created on 6 Aug 2026",
     address: "Flat 402, Green Valley Apartments, Bengaluru",
-    total: 150
+    total: 135
   },
   {
     orderId: "SUB-ORD-4410",
@@ -72,15 +74,18 @@ const initialSubscriptionOrders = [
     ],
     frequency: "Weekly (Sundays)",
     timeSlot: "8:00 AM - 9:00 AM",
-    status: "Active Schedule",
+    status: "App Setup Pending",
     nextDate: "Sunday (8:30 AM Slot)",
     orderDate: "Created on 4 Aug 2026",
     address: "Flat 402, Green Valley Apartments, Bengaluru",
-    total: 309
+    total: 278
   }
 ];
 
+const STORAGE_KEY = "fillcarts_subscription_orders";
+
 export default function SubscriptionPage() {
+  const { user } = useCart();
   const [activeCategory, setActiveCategory] = useState("dairy");
   const [basket, setBasket] = useState([
     { id: "dairy-0", name: "Toned Milk 1L", qty: 1, price: 54 }
@@ -88,12 +93,81 @@ export default function SubscriptionPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [frequency, setFrequency] = useState("Daily");
   const [timeSlot, setTimeSlot] = useState("6:30 AM - 7:30 AM");
+  const [customCardTitle, setCustomCardTitle] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [userAddress, setUserAddress] = useState("Flat 402, Green Valley Apartments, Bengaluru");
   
   // Modals & Navigation state
   const [showAppInstallModal, setShowAppInstallModal] = useState(false);
+  const [selectedCardForAppInstall, setSelectedCardForAppInstall] = useState(null);
   const [viewTab, setViewTab] = useState("create"); // create | my_subscriptions
-  const [orderFilter, setOrderFilter] = useState("All");
-  const [myOrders, setMyOrders] = useState(initialSubscriptionOrders);
+  const [orderFilter, setOrderFilter] = useState("All"); // All | Active Schedule | App Setup Pending | Paused
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+
+  // Dynamically fetch logged-in user profile address and saved addresses
+  useEffect(() => {
+    const fetchUserAddresses = async () => {
+      if (user) {
+        let addrStr = "";
+        if (user.address) {
+          addrStr = user.address;
+          if (user.pincode) addrStr += `, Pincode: ${user.pincode}`;
+        }
+        if (addrStr) {
+          setUserAddress(addrStr);
+        }
+
+        try {
+          const res = await api.get("/addresses");
+          if (res.data && res.data.addresses && res.data.addresses.length > 0) {
+            setSavedAddresses(res.data.addresses);
+            const first = res.data.addresses[0];
+            const firstStr = `[${first.type}] ${first.address_line}${first.pincode ? `, Pincode: ${first.pincode}` : ""}`;
+            if (!user.address) {
+              setUserAddress(firstStr);
+            }
+          }
+        } catch (e) {
+          console.error("Failed to fetch saved addresses", e);
+        }
+      } else {
+        const guestAddress = localStorage.getItem("fillcarts_user_address");
+        if (guestAddress) {
+          setUserAddress(guestAddress);
+        }
+      }
+    };
+
+    fetchUserAddresses();
+  }, [user]);
+
+  const handleAddressChange = (val) => {
+    setUserAddress(val);
+    localStorage.setItem("fillcarts_user_address", val);
+  };
+
+  // Persistent Orders State
+  const [myOrders, setMyOrders] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.error("Failed to read subscription orders from localStorage", e);
+    }
+    return initialSeedOrders;
+  });
+
+  // Save to LocalStorage whenever myOrders changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(myOrders));
+    } catch (e) {
+      console.error("Failed to save subscription orders to localStorage", e);
+    }
+  }, [myOrders]);
 
   // Products generated for the active category
   const activeCategoryProducts = useMemo(() => {
@@ -109,7 +183,7 @@ export default function SubscriptionPage() {
     return basket.reduce((sum, item) => sum + item.price * item.qty, 0);
   }, [basket]);
 
-  // Add / Remove Basket Items
+  // Add / Remove / Update Basket Items
   const updateQty = (product, delta) => {
     setBasket(prev => {
       const existing = prev.find(i => i.id === product.id);
@@ -124,14 +198,97 @@ export default function SubscriptionPage() {
     });
   };
 
-  // Trigger Checkout -> Direct Mobile App Install Modal
-  const handleProceedToCheckout = () => {
+  // Dynamically Create a Subscription Order Card
+  const handleCreateSubscriptionCard = () => {
     if (basket.length === 0) {
-      alert("Please add at least 1 item to your subscription basket.");
+      alert("Please add at least 1 item to your subscription card.");
       return;
     }
+
+    const calculatedTotal = Math.round(basketTotal * 0.9);
+    const newOrderId = `SUB-ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+    const categoryName = categories.find(c => c.key === activeCategory)?.name || "Essentials";
+    const defaultTitle = customCardTitle.trim() || `${basket[0]?.name || categoryName} Subscription Card`;
+
+    const todayStr = new Date().toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+
+    const newOrderCard = {
+      orderId: newOrderId,
+      name: defaultTitle,
+      items: basket.map(b => ({ name: b.name, qty: b.qty, price: b.price })),
+      frequency,
+      timeSlot,
+      status: "App Setup Pending",
+      nextDate: "Tomorrow (7:00 AM Slot)",
+      orderDate: `Created on ${todayStr}`,
+      address: userAddress,
+      total: calculatedTotal
+    };
+
+    // Prepend to myOrders list dynamically
+    setMyOrders(prev => [newOrderCard, ...prev]);
+
+    // Set selected card for app modal & open modal
+    setSelectedCardForAppInstall(newOrderCard);
+    setShowAppInstallModal(true);
+
+    // Switch to order tracking view tab
+    setViewTab("my_subscriptions");
+  };
+
+  // Trigger Mobile App Purchase Modal for an existing Card
+  const handleSelectCardForApp = (orderCard) => {
+    setSelectedCardForAppInstall(orderCard);
     setShowAppInstallModal(true);
   };
+
+  // Toggle Subscription Status (Pause / Activate)
+  const handleToggleStatus = (orderId) => {
+    setMyOrders(prev => prev.map(ord => {
+      if (ord.orderId === orderId) {
+        let newStatus = "Active Schedule";
+        if (ord.status === "Active Schedule") newStatus = "Paused";
+        else if (ord.status === "Paused") newStatus = "Active Schedule";
+        else if (ord.status === "App Setup Pending") newStatus = "Active Schedule";
+        return { ...ord, status: newStatus };
+      }
+      return ord;
+    }));
+  };
+
+  // Delete / Cancel Subscription Card
+  const handleDeleteCard = (orderId) => {
+    if (window.confirm("Are you sure you want to cancel and remove this subscription card from tracking?")) {
+      setMyOrders(prev => prev.filter(ord => ord.orderId !== orderId));
+    }
+  };
+
+  // Filtered & Searched Orders for Tracking Tab
+  const filteredOrders = useMemo(() => {
+    return myOrders.filter(ord => {
+      // Filter by status
+      if (orderFilter !== "All" && ord.status !== orderFilter) return false;
+
+      // Filter by search query
+      if (orderSearchQuery.trim()) {
+        const q = orderSearchQuery.toLowerCase();
+        const matchesId = ord.orderId.toLowerCase().includes(q);
+        const matchesName = ord.name.toLowerCase().includes(q);
+        const matchesItem = ord.items.some(i => i.name.toLowerCase().includes(q));
+        return matchesId || matchesName || matchesItem;
+      }
+      return true;
+    });
+  }, [myOrders, orderFilter, orderSearchQuery]);
+
+  // Metrics
+  const activeCount = useMemo(() => myOrders.filter(o => o.status === "Active Schedule").length, [myOrders]);
+  const pendingCount = useMemo(() => myOrders.filter(o => o.status === "App Setup Pending").length, [myOrders]);
+  const totalWeeklySpend = useMemo(() => myOrders.reduce((sum, o) => sum + o.total, 0), [myOrders]);
 
   return (
     <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
@@ -168,7 +325,7 @@ export default function SubscriptionPage() {
               Subscribe & Save on Essentials
             </h1>
             <p className="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
-              Select items directly from store categories, track your active subscription order records, and manage all plan modifications seamlessly on our Mobile App.
+              Add store items dynamically to your card, select your custom schedule, track your subscription orders in real-time, and complete your purchase via the FillCarts App!
             </p>
           </div>
 
@@ -180,7 +337,7 @@ export default function SubscriptionPage() {
                 viewTab === "create" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
               }`}
             >
-              <Plus size={14} /> Build Subscription
+              <Plus size={14} /> Build Subscription Card
             </button>
             <button
               onClick={() => setViewTab("my_subscriptions")}
@@ -188,7 +345,7 @@ export default function SubscriptionPage() {
                 viewTab === "my_subscriptions" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
               }`}
             >
-              <FileText size={14} /> Order Tracking & Records ({myOrders.length})
+              <FileText size={14} /> Dynamic Order Tracking ({myOrders.length})
             </button>
           </div>
         </div>
@@ -197,40 +354,70 @@ export default function SubscriptionPage() {
       {/* Main Body */}
       <main className="max-w-7xl mx-auto px-6 py-8">
 
-        {/* TAB 1: BUILD SUBSCRIPTION (Sourced from CategoriesPage) */}
+        {/* TAB 1: BUILD SUBSCRIPTION CARD */}
         {viewTab === "create" && (
-          <div className="grid lg:grid-cols-[360px_1fr] gap-8 items-start">
+          <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
             
-            {/* Left Column: Sticky Subscription Summary & Checkout Panel */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-lg sticky top-6 space-y-6">
+            {/* Left Column: Sticky Subscription Summary & Card Checkout Panel */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-lg sticky top-6 space-y-5">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
                   <ShoppingBasket size={18} className="text-blue-600" />
-                  <h3 className="text-base font-bold text-slate-900">Subscription Basket</h3>
+                  <h3 className="text-base font-bold text-slate-900">Subscription Card</h3>
                 </div>
                 <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
                   {basket.reduce((sum, i) => sum + i.qty, 0)} Items
                 </span>
               </div>
 
+              {/* Title Input */}
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                  Card Name (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Daily Milk & Breakfast Routine"
+                  value={customCardTitle}
+                  onChange={(e) => setCustomCardTitle(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500"
+                />
+              </div>
+
               {/* Basket Items List */}
-              <div className="space-y-3 max-h-56 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                 {basket.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-slate-400">
-                    No items selected yet. Choose products from category grid.
+                  <div className="text-center py-8 text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                    No items selected yet. Select products from category grid.
                   </div>
                 ) : (
                   basket.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl text-xs font-semibold">
+                    <div key={item.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl text-xs font-semibold border border-slate-100">
                       <div>
                         <div className="font-bold text-slate-900">{item.name}</div>
                         <div className="text-[11px] text-slate-500 font-mono">₹{item.price} × {item.qty}</div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="font-bold text-blue-600 font-mono">₹{item.price * item.qty}</span>
+                        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
+                          <button
+                            onClick={() => updateQty({ id: item.id }, -1)}
+                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs"
+                          >
+                            -
+                          </button>
+                          <span className="font-mono text-xs px-1 font-bold">{item.qty}</span>
+                          <button
+                            onClick={() => updateQty({ id: item.id }, 1)}
+                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs"
+                          >
+                            +
+                          </button>
+                        </div>
+                        <span className="font-bold text-blue-600 font-mono w-12 text-right">₹{item.price * item.qty}</span>
                         <button
                           onClick={() => updateQty({ id: item.id }, -item.qty)}
                           className="text-slate-400 hover:text-red-600 p-1"
+                          title="Remove item"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -240,10 +427,10 @@ export default function SubscriptionPage() {
                 )}
               </div>
 
-              {/* Schedule Configuration */}
-              <div className="space-y-4 pt-4 border-t border-slate-100 text-xs">
+              {/* Schedule & Address Configuration */}
+              <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Delivery Frequency</label>
+                  <label className="block font-bold text-slate-700 mb-1">Delivery Frequency</label>
                   <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
@@ -257,7 +444,7 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1.5">Guaranteed Slot</label>
+                  <label className="block font-bold text-slate-700 mb-1">Guaranteed Slot</label>
                   <select
                     value={timeSlot}
                     onChange={(e) => setTimeSlot(e.target.value)}
@@ -268,12 +455,56 @@ export default function SubscriptionPage() {
                     <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
                   </select>
                 </div>
+
+                {/* Delivery Address Section (Fetched dynamically from Account) */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="font-bold text-slate-700 flex items-center gap-1">
+                      <MapPin size={13} className="text-blue-600" /> Delivery Address
+                    </label>
+                    {user && (
+                      <span className="text-[10px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
+                        ✓ Fetched from Account
+                      </span>
+                    )}
+                  </div>
+
+                  {savedAddresses.length > 0 && (
+                    <select
+                      onChange={(e) => handleAddressChange(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-xs mb-2 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Choose Saved Location --</option>
+                      {user && user.address && (
+                        <option value={`${user.address}${user.pincode ? `, Pincode: ${user.pincode}` : ""}`}>
+                          [Profile] {user.address}
+                        </option>
+                      )}
+                      {savedAddresses.map((addr) => {
+                        const fullStr = `[${addr.type}] ${addr.address_line}${addr.pincode ? `, Pincode: ${addr.pincode}` : ""}`;
+                        return (
+                          <option key={addr.id} value={fullStr}>
+                            [{addr.type}] {addr.address_line.slice(0, 35)}...
+                          </option>
+                        );
+                      })}
+                    </select>
+                  )}
+
+                  <input
+                    type="text"
+                    value={userAddress}
+                    onChange={(e) => handleAddressChange(e.target.value)}
+                    placeholder="Doorstep delivery address..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500"
+                  />
+                </div>
               </div>
 
               {/* Basket Total Breakdown */}
               <div className="bg-slate-900 text-white p-4 rounded-2xl space-y-2">
                 <div className="flex justify-between text-xs text-slate-300">
-                  <span>Recurring Total / Cycle</span>
+                  <span>Recurring Item Total</span>
                   <span className="font-mono font-bold text-white">₹{basketTotal}</span>
                 </div>
                 <div className="flex justify-between text-[11px] text-teal-400 font-bold">
@@ -281,29 +512,29 @@ export default function SubscriptionPage() {
                   <span>-10% Applied</span>
                 </div>
                 <div className="pt-2 border-t border-slate-800 flex justify-between text-sm font-extrabold text-teal-300">
-                  <span>Estimated Total</span>
+                  <span>Estimated Total / Cycle</span>
                   <span className="font-mono">₹{Math.round(basketTotal * 0.9)}</span>
                 </div>
               </div>
 
-              {/* CHECKOUT ACTION -> DIRECT APP INSTALL MODAL */}
+              {/* DYNAMIC CARD CHECKOUT ACTION */}
               <button
-                onClick={handleProceedToCheckout}
+                onClick={handleCreateSubscriptionCard}
                 disabled={basket.length === 0}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold text-xs rounded-full py-3.5 shadow-lg transition-all flex items-center justify-center gap-2"
+                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold text-xs rounded-full py-3.5 shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Proceed to Checkout <ArrowRight size={15} />
+                Confirm Subscription Card <ArrowRight size={15} />
               </button>
 
-              <div className="text-[11px] text-slate-400 text-center font-medium">
-                🔒 Subscription setup requires mobile app installation for 1-tap AutoPay authorization.
+              <div className="text-[11px] text-slate-400 text-center font-medium leading-tight">
+                🔒 Card will be added to <strong>Order Tracking</strong>. Download the mobile app to activate 1-tap AutoPay.
               </div>
             </div>
 
             {/* Right Column: Categories Selector & Product Grid */}
             <div className="space-y-6">
               
-              {/* Category Chips Bar (Flex-wrap to prevent right-edge clipping) */}
+              {/* Category Chips Bar */}
               <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
                 <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
                   <SlidersHorizontal size={14} /> Select Store Category
@@ -316,7 +547,7 @@ export default function SubscriptionPage() {
                       <button
                         key={c.key}
                         onClick={() => setActiveCategory(c.key)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all border ${
+                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer ${
                           isActive
                             ? "bg-slate-900 text-white border-slate-900 shadow-md"
                             : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
@@ -335,7 +566,7 @@ export default function SubscriptionPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
                     <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2" style={{ fontFamily: "'Fraunces', serif" }}>
-                      <span>Select Products for Subscription</span>
+                      <span>Select Products for Subscription Card</span>
                     </h2>
                     <p className="text-xs text-slate-500 mt-0.5">Showing fresh items in <strong>{categories.find(c => c.key === activeCategory)?.name}</strong></p>
                   </div>
@@ -385,22 +616,22 @@ export default function SubscriptionPage() {
                         {qty === 0 ? (
                           <button
                             onClick={() => updateQty(p, 1)}
-                            className="w-full bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 font-bold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1"
+                            className="w-full bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 font-bold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
-                            <Plus size={14} /> Add to Subscription
+                            <Plus size={14} /> Add to Card
                           </button>
                         ) : (
                           <div className="flex items-center justify-between bg-blue-600 text-white rounded-xl p-1 shadow-sm">
                             <button
                               onClick={() => updateQty(p, -1)}
-                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs"
+                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               -
                             </button>
                             <span className="font-mono font-bold text-xs px-2">{qty}</span>
                             <button
                               onClick={() => updateQty(p, 1)}
-                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs"
+                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               +
                             </button>
@@ -415,58 +646,95 @@ export default function SubscriptionPage() {
           </div>
         )}
 
-        {/* TAB 2: DEDICATED ORDER TRACKING & SUBSCRIPTION RECORDS DASHBOARD */}
+        {/* TAB 2: DYNAMIC ORDER TRACKING & SUBSCRIPTION RECORDS DASHBOARD */}
         {viewTab === "my_subscriptions" && (
-          <div className="max-w-5xl mx-auto space-y-8 animate-fade-in">
+          <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
             
             {/* Header Metrics Bar */}
             <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white rounded-3xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] font-mono font-bold text-blue-300 uppercase tracking-widest block mb-1">
-                  Customer Records Hub
+                  Real-time Subscriptions Dashboard
                 </span>
                 <h2 className="text-2xl font-extrabold" style={{ fontFamily: "'Fraunces', serif" }}>
-                  Subscription Orders & Delivery Tracking
+                  Subscription Order Cards & Delivery Tracking
                 </h2>
                 <p className="text-xs text-slate-300 mt-1 font-medium">
-                  Review your active subscription records and upcoming delivery schedules.
+                  Track your dynamic subscription cards, view product breakdowns, and download the app to purchase.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl">
                 <div className="text-center px-3 border-r border-slate-700">
-                  <div className="text-xl font-bold font-mono text-teal-400">{myOrders.length}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Active Orders</div>
+                  <div className="text-xl font-bold font-mono text-teal-400">{activeCount}</div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase">Active Cards</div>
+                </div>
+                <div className="text-center px-3 border-r border-slate-700">
+                  <div className="text-xl font-bold font-mono text-amber-400">{pendingCount}</div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase">Pending Setup</div>
                 </div>
                 <div className="text-center px-3">
-                  <div className="text-xl font-bold font-mono text-blue-400">₹459</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Est. Weekly</div>
+                  <div className="text-xl font-bold font-mono text-blue-400">₹{totalWeeklySpend}</div>
+                  <div className="text-[10px] text-slate-400 font-bold uppercase">Est. Total</div>
                 </div>
               </div>
             </div>
 
-            {/* Subscriptions Order List */}
+            {/* Filter & Search Bar */}
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+              {/* Status Filter Buttons */}
+              <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
+                <span className="text-xs font-bold text-slate-400 mr-1 uppercase text-[10px]">Filter:</span>
+                {["All", "Active Schedule", "App Setup Pending", "Paused"].map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setOrderFilter(st)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap cursor-pointer ${
+                      orderFilter === st
+                        ? "bg-slate-900 text-white border-slate-900"
+                        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
+
+              {/* Order Search Input */}
+              <div className="relative w-full sm:w-64">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+                <input
+                  type="text"
+                  placeholder="Search tracking cards or items..."
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  className="bg-slate-50 border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full focus:outline-none focus:border-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Subscriptions Order Cards List */}
             <div className="space-y-6">
-              {myOrders.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto">
+              {filteredOrders.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto shadow-sm">
                   <FileText size={36} className="text-slate-300 mx-auto mb-3" />
-                  <h3 className="text-base font-bold text-slate-900">No active subscription records found</h3>
-                  <p className="text-xs text-slate-500 mb-6">Subscribe to fresh morning milk, eggs, bread or vegetables to start tracking your orders.</p>
+                  <h3 className="text-base font-bold text-slate-900">No matching subscription cards found</h3>
+                  <p className="text-xs text-slate-500 mb-6">Build a new subscription card or adjust your filter options.</p>
                   <button
                     onClick={() => setViewTab("create")}
-                    className="bg-blue-600 text-white font-bold text-xs px-6 py-3 rounded-full shadow-md"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
                   >
-                    Build First Subscription
+                    Build First Subscription Card
                   </button>
                 </div>
               ) : (
-                myOrders.map((ord) => (
+                filteredOrders.map((ord) => (
                   <div key={ord.orderId} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-5 relative overflow-hidden">
                     
-                    {/* Header: Order ID & Status */}
+                    {/* Header: Order ID, Status & Quick Controls */}
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                        <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
                           <Repeat size={20} />
                         </div>
                         <div>
@@ -480,9 +748,42 @@ export default function SubscriptionPage() {
                         </div>
                       </div>
 
-                      <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-2xs">
-                        <CheckCircle2 size={14} /> {ord.status}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {/* Status Badge */}
+                        {ord.status === "Active Schedule" && (
+                          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                            <CheckCircle2 size={14} /> Active Schedule
+                          </span>
+                        )}
+                        {ord.status === "App Setup Pending" && (
+                          <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                            <AlertCircle size={14} /> App Download Needed
+                          </span>
+                        )}
+                        {ord.status === "Paused" && (
+                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                            <PauseCircle size={14} /> Paused
+                          </span>
+                        )}
+
+                        {/* Status Toggle Button */}
+                        <button
+                          onClick={() => handleToggleStatus(ord.orderId)}
+                          className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                          title="Toggle Status"
+                        >
+                          {ord.status === "Active Schedule" ? "Pause" : "Activate"}
+                        </button>
+
+                        {/* Delete Button */}
+                        <button
+                          onClick={() => handleDeleteCard(ord.orderId)}
+                          className="text-slate-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-colors cursor-pointer"
+                          title="Delete Card"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
                     </div>
 
                     {/* Order Breakdown Grid */}
@@ -490,7 +791,7 @@ export default function SubscriptionPage() {
                       {/* Products List */}
                       <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
                         <div className="font-bold text-slate-400 uppercase text-[10px] flex items-center gap-1 mb-2">
-                          <ShoppingBasket size={13} /> Subscribed Products:
+                          <ShoppingBasket size={13} /> Subscribed Products ({ord.items.length}):
                         </div>
                         {ord.items.map((i, idx) => (
                           <div key={idx} className="flex justify-between font-semibold text-slate-800">
@@ -526,28 +827,28 @@ export default function SubscriptionPage() {
                             📍 {ord.address}
                           </div>
                           <div className="text-xs text-blue-600 font-bold">
-                            💳 UPI AutoPay Mandate Authorized
+                            💳 UPI AutoPay Mandate
                           </div>
                         </div>
 
                         <div className="text-[10px] text-slate-400 italic">
-                          Automatic door drop by 7:00 AM.
+                          Automatic doorstep drop by morning time slot.
                         </div>
                       </div>
                     </div>
 
-                    {/* Action Footer -> Redirect to App for Modifications */}
-                    <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-blue-50/50 p-3 rounded-2xl">
+                    {/* Action Footer -> Select Card for Subscription Purchase via Mobile App */}
+                    <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-blue-50/50 p-3.5 rounded-2xl">
                       <div className="text-blue-900 font-semibold text-xs flex items-center gap-1.5">
                         <Info size={15} className="text-blue-600 shrink-0" />
-                        <span>Skip delivery, pause schedule, or cancel order on <strong>FillCarts Mobile App</strong>.</span>
+                        <span>Select this subscription card to complete your purchase after app download.</span>
                       </div>
 
                       <button
-                        onClick={() => setShowAppInstallModal(true)}
-                        className="bg-slate-900 hover:bg-slate-950 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-1.5"
+                        onClick={() => handleSelectCardForApp(ord)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 py-2.5 rounded-xl shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
                       >
-                        <Smartphone size={14} /> Open App to Manage Order <ArrowRight size={14} />
+                        <Smartphone size={14} /> Select Card to Purchase ({ord.orderId}) <ArrowRight size={14} />
                       </button>
                     </div>
 
@@ -559,14 +860,14 @@ export default function SubscriptionPage() {
         )}
       </main>
 
-      {/* DIRECT MOBILE APP INSTALLATION MODAL (TRIGGERED ON CHECKOUT OR ORDER MANAGEMENT) */}
+      {/* DYNAMIC MOBILE APP DOWNLOAD & PURCHASE MODAL */}
       {showAppInstallModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center relative shadow-2xl border border-slate-200 animate-scale-up space-y-6">
+          <div className="bg-white rounded-3xl p-8 max-w-lg w-full text-center relative shadow-2xl border border-slate-200 animate-scale-up space-y-5">
             
             <button
               onClick={() => setShowAppInstallModal(false)}
-              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100"
+              className="absolute top-4 right-4 p-2 rounded-full text-slate-400 hover:text-slate-900 hover:bg-slate-100 cursor-pointer"
             >
               <X size={20} />
             </button>
@@ -578,57 +879,65 @@ export default function SubscriptionPage() {
 
             <div>
               <span className="text-[11px] font-extrabold uppercase tracking-widest text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
-                FillCarts Mobile App
+                FillCarts Mobile App Purchase
               </span>
               
               <h3 className="text-2xl font-bold text-slate-900 mt-3" style={{ fontFamily: "'Fraunces', serif" }}>
-                Manage Subscription on FillCarts App
+                Purchase Subscription via FillCarts App
               </h3>
               
               <p className="text-xs text-slate-600 font-medium leading-relaxed mt-2">
-                Order modification, skipping deliveries, pausing schedule, live tracking, or 1-tap AutoPay setup Mobile App par available hai. App install karke apni subscription easily manage karein!
+                Aapka subscription card successfully order tracking mein add ho gaya hai! FillCarts Mobile App download karke 1-tap AutoPay complete karein aur apni delivery start karein.
               </p>
             </div>
 
-            {/* Basket Summary inside Modal */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2">
-              <div className="flex justify-between text-slate-500 font-bold">
-                <span>Selected Basket Items:</span>
-                <span className="text-slate-900 font-mono">{basket.length} Products</span>
+            {/* Selected Card Summary inside Modal */}
+            {selectedCardForAppInstall && (
+              <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-left text-xs space-y-2">
+                <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                  <span className="font-bold text-slate-900">{selectedCardForAppInstall.name}</span>
+                  <span className="font-mono text-[10px] font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                    {selectedCardForAppInstall.orderId}
+                  </span>
+                </div>
+                <div className="flex justify-between text-slate-500 font-semibold">
+                  <span>Selected Products:</span>
+                  <span className="text-slate-900 font-bold">{selectedCardForAppInstall.items.length} Items</span>
+                </div>
+                <div className="flex justify-between text-slate-500 font-semibold">
+                  <span>Schedule & Slot:</span>
+                  <span className="text-blue-600 font-bold">{selectedCardForAppInstall.frequency} ({selectedCardForAppInstall.timeSlot})</span>
+                </div>
+                <div className="flex justify-between text-slate-900 font-extrabold text-sm pt-2 border-t border-slate-200">
+                  <span>Recurring Total:</span>
+                  <span className="text-blue-600 font-mono">₹{selectedCardForAppInstall.total} / Cycle</span>
+                </div>
               </div>
-              <div className="flex justify-between text-slate-500 font-bold">
-                <span>Schedule & Slot:</span>
-                <span className="text-blue-600">{frequency} ({timeSlot})</span>
-              </div>
-              <div className="flex justify-between text-slate-900 font-extrabold text-sm pt-2 border-t border-slate-200">
-                <span>Est. Amount per Cycle:</span>
-                <span className="text-blue-600 font-mono">₹{Math.round(basketTotal * 0.9)}</span>
-              </div>
-            </div>
+            )}
 
             {/* QR Code & Direct Install Buttons */}
-            <div className="pt-2 space-y-4">
+            <div className="pt-1 space-y-4">
               <div className="flex items-center justify-center gap-4">
-                <div className="w-28 h-28 bg-white p-2 rounded-2xl border border-slate-200 shadow-md flex items-center justify-center">
-                  <QrCode size={90} className="text-slate-900" />
+                <div className="w-24 h-24 bg-white p-2 rounded-2xl border border-slate-200 shadow-md flex items-center justify-center shrink-0">
+                  <QrCode size={80} className="text-slate-900" />
                 </div>
                 <div className="text-left text-xs space-y-1">
-                  <div className="font-extrabold text-slate-900">Scan QR Code</div>
-                  <div className="text-slate-500 text-[11px]">Point phone camera to install FillCarts App immediately.</div>
-                  <div className="text-teal-600 font-bold text-[11px]">✓ Instant Sync with Account</div>
+                  <div className="font-extrabold text-slate-900">Scan QR to Install</div>
+                  <div className="text-slate-500 text-[11px]">Point phone camera to install FillCarts App directly.</div>
+                  <div className="text-teal-600 font-bold text-[11px]">✓ Instant Sync with your Account</div>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3 pt-2">
                 <a
                   href="#download-playstore"
-                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   <Download size={15} /> Google Play
                 </a>
                 <a
                   href="#download-appstore"
-                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all"
+                  className="bg-slate-900 hover:bg-slate-950 text-white py-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                 >
                   <Smartphone size={15} /> App Store
                 </a>
@@ -636,7 +945,7 @@ export default function SubscriptionPage() {
             </div>
 
             <div className="text-[11px] text-slate-400 font-medium">
-              Your selected items will automatically sync when you log in to the App.
+              Your subscription card items will automatically sync when you log in to the FillCarts App.
             </div>
 
           </div>
@@ -648,3 +957,4 @@ export default function SubscriptionPage() {
     </div>
   );
 }
+
