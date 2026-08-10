@@ -8,6 +8,7 @@ import {
   ShieldCheck, Truck, Clock, Sparkles, MapPin, Store, Check, ThumbsUp, RefreshCw, AlertCircle
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { getProductImage } from "../utils/productImages";
 
 const productDatabase = [
   { id: "grocery-0", name: "Basmati Rice 5kg", category: "Grocery", brand: "India Gate", price: 299, mrp: 349, rating: "4.8", reviews: "1,840", img: "grocery-item-0", desc: "Premium long-grain aromatic Basmati rice, aged to perfection for non-sticky fluffy cooking." },
@@ -77,11 +78,12 @@ export default function ProductDetailPage() {
   const inCart = cart.find((item) => item.id === product.id);
 
   // Gallery thumbnails
+  const mainProductImg = getProductImage(product.name, product.category?.toLowerCase() || "grocery");
   const galleryImages = [
-    `https://picsum.photos/seed/${product.img}/600/600`,
-    `https://picsum.photos/seed/${product.img}-pack/600/600`,
-    `https://picsum.photos/seed/${product.img}-back/600/600`,
-    `https://picsum.photos/seed/${product.img}-detail/600/600`,
+    mainProductImg,
+    mainProductImg,
+    mainProductImg,
+    mainProductImg,
   ];
 
   // Related products
@@ -575,7 +577,7 @@ export default function ProductDetailPage() {
               >
                 <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden mb-3 relative">
                   <img
-                    src={`https://picsum.photos/seed/${rel.img}/300/300`}
+                    src={getProductImage(rel.name, rel.category?.toLowerCase() || "grocery")}
                     alt={rel.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />

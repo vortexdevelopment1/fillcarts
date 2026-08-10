@@ -8,6 +8,7 @@ import {
   ChevronDown, MapPin, ShoppingCart, User, ArrowUpDown, X
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { getProductImage } from "../utils/productImages";
 
 const categories = [
   { key: "grocery", name: "Grocery", icon: Carrot, color: "text-blue-600", bg: "bg-blue-50", count: 420 },
@@ -43,7 +44,7 @@ function genProducts(catKey) {
     price: 39 + ((i * 37) % 260),
     mrp: 39 + ((i * 37) % 260) + 20 + (i % 3) * 10,
     rating: (3.8 + ((i * 7) % 12) / 10).toFixed(1),
-    img: `${catKey}-item-${i}`,
+    img: getProductImage(name, catKey),
   }));
 }
 
@@ -176,7 +177,7 @@ export default function CategoriesPage() {
                   className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group block text-slate-900"
                 >
                   <div className="aspect-square bg-slate-100 relative overflow-hidden">
-                    <img src={`https://picsum.photos/seed/${p.img}/300/300`} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
+                    <img src={p.img && p.img.startsWith("http") ? p.img : getProductImage(p.name, active)} alt={p.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-xs">
                       View Details →
                     </span>

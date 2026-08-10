@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import { getProductImage } from "../utils/productImages";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
 import api from "../api";
@@ -276,7 +277,7 @@ export default function CartPage() {
                     <div key={item.id} className="py-4 flex gap-4 items-center">
                       <div className="w-16 h-16 rounded-xl bg-slate-100 overflow-hidden flex-shrink-0">
                         <img
-                          src={item.img.startsWith("http") ? item.img : `https://picsum.photos/seed/${item.img}/150/150`}
+                          src={item.img && item.img.startsWith("http") ? item.img : getProductImage(item.name)}
                           alt={item.name}
                           className="w-full h-full object-cover"
                         />
