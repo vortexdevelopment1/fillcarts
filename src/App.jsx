@@ -17,6 +17,7 @@ import { CartProvider } from "./context/CartContext";
 import FeaturesPage from "./components/FeaturesPage";
 import TermsPage from "./components/TermsPage";
 import PrivacyPolicyPage from "./components/PrivacyPolicyPage";
+import ProductDetailPage from "./components/ProductDetailPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -39,6 +40,7 @@ function App() {
           <Route path="/register" element={<CustomerRegistrationPage />} />
           <Route path="/" element={<AppKartHome />} />
           <Route path="/categories" element={<CategoriesPage />} />
+          <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/features" element={<FeaturesPage />} />
           <Route path="/become-vendor" element={<BecomeVendorPage />} />
           <Route path="/become-rider" element={<BecomeRiderPage />} />
