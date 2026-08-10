@@ -156,31 +156,10 @@ export default function CartPage() {
     setAppliedPromo(null);
   };
 
-  // Place Order handler
-  const handlePlaceOrder = async () => {
+  // Place Order handler - Redirects user to App Checkout & QR Code Modal
+  const handlePlaceOrder = () => {
     if (cart.length === 0) return;
-    setIsPlacingOrder(true);
-
-    const chosenAddressObj = finalAddresses.find(a => a.id === selectedAddress);
-    const deliveryAddress = chosenAddressObj
-      ? `${chosenAddressObj.type}: ${chosenAddressObj.address_line} - Pincode: ${chosenAddressObj.pincode} (Tel: ${chosenAddressObj.phone})`
-      : user?.address || "No address selected";
-
-    try {
-      const res = await api.post("/orders", {
-        items: cart,
-        total: grandTotal,
-        payment_method: selectedPayment,
-        delivery_address: deliveryAddress
-      });
-      setOrderId(res.data.orderId);
-      setIsPlacingOrder(false);
-      setOrderSuccess(true);
-      clearCart();
-    } catch (err) {
-      console.error(err);
-      setIsPlacingOrder(false);
-    }
+    setShowAppModal(true);
   };
 
   if (orderSuccess) {
@@ -397,8 +376,8 @@ export default function CartPage() {
                           key={addr.id}
                           onClick={() => setSelectedAddress(addr.id)}
                           className={`border rounded-2xl p-4 cursor-pointer relative transition-all ${isSelected
-                              ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
-                              : "border-slate-200 hover:border-slate-300 bg-white"
+                            ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
+                            : "border-slate-200 hover:border-slate-300 bg-white"
                             }`}
                         >
                           <div className="flex justify-between items-center mb-2">
@@ -435,8 +414,8 @@ export default function CartPage() {
                         key={pm.id}
                         onClick={() => setSelectedPayment(pm.id)}
                         className={`border rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all ${isSelected
-                            ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
-                            : "border-slate-200 hover:border-slate-300 bg-white"
+                          ? "border-blue-600 bg-blue-50/30 ring-1 ring-blue-600"
+                          : "border-slate-200 hover:border-slate-300 bg-white"
                           }`}
                       >
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-500"
@@ -631,60 +610,61 @@ export default function CartPage() {
             {/* Close Button */}
             <button
               onClick={() => setShowAppModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
             >
               <X size={14} />
             </button>
 
             {/* Header */}
             <div className="mt-2 mb-5">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
-                <ShoppingCart size={22} />
+              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3 shadow-inner">
+                <ShoppingCart size={24} />
               </div>
-              <h2 className="text-lg font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
-                Checkout on our App
+              <h2 className="text-xl font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
+                Complete Order on Mobile App
               </h2>
-              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[240px] mx-auto leading-relaxed">
-                To guarantee express 15-minute delivery, orders must be placed through our mobile application.
+              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[260px] mx-auto leading-relaxed">
+                To guarantee express 15-minute delivery, orders must be checked out through our mobile application.
               </p>
             </div>
 
             {/* QR Code Container */}
-            <div className="bg-slate-50 border border-slate-100 rounded-2xl p-4 flex flex-col items-center justify-center mb-5">
-              <div className="relative p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm mb-2.5">
-                <QrCode size={110} className="text-slate-900" />
-                {/* Logo indicator in center */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-6 h-6 bg-blue-600 rounded-md flex items-center justify-center border border-white shadow">
-                  <span className="text-[8px] font-black text-white leading-none">FC</span>
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center mb-4">
+              <div className="relative p-3 bg-white border border-slate-200 rounded-2xl shadow-sm mb-2.5">
+                <QrCode size={120} className="text-slate-900" />
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-7 h-7 bg-blue-600 rounded-lg flex items-center justify-center border-2 border-white shadow">
+                  <span className="text-[9px] font-black text-white leading-none">FC</span>
                 </div>
               </div>
 
-              <div className="text-[11px] font-extrabold text-slate-900 mb-0.5">
-                Scan with your phone camera
+              <div className="text-xs font-extrabold text-slate-900 mb-0.5">
+                Scan with phone camera to open app
               </div>
-              <div className="text-[9px] font-semibold text-slate-400">
-                Instantly download FillCarts App
+              <div className="text-[10px] font-semibold text-slate-400">
+                Cart Total: <strong className="text-blue-600 font-extrabold">₹{grandTotal}</strong> ({cartCount} items)
               </div>
             </div>
 
             {/* Sync Alert message */}
-            <div className="bg-blue-50/70 text-blue-800 text-[10px] font-bold p-3 rounded-xl border border-blue-100 mb-5 text-left leading-relaxed">
-              💡 Your cart items are saved! Logging into the app using your phone number will sync your cart automatically.
+            <div className="bg-blue-50/70 text-blue-900 text-xs font-bold p-3.5 rounded-2xl border border-blue-100 mb-5 text-left leading-relaxed">
+              💡 <strong className="font-extrabold text-blue-950">Your cart is saved!</strong> Logging into the app using {user?.phone ? `+91 ${user.phone}` : "your phone number"} will automatically sync your cart for instant 15-minute delivery.
             </div>
 
             {/* Store Download Links */}
             <div className="flex gap-2">
               <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3 rounded-xl text-[10px] transition-colors inline-block"
+                href="https://apps.apple.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors inline-block cursor-pointer shadow-sm"
               >
                 App Store
               </a>
               <a
-                href="#"
-                onClick={(e) => e.preventDefault()}
-                className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-3 rounded-xl text-[10px] transition-colors inline-block"
+                href="https://play.google.com"
+                target="_blank"
+                rel="noreferrer"
+                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors inline-block cursor-pointer shadow-sm shadow-blue-100"
               >
                 Google Play
               </a>

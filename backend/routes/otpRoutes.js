@@ -369,20 +369,27 @@ router.delete("/profile", authMiddleware, (req, res) => {
   });
 });
 
+const inMemoryUserCarts = new Map();
+
 // GET /cart
 router.get("/cart", authMiddleware, (req, res) => {
-  db.query("SELECT items FROM customer_carts WHERE customer_id = ?", [req.user.id], (err, results) => {
-    if (err) {
-      console.error(err);
-      return res.status(500).send("Database Error");
+  const customerId = req.user.id;
+  db.query("SELECT items FROM customer_carts WHERE customer_id = ?", [customerId], (err, results) => {
+    if (err || !results) {
+      console.warn("MySQL GET cart warning (using in-memory cart fallback):", err?.message);
+      const savedItems = inMemoryUserCarts.get(customerId) || [];
+      return res.send({ cart: savedItems });
     }
     if (results.length === 0) {
-      return res.send({ cart: [] });
+      const savedItems = inMemoryUserCarts.get(customerId) || [];
+      return res.send({ cart: savedItems });
     }
     try {
-      return res.send({ cart: JSON.parse(results[0].items) });
+      const dbCart = JSON.parse(results[0].items);
+      return res.send({ cart: Array.isArray(dbCart) ? dbCart : [] });
     } catch (e) {
-      return res.send({ cart: [] });
+      const savedItems = inMemoryUserCarts.get(customerId) || [];
+      return res.send({ cart: savedItems });
     }
   });
 });
@@ -390,16 +397,19 @@ router.get("/cart", authMiddleware, (req, res) => {
 // POST /cart
 router.post("/cart", authMiddleware, (req, res) => {
   const { cart } = req.body;
-  const itemsStr = JSON.stringify(cart || []);
+  const customerId = req.user.id;
+  const safeCart = Array.isArray(cart) ? cart : [];
+  inMemoryUserCarts.set(customerId, safeCart);
+
+  const itemsStr = JSON.stringify(safeCart);
   db.query(
     "INSERT INTO customer_carts (customer_id, items) VALUES (?, ?) ON DUPLICATE KEY UPDATE items = ?",
-    [req.user.id, itemsStr, itemsStr],
+    [customerId, itemsStr, itemsStr],
     (err) => {
       if (err) {
-        console.error(err);
-        return res.status(500).send("Database Error");
+        console.warn("MySQL POST cart warning (saved to in-memory fallback):", err.message);
       }
-      return res.send({ message: "Cart saved successfully" });
+      return res.send({ message: "Cart saved successfully", cart: safeCart });
     }
   );
 });

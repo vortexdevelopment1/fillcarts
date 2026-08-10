@@ -11,6 +11,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import api from "../api";
+import { useCart } from "../context/CartContext";
 
 const getErrorMessage = (err) => {
   const responseData = err?.response?.data;
@@ -25,6 +26,7 @@ const getErrorMessage = (err) => {
 
 export default function CustomerLoginPage() {
   const navigate = useNavigate();
+  const { setUser, checkUserProfile } = useCart();
   const [step, setStep] = useState("phone");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
@@ -67,8 +69,13 @@ export default function CustomerLoginPage() {
       });
 
       const profileRes = await api.get("/profile");
+      const loggedInCustomer = profileRes.data.customer || null;
       setError("");
-      setCustomerProfile(profileRes.data.customer || null);
+      setCustomerProfile(loggedInCustomer);
+      if (loggedInCustomer) {
+        setUser(loggedInCustomer);
+        if (checkUserProfile) await checkUserProfile();
+      }
       setStep("success");
       setTimeout(() => navigate("/"), 900);
     } catch (err) {
@@ -142,8 +149,13 @@ export default function CustomerLoginPage() {
       });
 
       const profileRes = await api.get("/profile");
+      const loggedInCustomer = profileRes.data.customer || null;
       setError("");
-      setCustomerProfile(profileRes.data.customer || null);
+      setCustomerProfile(loggedInCustomer);
+      if (loggedInCustomer) {
+        setUser(loggedInCustomer);
+        if (checkUserProfile) await checkUserProfile();
+      }
       setStep("success");
       setTimeout(() => navigate("/"), 900);
     } catch (err) {
