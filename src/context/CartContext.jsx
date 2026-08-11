@@ -10,6 +10,29 @@ export function CartProvider({ children }) {
   const [cart, setCart] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
 
+  // Global Location State
+  const [userLocation, setUserLocation] = useState(() => {
+    const saved = localStorage.getItem("fillcarts_user_location");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {}
+    }
+    return {
+      city: "Indore",
+      area: "Vijay Nagar",
+      pincode: "452010",
+      state: "M.P.",
+      formatted: "Vijay Nagar, Indore (452010)",
+      isGps: false
+    };
+  });
+
+  const changeLocation = (newLoc) => {
+    setUserLocation(newLoc);
+    localStorage.setItem("fillcarts_user_location", JSON.stringify(newLoc));
+  };
+
   // Fetch authenticated user profile on mount
   const checkUserProfile = async () => {
     try {
@@ -177,7 +200,9 @@ export function CartProvider({ children }) {
         loadingUser,
         logoutUser,
         checkUserProfile,
-        setShowLoginModal
+        setShowLoginModal,
+        userLocation,
+        changeLocation
       }}
     >
       {children}

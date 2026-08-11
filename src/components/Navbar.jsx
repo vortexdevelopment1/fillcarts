@@ -2,13 +2,14 @@ import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Zap, Gift, CreditCard, Sparkles, MapPin, Search, User,
-  ShoppingCart, ChevronRight, ChevronDown, QrCode, X
+  ShoppingCart, ChevronRight, ChevronDown, QrCode, X, Navigation,
+  Compass, Loader2, CheckCircle2, Building2
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import api from "../api";
 
 export default function Navbar({ searchPlaceholder = "Search products, stores...", onSearchChange }) {
-  const { cartCount, user, logoutUser, setShowLoginModal } = useCart();
+  const { cartCount, user, logoutUser, setShowLoginModal, userLocation, changeLocation } = useCart();
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const location = useLocation();
@@ -16,6 +17,93 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
   const [showAppModal, setShowAppModal] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const [modalDesc, setModalDesc] = useState("");
+
+  // Location selector state
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [isDetectingGps, setIsDetectingGps] = useState(false);
+  const [gpsError, setGpsError] = useState("");
+  const [customCity, setCustomCity] = useState("");
+  const [customArea, setCustomArea] = useState("");
+  const [customPincode, setCustomPincode] = useState("");
+  const [savedAddresses, setSavedAddresses] = useState([]);
+  const [loadingSavedAddresses, setLoadingSavedAddresses] = useState(false);
+
+  useEffect(() => {
+    if (showLocationModal && user) {
+      setLoadingSavedAddresses(true);
+      api.get("/addresses")
+        .then((res) => {
+          setSavedAddresses(res.data.addresses || []);
+        })
+        .catch(() => {})
+        .finally(() => setLoadingSavedAddresses(false));
+    }
+  }, [showLocationModal, user]);
+
+  const handleDetectGps = () => {
+    setIsDetectingGps(true);
+    setGpsError("");
+    if (!navigator.geolocation) {
+      setGpsError("Geolocation is not supported by your browser.");
+      setIsDetectingGps(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude.toFixed(3);
+        const lng = position.coords.longitude.toFixed(3);
+        const gpsLoc = {
+          city: "Live Location",
+          area: `GPS (${lat}, ${lng})`,
+          pincode: "Near You",
+          state: "Live",
+          formatted: `Live Location (${lat}, ${lng})`,
+          isGps: true
+        };
+        changeLocation(gpsLoc);
+        setIsDetectingGps(false);
+        setShowLocationModal(false);
+      },
+      (err) => {
+        console.warn("GPS error:", err);
+        setGpsError("Could not access location. Please pick a city or enter pincode below.");
+        setIsDetectingGps(false);
+      },
+      { timeout: 10000, enableHighAccuracy: true }
+    );
+  };
+
+  const popularCities = [
+    { city: "Indore", area: "Vijay Nagar", pincode: "452010", state: "M.P." },
+    { city: "Bhopal", area: "MP Nagar", pincode: "462011", state: "M.P." },
+    { city: "Bengaluru", area: "Koramangala", pincode: "560034", state: "Karnataka" },
+    { city: "Mumbai", area: "Andheri West", pincode: "400053", state: "Maharashtra" },
+    { city: "Delhi NCR", area: "Connaught Place", pincode: "110001", state: "Delhi" },
+    { city: "Hyderabad", area: "Hitech City", pincode: "500081", state: "Telangana" },
+    { city: "Pune", area: "Viman Nagar", pincode: "411014", state: "Maharashtra" },
+    { city: "Ahmedabad", area: "SG Highway", pincode: "380015", state: "Gujarat" },
+    { city: "Jaipur", area: "Malviya Nagar", pincode: "302017", state: "Rajasthan" },
+  ];
+
+  const handleSaveCustomLocation = (e) => {
+    e.preventDefault();
+    if (!customCity.trim() && !customPincode.trim() && !customArea.trim()) return;
+
+    const newLoc = {
+      city: customCity.trim() || "Delivery Location",
+      area: customArea.trim() || customCity.trim() || "Local Area",
+      pincode: customPincode.replace(/\D/g, "").slice(0, 6) || "Pincode",
+      state: "India",
+      formatted: `${customArea ? customArea + ", " : ""}${customCity} ${customPincode}`,
+      isGps: false
+    };
+    changeLocation(newLoc);
+    setCustomCity("");
+    setCustomArea("");
+    setCustomPincode("");
+    setShowLocationModal(false);
+  };
 
   const handleLogout = async () => {
     await logoutUser();
@@ -84,9 +172,23 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             Fill<span className="text-blue-600">Carts</span>
           </Link>
 
-          <div className="hidden md:flex items-center gap-1.5 text-xs font-semibold border border-slate-200 rounded-full px-3 py-2 bg-white flex-shrink-0">
-            <MapPin size={14} className="text-blue-600" /> Your Location
-          </div>
+          <button
+            onClick={() => setShowLocationModal(true)}
+            className="hidden md:flex items-center gap-2 border border-slate-200 hover:border-blue-500 rounded-full px-3.5 py-1.5 bg-white flex-shrink-0 transition-all cursor-pointer shadow-xs text-left group"
+          >
+            <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+              <MapPin size={14} />
+            </div>
+            <div className="flex flex-col leading-none pr-1">
+              <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
+                Deliver to {userLocation?.isGps ? <span className="text-emerald-600 font-bold">● Live GPS</span> : "Location"}
+              </span>
+              <span className="text-xs font-black text-slate-900 truncate max-w-[130px] mt-0.5">
+                {userLocation?.area || userLocation?.city || "Select City"}
+              </span>
+            </div>
+            <ChevronDown size={13} className="text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+          </button>
 
           <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
             <Search size={15} />
@@ -316,6 +418,201 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                 Google Play
               </a>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Location Selector Modal */}
+      {showLocationModal && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md p-6 shadow-2xl relative overflow-hidden text-left animate-[scaleUp_0.3s_ease-out]">
+            <button
+              onClick={() => setShowLocationModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
+            >
+              <X size={16} />
+            </button>
+
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100">
+                <MapPin size={24} />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
+                  Select Delivery Location
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold mt-0.5">
+                  Pick your area or city for express 15-minute delivery
+                </p>
+              </div>
+            </div>
+
+            {/* Current Active Location Display Pill */}
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 mb-4 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Location</div>
+                <div className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 mt-0.5">
+                  <MapPin size={13} className="text-blue-600" />
+                  <span>{userLocation?.formatted || `${userLocation?.area}, ${userLocation?.city}`}</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+                ⚡ Active
+              </span>
+            </div>
+
+            {/* GPS Auto Detection Button */}
+            <button
+              onClick={handleDetectGps}
+              disabled={isDetectingGps}
+              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold p-3.5 rounded-2xl text-xs transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-2 cursor-pointer mb-4"
+            >
+              {isDetectingGps ? (
+                <>
+                  <Loader2 size={16} className="animate-spin" />
+                  <span>Detecting your GPS location...</span>
+                </>
+              ) : (
+                <>
+                  <Navigation size={16} />
+                  <span>Use Current Location (GPS)</span>
+                </>
+              )}
+            </button>
+
+            {gpsError && (
+              <p className="text-[11px] font-bold text-red-600 bg-red-50 p-2.5 rounded-xl mb-4 border border-red-100">
+                {gpsError}
+              </p>
+            )}
+
+            {/* Saved Profile Addresses if available */}
+            {user && (
+              <div className="mb-4">
+                <div className="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+                  <Building2 size={13} className="text-blue-600" /> Your Saved Addresses
+                </div>
+                {loadingSavedAddresses ? (
+                  <div className="text-xs text-slate-400 font-bold py-2 flex items-center gap-2">
+                    <Loader2 size={14} className="animate-spin" /> Loading addresses...
+                  </div>
+                ) : savedAddresses.length === 0 && !user.address ? (
+                  <div className="text-xs text-slate-400 font-semibold bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    No saved addresses found. Enter one below or add in your profile.
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                    {user.address && (
+                      <button
+                        onClick={() => {
+                          changeLocation({
+                            city: "Home",
+                            area: user.address,
+                            pincode: user.pincode || "452010",
+                            state: "Primary",
+                            formatted: user.address,
+                            isGps: false
+                          });
+                          setShowLocationModal(false);
+                        }}
+                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-colors flex items-center justify-between cursor-pointer group"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="text-xs font-extrabold text-slate-900 group-hover:text-blue-600">Primary Profile Address</div>
+                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{user.address}</div>
+                        </div>
+                        <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                      </button>
+                    )}
+                    {savedAddresses.map((addr) => (
+                      <button
+                        key={addr.id}
+                        onClick={() => {
+                          changeLocation({
+                            city: addr.type || "Address",
+                            area: addr.address_line,
+                            pincode: addr.pincode || "452010",
+                            state: addr.type,
+                            formatted: `${addr.address_line} (${addr.pincode || ''})`,
+                            isGps: false
+                          });
+                          setShowLocationModal(false);
+                        }}
+                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-colors flex items-center justify-between cursor-pointer group"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="text-xs font-extrabold text-slate-900 group-hover:text-blue-600">{addr.type} Address</div>
+                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{addr.address_line}</div>
+                        </div>
+                        <ChevronRight size={14} className="text-slate-400 shrink-0" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Popular Cities Quick Select */}
+            <div className="mb-4">
+              <div className="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
+                <Compass size={13} className="text-blue-600" /> Popular Cities
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {popularCities.map((item) => {
+                  const isSelected = userLocation?.city === item.city;
+                  return (
+                    <button
+                      key={item.city}
+                      onClick={() => {
+                        changeLocation({
+                          city: item.city,
+                          area: item.area,
+                          pincode: item.pincode,
+                          state: item.state,
+                          formatted: `${item.area}, ${item.city} (${item.pincode})`,
+                          isGps: false
+                        });
+                        setShowLocationModal(false);
+                      }}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
+                        isSelected
+                          ? "bg-slate-900 text-white border-slate-900 shadow-xs"
+                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                      }`}
+                    >
+                      {item.city}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Manual Custom Locality Form */}
+            <form onSubmit={handleSaveCustomLocation} className="border-t border-slate-100 pt-3 space-y-2.5">
+              <div className="text-xs font-black text-slate-800">Or Enter City / Area / Pincode Manually</div>
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="text"
+                  placeholder="City / Area"
+                  value={customCity}
+                  onChange={(e) => setCustomCity(e.target.value)}
+                  className="px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white"
+                />
+                <input
+                  type="text"
+                  placeholder="6-digit Pincode"
+                  value={customPincode}
+                  onChange={(e) => setCustomPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  className="px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Set Delivery Location
+              </button>
+            </form>
           </div>
         </div>
       )}
