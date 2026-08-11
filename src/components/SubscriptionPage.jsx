@@ -5,7 +5,7 @@ import {
   Sparkles, Star, Plus, Trash2,
   X, Search, SlidersHorizontal, ShieldCheck, Download, Smartphone, QrCode,
   ArrowRight, ArrowLeft, Carrot, Apple, Croissant, Pill, UtensilsCrossed, Home, FileText, CheckCircle2, Info,
-  Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle
+  Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle, Zap
 } from "lucide-react";
 import Footer from "./Footer";
 import Navbar from "./Navbar";
@@ -15,14 +15,14 @@ import api from "../api";
 
 // Sourced directly from CategoriesPage for 100% category consistency
 const categories = [
-  { key: "grocery", name: "Grocery", icon: Carrot, color: "text-blue-600", bg: "bg-blue-50" },
-  { key: "fruits", name: "Fruits & Veg", icon: Apple, color: "text-teal-600", bg: "bg-teal-50" },
-  { key: "dairy", name: "Dairy", icon: Milk, color: "text-blue-600", bg: "bg-blue-50" },
-  { key: "bakery", name: "Bakery", icon: Croissant, color: "text-amber-700", bg: "bg-amber-50" },
-  { key: "pharmacy", name: "Pharmacy", icon: Pill, color: "text-teal-600", bg: "bg-teal-50" },
-  { key: "food", name: "Food", icon: UtensilsCrossed, color: "text-violet-600", bg: "bg-violet-50" },
+  { key: "grocery", name: "Grocery", icon: Carrot, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "fruits", name: "Fruits & Veg", icon: Apple, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "dairy", name: "Dairy", icon: Milk, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "bakery", name: "Bakery", icon: Croissant, color: "text-[#F59E0B]", bg: "bg-amber-50" },
+  { key: "pharmacy", name: "Pharmacy", icon: Pill, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "food", name: "Food", icon: UtensilsCrossed, color: "text-[#F59E0B]", bg: "bg-amber-50" },
   { key: "home", name: "Home Essentials", icon: Home, color: "text-slate-700", bg: "bg-slate-100" },
-  { key: "personal", name: "Personal Care", icon: Sparkles, color: "text-teal-500", bg: "bg-teal-50" },
+  { key: "personal", name: "Personal Care", icon: Sparkles, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
 ];
 
 const productNames = {
@@ -329,56 +329,58 @@ export default function SubscriptionPage() {
   const totalWeeklySpend = useMemo(() => myOrders.reduce((sum, o) => sum + o.total, 0), [myOrders]);
 
   return (
-    <div className="bg-slate-50 min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
+    <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
       {/* Shared Navbar */}
       <Navbar />
 
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center justify-between">
+      <div className="bg-white border-b border-slate-100">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <Link to="/" className="hover:text-blue-600">Home</Link>
-            <ChevronRight size={13} />
-            <Link to="/categories" className="hover:text-blue-600">Categories</Link>
-            <ChevronRight size={13} />
-            <span className="text-slate-900 font-bold">Daily Essentials Subscriptions</span>
+            <Link to="/" className="hover:text-[#16A34A] transition-colors">Home</Link>
+            <ChevronRight size={12} />
+            <Link to="/categories" className="hover:text-[#16A34A] transition-colors">Categories</Link>
+            <ChevronRight size={12} />
+            <span className="text-[#166534] font-bold">Daily Essentials Subscriptions</span>
           </div>
 
-          <div className="flex items-center gap-2 text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-3 py-1 rounded-full">
-            <ShieldCheck size={14} /> 100% Fresh Morning Delivery
+          <div className="hidden sm:flex items-center gap-2 text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3 py-1 rounded-full">
+            <ShieldCheck size={14} className="text-[#16A34A]" /> 100% Fresh Morning Delivery
           </div>
         </div>
       </div>
 
-      {/* Clean Hero Header */}
-      <section className="bg-gradient-to-r from-blue-900 via-slate-900 to-slate-950 text-white py-10 px-6 relative">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-300 rounded-full px-3.5 py-1 text-xs font-bold mb-3">
-              <Repeat size={14} className="text-blue-400" /> Daily & Weekly Auto-Delivery
-            </div>
-            <h1 className="text-3xl md:text-5xl font-extrabold leading-tight mb-2" style={{ fontFamily: "'Fraunces', serif" }}>
-              Subscribe & Save on Essentials
+      {/* Soft Green Shaded Hero Header with Side-by-side max-w-6xl bounds */}
+      <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4] to-[#FFFCF5] border-b border-emerald-200/60 py-10 px-4 sm:px-6 relative text-left">
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="space-y-1.5">
+            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-white px-3.5 py-1.5 rounded-full border border-amber-200/80 mb-1 shadow-2xs">
+              <Sparkles size={13} /> Daily & Weekly Auto-Delivery
+            </span>
+            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#17231A] leading-tight tracking-tight">
+              Subscribe & Save on <span className="text-[#16A34A]">Essentials</span>
             </h1>
-            <p className="text-xs md:text-sm text-slate-300 max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-[#166534] font-semibold max-w-xl leading-relaxed">
               Add store items dynamically to your card, select your custom schedule, track your subscription orders in real-time, and complete your purchase via the FillCarts App!
             </p>
           </div>
 
           {/* Navigation Tab Switcher */}
-          <div className="bg-slate-800/90 border border-slate-700 p-1.5 rounded-2xl flex gap-2 shadow-xl backdrop-blur-md shrink-0">
+          <div className="bg-white border border-emerald-200 p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap gap-2 shadow-xs shrink-0 self-start md:self-center">
             <button
               onClick={() => setViewTab("create")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${viewTab === "create" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
+              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "create"
+                  ? "bg-[#16A34A] text-white shadow-md"
+                  : "text-[#166534] hover:bg-[#ECFDF3]"
                 }`}
             >
               <Plus size={14} /> Build Subscription Card
             </button>
             <button
               onClick={() => setViewTab("my_subscriptions")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${viewTab === "my_subscriptions" ? "bg-blue-600 text-white shadow-md" : "text-slate-300 hover:text-white"
+              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "my_subscriptions"
+                  ? "bg-[#16A34A] text-white shadow-md"
+                  : "text-[#166534] hover:bg-[#ECFDF3]"
                 }`}
             >
               <FileText size={14} /> Dynamic Order Tracking ({myOrders.length})
@@ -388,27 +390,27 @@ export default function SubscriptionPage() {
       </section>
 
       {/* Main Body */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
 
         {/* TAB 1: BUILD SUBSCRIPTION CARD */}
         {viewTab === "create" && (
           <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
 
             {/* Left Column: Sticky Subscription Summary & Card Checkout Panel */}
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-lg sticky top-6 space-y-5">
+            <div className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-md sticky top-6 space-y-5 text-left">
               <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div className="flex items-center gap-2">
-                  <ShoppingBasket size={18} className="text-blue-600" />
-                  <h3 className="text-base font-bold text-slate-900">Subscription Card</h3>
+                  <ShoppingBasket size={18} className="text-[#16A34A]" />
+                  <h3 className="text-base font-extrabold text-[#17231A]">Subscription Card</h3>
                 </div>
-                <span className="bg-blue-50 text-blue-700 text-xs font-bold px-2.5 py-0.5 rounded-full">
+                <span className="bg-[#ECFDF3] text-[#166534] text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
                   {basket.reduce((sum, i) => sum + i.qty, 0)} Items
                 </span>
               </div>
 
               {/* Title Input */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-500 uppercase mb-1">
+                <label className="block text-[11px] font-black text-[#166534] uppercase tracking-wider mb-1">
                   Card Name (Optional)
                 </label>
                 <input
@@ -416,43 +418,43 @@ export default function SubscriptionPage() {
                   placeholder="e.g. Daily Milk & Breakfast Routine"
                   value={customCardTitle}
                   onChange={(e) => setCustomCardTitle(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500"
+                  className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
                 />
               </div>
 
               {/* Basket Items List */}
               <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                 {basket.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-slate-400 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
+                  <div className="text-center py-8 text-xs text-slate-400 bg-[#FFFCF5] rounded-2xl border border-dashed border-slate-200">
                     No items selected yet. Select products from category grid.
                   </div>
                 ) : (
                   basket.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between bg-slate-50 p-3 rounded-2xl text-xs font-semibold border border-slate-100">
+                    <div key={item.id} className="flex items-center justify-between bg-[#FFFCF5] p-3 rounded-2xl text-xs font-semibold border border-slate-100">
                       <div>
-                        <div className="font-bold text-slate-900">{item.name}</div>
+                        <div className="font-extrabold text-[#17231A]">{item.name}</div>
                         <div className="text-[11px] text-slate-500 font-mono">₹{item.price} × {item.qty}</div>
                       </div>
                       <div className="flex items-center gap-2">
                         <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
                           <button
                             onClick={() => updateQty({ id: item.id }, -1)}
-                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs"
+                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs cursor-pointer"
                           >
                             -
                           </button>
                           <span className="font-mono text-xs px-1 font-bold">{item.qty}</span>
                           <button
                             onClick={() => updateQty({ id: item.id }, 1)}
-                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs"
+                            className="w-5 h-5 rounded bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs cursor-pointer"
                           >
                             +
                           </button>
                         </div>
-                        <span className="font-bold text-blue-600 font-mono w-12 text-right">₹{item.price * item.qty}</span>
+                        <span className="font-black text-[#166534] font-mono w-12 text-right">₹{item.price * item.qty}</span>
                         <button
                           onClick={() => updateQty({ id: item.id }, -item.qty)}
-                          className="text-slate-400 hover:text-red-600 p-1"
+                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
                           title="Remove item"
                         >
                           <Trash2 size={13} />
@@ -466,11 +468,11 @@ export default function SubscriptionPage() {
               {/* Schedule & Address Configuration */}
               <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Delivery Frequency</label>
+                  <label className="block font-extrabold text-[#17231A] mb-1">Delivery Frequency</label>
                   <select
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
                   >
                     <option value="Daily">Daily Morning Delivery</option>
                     <option value="Every 2 Days">Every 2 Days</option>
@@ -480,11 +482,11 @@ export default function SubscriptionPage() {
                 </div>
 
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1">Guaranteed Slot</label>
+                  <label className="block font-extrabold text-[#17231A] mb-1">Guaranteed Slot</label>
                   <select
                     value={timeSlot}
                     onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500 cursor-pointer"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
                   >
                     <option value="6:30 AM - 7:30 AM">6:30 AM - 7:30 AM (Express Morning)</option>
                     <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
@@ -494,13 +496,13 @@ export default function SubscriptionPage() {
 
                 {/* Subscription Duration */}
                 <div>
-                  <label className="block font-bold text-slate-700 mb-1 flex items-center gap-1">
-                    <Calendar size={13} className="text-blue-600" /> Subscription Duration
+                  <label className="block font-extrabold text-[#17231A] mb-1 flex items-center gap-1">
+                    <Calendar size={13} className="text-[#16A34A]" /> Subscription Duration
                   </label>
                   <select
                     value={durationType}
                     onChange={(e) => handleDurationTypeChange(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-blue-500 mb-2 cursor-pointer"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] mb-2 cursor-pointer"
                   >
                     <option value="1_month">1 Month (30 Days Plan)</option>
                     <option value="7_days">7 Days Plan</option>
@@ -510,9 +512,9 @@ export default function SubscriptionPage() {
                   </select>
 
                   {/* Start Date & End Date Inputs */}
-                  <div className="grid grid-cols-2 gap-2 bg-slate-50 border border-slate-200/90 p-2.5 rounded-xl">
+                  <div className="grid grid-cols-2 gap-2 bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
                     <div>
-                      <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">Start Date</span>
+                      <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">Start Date</span>
                       <input
                         type="date"
                         value={startDate}
@@ -525,14 +527,14 @@ export default function SubscriptionPage() {
                             setEndDate(end.toISOString().split("T")[0]);
                           }
                         }}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none focus:border-blue-500 cursor-pointer"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#16A34A] cursor-pointer"
                       />
                     </div>
 
                     <div>
-                      <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">End Date</span>
+                      <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">End Date</span>
                       {durationType === "until_cancelled" ? (
-                        <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 text-[11px] font-bold py-1 px-2 rounded-lg text-center truncate mt-0.5">
+                        <div className="bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[11px] font-bold py-1 px-2 rounded-lg text-center truncate mt-0.5">
                           Until Cancelled
                         </div>
                       ) : (
@@ -541,7 +543,7 @@ export default function SubscriptionPage() {
                           value={endDate}
                           readOnly={durationType !== "custom"}
                           onChange={(e) => setEndDate(e.target.value)}
-                          className={`w-full border rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none ${durationType === "custom" ? "bg-white border-slate-200 focus:border-blue-500 cursor-pointer" : "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"}`}
+                          className={`w-full border rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none ${durationType === "custom" ? "bg-white border-slate-200 focus:border-[#16A34A] cursor-pointer" : "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"}`}
                         />
                       )}
                     </div>
@@ -551,12 +553,12 @@ export default function SubscriptionPage() {
                 {/* Delivery Address Section (Fetched dynamically from Account) */}
                 <div>
                   <div className="flex items-center justify-between mb-1">
-                    <label className="font-bold text-slate-700 flex items-center gap-1">
-                      <MapPin size={13} className="text-blue-600" /> Delivery Address
+                    <label className="font-extrabold text-[#17231A] flex items-center gap-1">
+                      <MapPin size={13} className="text-[#16A34A]" /> Delivery Address
                     </label>
                     {user && (
-                      <span className="text-[10px] text-teal-600 font-bold bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200">
-                        ✓ Fetched from Account
+                      <span className="text-[10px] text-[#166534] font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-emerald-200">
+                        ✓ Account Synced
                       </span>
                     )}
                   </div>
@@ -564,7 +566,7 @@ export default function SubscriptionPage() {
                   {savedAddresses.length > 0 && (
                     <select
                       onChange={(e) => handleAddressChange(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-xs mb-2 focus:outline-none focus:border-blue-500"
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-semibold text-xs mb-2 focus:outline-none focus:border-[#16A34A] cursor-pointer"
                     >
                       <option value="">-- Choose Saved Location --</option>
                       {user && user.address && (
@@ -588,24 +590,24 @@ export default function SubscriptionPage() {
                     value={userAddress}
                     onChange={(e) => handleAddressChange(e.target.value)}
                     placeholder="Doorstep delivery address..."
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-blue-500"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
                   />
                 </div>
               </div>
 
-              {/* Basket Total Breakdown */}
-              <div className="bg-slate-900 text-white p-4 rounded-2xl space-y-2">
-                <div className="flex justify-between text-xs text-slate-300">
+              {/* Basket Total Breakdown in Dark Green Container */}
+              <div className="bg-[#166534] text-white p-4 rounded-2xl space-y-2 shadow-xs">
+                <div className="flex justify-between text-xs text-emerald-100">
                   <span>Recurring Item Total</span>
                   <span className="font-mono font-bold text-white">₹{basketTotal}</span>
                 </div>
-                <div className="flex justify-between text-[11px] text-teal-400 font-bold">
+                <div className="flex justify-between text-[11px] text-amber-300 font-extrabold">
                   <span>Subscriber Discount</span>
-                  <span>-10% Applied</span>
+                  <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px]">-10% Applied</span>
                 </div>
-                <div className="pt-2 border-t border-slate-800 flex justify-between text-sm font-extrabold text-teal-300">
+                <div className="pt-2 border-t border-emerald-700 flex justify-between text-sm font-black text-white">
                   <span>Estimated Total / Cycle</span>
-                  <span className="font-mono">₹{Math.round(basketTotal * 0.9)}</span>
+                  <span className="font-mono text-amber-300 text-base">₹{Math.round(basketTotal * 0.9)}</span>
                 </div>
               </div>
 
@@ -613,9 +615,10 @@ export default function SubscriptionPage() {
               <button
                 onClick={handleCreateSubscriptionCard}
                 disabled={basket.length === 0}
-                className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white font-bold text-xs rounded-full py-3.5 shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-40 text-white font-extrabold text-xs rounded-xl py-3.5 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                Confirm Subscription Card <ArrowRight size={15} />
+                <span>Confirm Subscription Card</span>
+                <ArrowRight size={15} />
               </button>
 
               <div className="text-[11px] text-slate-400 text-center font-medium leading-tight">
@@ -624,13 +627,13 @@ export default function SubscriptionPage() {
             </div>
 
             {/* Right Column: Categories Selector & Product Grid */}
-            <div className="space-y-6">
+            <div className="space-y-6 text-left">
 
               {/* Category Chips Bar */}
-              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
-                <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3 flex items-center gap-1.5">
-                  <SlidersHorizontal size={14} /> Select Store Category
-                </div>
+              <div className="bg-white border border-emerald-100 rounded-3xl p-5 shadow-xs">
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-3">
+                  <SlidersHorizontal size={13} /> Select Store Category
+                </span>
                 <div className="flex flex-wrap items-center gap-2">
                   {categories.map((c) => {
                     const IconComp = c.icon;
@@ -639,9 +642,9 @@ export default function SubscriptionPage() {
                       <button
                         key={c.key}
                         onClick={() => setActiveCategory(c.key)}
-                        className={`flex items-center gap-2 px-3.5 py-2 rounded-full text-xs font-bold transition-all border cursor-pointer ${isActive
-                            ? "bg-slate-900 text-white border-slate-900 shadow-md"
-                            : "bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50"
+                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${isActive
+                            ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
+                            : "bg-[#FFFCF5] border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-[#ECFDF3]"
                           }`}
                       >
                         <IconComp size={14} className={isActive ? "text-white" : c.color} />
@@ -653,24 +656,26 @@ export default function SubscriptionPage() {
               </div>
 
               {/* Products Section Header & Search */}
-              <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+              <div className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2" style={{ fontFamily: "'Fraunces', serif" }}>
-                      <span>Select Products for Subscription Card</span>
+                    <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-1">
+                      <Sparkles size={13} /> Select Subscription Products
+                    </span>
+                    <h2 className="text-xl font-extrabold text-[#17231A]">
+                      Fresh items in {categories.find(c => c.key === activeCategory)?.name}
                     </h2>
-                    <p className="text-xs text-slate-500 mt-0.5">Showing fresh items in <strong>{categories.find(c => c.key === activeCategory)?.name}</strong></p>
                   </div>
 
                   {/* Search Bar */}
                   <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                     <input
                       type="text"
                       placeholder="Search category items..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-slate-50 border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full sm:w-56 focus:outline-none focus:border-blue-500"
+                      className="bg-[#FFFCF5] border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full sm:w-56 focus:outline-none focus:border-[#16A34A]"
                     />
                   </div>
                 </div>
@@ -682,23 +687,23 @@ export default function SubscriptionPage() {
                     const qty = inBasket ? inBasket.qty : 0;
 
                     return (
-                      <div key={p.id} className="bg-white border border-slate-200 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col justify-between p-3 group">
+                      <div key={p.id} className="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col justify-between p-3 group">
                         <div>
-                          <div className="aspect-square bg-slate-100 rounded-xl overflow-hidden mb-3 relative">
+                          <div className="aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3 relative">
                             <img
                               src={getProductImage(p.name, p.categoryKey || activeCategory)}
                               alt={p.name}
                               className="w-full h-full object-cover group-hover:scale-105 transition-transform"
                               loading="lazy"
                             />
-                            <div className="absolute top-2 left-2 bg-white/90 backdrop-blur-md px-2 py-0.5 rounded-full text-[10px] font-bold text-blue-600 flex items-center gap-0.5 shadow-xs">
+                            <div className="absolute top-2 left-2 bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-0.5 shadow-xs">
                               <Star size={10} fill="currentColor" /> {p.rating}
                             </div>
                           </div>
 
-                          <div className="font-bold text-xs text-slate-900 mb-1 leading-snug line-clamp-2">{p.name}</div>
+                          <div className="font-extrabold text-xs text-[#17231A] mb-1 leading-snug line-clamp-2">{p.name}</div>
                           <div className="flex items-center gap-1.5 mb-3">
-                            <span className="font-extrabold text-sm text-slate-900 font-mono">₹{p.price}</span>
+                            <span className="font-black text-sm text-[#166534] font-mono">₹{p.price}</span>
                             <span className="text-[11px] text-slate-400 line-through">₹{p.mrp}</span>
                           </div>
                         </div>
@@ -707,22 +712,22 @@ export default function SubscriptionPage() {
                         {qty === 0 ? (
                           <button
                             onClick={() => updateQty(p, 1)}
-                            className="w-full bg-blue-50 hover:bg-blue-600 text-blue-700 hover:text-white border border-blue-200 font-bold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            className="w-full bg-[#ECFDF3] hover:bg-[#16A34A] text-[#166534] hover:text-white border border-emerald-200 font-extrabold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
                           >
                             <Plus size={14} /> Add to Card
                           </button>
                         ) : (
-                          <div className="flex items-center justify-between bg-blue-600 text-white rounded-xl p-1 shadow-sm">
+                          <div className="flex items-center justify-between bg-[#16A34A] text-white rounded-xl p-1 shadow-xs">
                             <button
                               onClick={() => updateQty(p, -1)}
-                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs cursor-pointer"
+                              className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               -
                             </button>
-                            <span className="font-mono font-bold text-xs px-2">{qty}</span>
+                            <span className="font-mono font-black text-xs px-2">{qty}</span>
                             <button
                               onClick={() => updateQty(p, 1)}
-                              className="w-7 h-7 rounded-lg bg-blue-700 hover:bg-blue-800 flex items-center justify-center font-bold text-xs cursor-pointer"
+                              className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               +
                             </button>
@@ -739,50 +744,50 @@ export default function SubscriptionPage() {
 
         {/* TAB 2: DYNAMIC ORDER TRACKING & SUBSCRIPTION RECORDS DASHBOARD */}
         {viewTab === "my_subscriptions" && (
-          <div className="max-w-5xl mx-auto space-y-6 animate-fade-in">
+          <div className="max-w-5xl mx-auto space-y-6 text-left">
 
-            {/* Header Metrics Bar */}
-            <div className="bg-gradient-to-r from-slate-900 to-blue-950 text-white rounded-3xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
+            {/* Header Metrics Bar in Dark Green Container */}
+            <div className="bg-[#166534] text-white rounded-3xl p-6 sm:p-8 shadow-md flex flex-wrap items-center justify-between gap-4">
               <div>
-                <span className="text-[10px] font-mono font-bold text-blue-300 uppercase tracking-widest block mb-1">
-                  Real-time Subscriptions Dashboard
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-300 bg-emerald-900/60 px-3 py-1 rounded-full border border-emerald-600 mb-2">
+                  <Sparkles size={13} /> Real-time Subscriptions Dashboard
                 </span>
-                <h2 className="text-2xl font-extrabold" style={{ fontFamily: "'Fraunces', serif" }}>
+                <h2 className="text-2xl sm:text-3xl font-extrabold">
                   Subscription Order Cards & Delivery Tracking
                 </h2>
-                <p className="text-xs text-slate-300 mt-1 font-medium">
+                <p className="text-xs text-emerald-100 mt-1 font-medium max-w-xl">
                   Track your dynamic subscription cards, view product breakdowns, and download the app to purchase.
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 bg-slate-800/80 border border-slate-700/80 p-3 rounded-2xl">
-                <div className="text-center px-3 border-r border-slate-700">
-                  <div className="text-xl font-bold font-mono text-teal-400">{activeCount}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Active Cards</div>
+              <div className="flex items-center gap-3 bg-[#15803D] border border-emerald-500 p-3 rounded-2xl">
+                <div className="text-center px-3 border-r border-emerald-600">
+                  <div className="text-xl font-black font-mono text-white">{activeCount}</div>
+                  <div className="text-[10px] text-emerald-100 font-bold uppercase">Active Cards</div>
                 </div>
-                <div className="text-center px-3 border-r border-slate-700">
-                  <div className="text-xl font-bold font-mono text-amber-400">{pendingCount}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Pending Setup</div>
+                <div className="text-center px-3 border-r border-emerald-600">
+                  <div className="text-xl font-black font-mono text-amber-300">{pendingCount}</div>
+                  <div className="text-[10px] text-emerald-100 font-bold uppercase">Pending Setup</div>
                 </div>
                 <div className="text-center px-3">
-                  <div className="text-xl font-bold font-mono text-blue-400">₹{totalWeeklySpend}</div>
-                  <div className="text-[10px] text-slate-400 font-bold uppercase">Est. Total</div>
+                  <div className="text-xl font-black font-mono text-white">₹{totalWeeklySpend}</div>
+                  <div className="text-[10px] text-emerald-100 font-bold uppercase">Est. Total</div>
                 </div>
               </div>
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-white border border-emerald-100 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Status Filter Buttons */}
               <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                <span className="text-xs font-bold text-slate-400 mr-1 uppercase text-[10px]">Filter:</span>
+                <span className="text-xs font-black text-slate-400 mr-1 uppercase text-[10px]">Filter:</span>
                 {["All", "Active Schedule", "App Setup Pending", "Paused"].map((st) => (
                   <button
                     key={st}
                     onClick={() => setOrderFilter(st)}
-                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border whitespace-nowrap cursor-pointer ${orderFilter === st
-                        ? "bg-slate-900 text-white border-slate-900"
-                        : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100"
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all border whitespace-nowrap cursor-pointer ${orderFilter === st
+                        ? "bg-[#16A34A] text-white border-[#16A34A]"
+                        : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3]"
                       }`}
                   >
                     {st}
@@ -798,7 +803,7 @@ export default function SubscriptionPage() {
                   placeholder="Search tracking cards or items..."
                   value={orderSearchQuery}
                   onChange={(e) => setOrderSearchQuery(e.target.value)}
-                  className="bg-slate-50 border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full focus:outline-none focus:border-blue-500"
+                  className="bg-[#FFFCF5] border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full focus:outline-none focus:border-[#16A34A]"
                 />
               </div>
             </div>
@@ -806,52 +811,52 @@ export default function SubscriptionPage() {
             {/* Subscriptions Order Cards List */}
             <div className="space-y-6">
               {filteredOrders.length === 0 ? (
-                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto shadow-sm">
+                <div className="bg-white border border-emerald-100 rounded-3xl p-12 text-center max-w-md mx-auto shadow-xs">
                   <FileText size={36} className="text-slate-300 mx-auto mb-3" />
-                  <h3 className="text-base font-bold text-slate-900">No matching subscription cards found</h3>
-                  <p className="text-xs text-slate-500 mb-6">Build a new subscription card or adjust your filter options.</p>
+                  <h3 className="text-base font-extrabold text-[#17231A]">No matching subscription cards found</h3>
+                  <p className="text-xs text-slate-500 mb-6 font-medium">Build a new subscription card or adjust your filter options.</p>
                   <button
                     onClick={() => setViewTab("create")}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
                   >
                     Build First Subscription Card
                   </button>
                 </div>
               ) : (
                 filteredOrders.map((ord) => (
-                  <div key={ord.orderId} className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all space-y-5 relative overflow-hidden">
+                  <div key={ord.orderId} className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs hover:shadow-md transition-all space-y-5 relative overflow-hidden">
 
                     {/* Header: Order ID, Status & Quick Controls */}
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-11 h-11 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold shrink-0">
+                        <div className="w-11 h-11 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold shrink-0">
                           <Repeat size={20} />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-extrabold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                            <span className="text-[10px] font-mono font-black text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200">
                               {ord.orderId}
                             </span>
-                            <span className="text-xs text-slate-400 font-medium">{ord.orderDate}</span>
+                            <span className="text-xs text-slate-400 font-semibold">{ord.orderDate}</span>
                           </div>
-                          <h3 className="text-base font-bold text-slate-900 mt-0.5">{ord.name}</h3>
+                          <h3 className="text-base font-extrabold text-[#17231A] mt-0.5">{ord.name}</h3>
                         </div>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {/* Status Badge */}
                         {ord.status === "Active Schedule" && (
-                          <span className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
-                            <CheckCircle2 size={14} /> Active Schedule
+                          <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                            <CheckCircle2 size={14} className="text-[#16A34A]" /> Active Schedule
                           </span>
                         )}
                         {ord.status === "App Setup Pending" && (
-                          <span className="bg-amber-50 text-amber-700 border border-amber-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
-                            <AlertCircle size={14} /> App Download Needed
+                          <span className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                            <AlertCircle size={14} className="text-[#F59E0B]" /> App Download Needed
                           </span>
                         )}
                         {ord.status === "Paused" && (
-                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
                             <PauseCircle size={14} /> Paused
                           </span>
                         )}
@@ -868,7 +873,7 @@ export default function SubscriptionPage() {
                         {/* Delete Button */}
                         <button
                           onClick={() => handleDeleteCard(ord.orderId)}
-                          className="text-slate-400 hover:text-red-600 p-1.5 rounded-full hover:bg-red-50 transition-colors cursor-pointer"
+                          className="text-slate-400 hover:text-rose-600 p-1.5 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
                           title="Delete Card"
                         >
                           <Trash2 size={16} />
@@ -879,8 +884,8 @@ export default function SubscriptionPage() {
                     {/* Order Breakdown Grid */}
                     <div className="grid md:grid-cols-3 gap-5 text-xs">
                       {/* Products List */}
-                      <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <div className="font-bold text-slate-400 uppercase text-[10px] flex items-center gap-1 mb-2">
+                      <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100">
+                        <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
                           <ShoppingBasket size={13} /> Subscribed Products ({ord.items.length}):
                         </div>
                         {ord.items.map((i, idx) => (
@@ -889,39 +894,39 @@ export default function SubscriptionPage() {
                             <span className="font-mono text-slate-600">₹{i.price * i.qty}</span>
                           </div>
                         ))}
-                        <div className="pt-2 border-t border-slate-200 flex justify-between font-extrabold text-slate-900">
+                        <div className="pt-2 border-t border-slate-200 flex justify-between font-extrabold text-[#17231A]">
                           <span>Total Per Delivery</span>
-                          <span className="font-mono text-blue-600">₹{ord.total}</span>
+                          <span className="font-mono text-[#166534]">₹{ord.total}</span>
                         </div>
                       </div>
 
                       {/* Schedule Details */}
-                      <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                        <div className="font-bold text-slate-400 uppercase text-[10px] flex items-center gap-1 mb-2">
+                      <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100">
+                        <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
                           <Clock size={13} /> Schedule & Slot:
                         </div>
                         <div className="text-slate-700 font-semibold">Frequency: <strong>{ord.frequency}</strong></div>
                         <div className="text-slate-700 font-semibold">Morning Slot: <strong>{ord.timeSlot}</strong></div>
                         {ord.duration && (
-                          <div className="text-blue-700 font-semibold text-[11px] bg-blue-50/90 border border-blue-200/90 px-2.5 py-1 rounded-xl">
+                          <div className="text-[#166534] font-bold text-[11px] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-1 rounded-xl">
                             📅 Period: <strong>{ord.duration}</strong>
                           </div>
                         )}
-                        <div className="text-teal-700 font-bold bg-teal-50 border border-teal-200 p-2 rounded-xl mt-1">
+                        <div className="text-[#166534] font-extrabold bg-[#ECFDF3] border border-emerald-200 p-2 rounded-xl mt-1">
                           Next Scheduled: {ord.nextDate}
                         </div>
                       </div>
 
                       {/* Location & Payment Info */}
-                      <div className="space-y-2 bg-slate-50 p-4 rounded-2xl border border-slate-100 flex flex-col justify-between">
+                      <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100 flex flex-col justify-between">
                         <div>
-                          <div className="font-bold text-slate-400 uppercase text-[10px] flex items-center gap-1 mb-2">
+                          <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
                             <MapPin size={13} strokeWidth={2.5} /> Address & Payment Mode:
                           </div>
                           <div className="text-slate-700 font-semibold truncate mb-1">
                             📍 {ord.address}
                           </div>
-                          <div className="text-xs text-blue-600 font-bold">
+                          <div className="text-xs text-[#166534] font-extrabold">
                             💳 UPI AutoPay Mandate
                           </div>
                         </div>
@@ -933,15 +938,15 @@ export default function SubscriptionPage() {
                     </div>
 
                     {/* Action Footer -> Select Card for Subscription Purchase via Mobile App */}
-                    <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-blue-50/50 p-3.5 rounded-2xl">
-                      <div className="text-blue-900 font-semibold text-xs flex items-center gap-1.5">
-                        <Info size={15} className="text-blue-600 shrink-0" />
+                    <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-[#ECFDF3]/60 p-3.5 rounded-2xl">
+                      <div className="text-[#166534] font-extrabold text-xs flex items-center gap-1.5">
+                        <Info size={15} className="text-[#16A34A] shrink-0" />
                         <span>Select this subscription card to complete your purchase after app download.</span>
                       </div>
 
                       <button
                         onClick={() => handleSelectCardForApp(ord)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-2 rounded-xl shadow-sm transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
+                        className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
                       >
                         <Smartphone size={14} /> Select Card to Purchase ({ord.orderId}) <ArrowRight size={14} />
                       </button>
@@ -955,21 +960,21 @@ export default function SubscriptionPage() {
         )}
       </main>
 
-      {/* FULL-SCREEN BEAUTIFUL & SPACIOUS SUBSCRIPTION CONFIRMATION OVERLAY (NO SCROLLBAR) */}
+      {/* FULL-SCREEN SUBSCRIPTION CONFIRMATION OVERLAY */}
       {showAppInstallModal && (
-        <div className="fixed inset-0 z-50 bg-[#FAF8F5] text-slate-900 overflow-hidden flex flex-col justify-between p-4 sm:p-8 md:p-12 animate-fade-in">
-          
+        <div className="fixed inset-0 z-50 bg-[#FFFCF5] text-[#17231A] overflow-hidden flex flex-col justify-between p-4 sm:p-8 md:p-12">
+
           {/* Top Bar */}
-          <div className="max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 pb-2 border-b border-slate-200/80">
+          <div className="max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 pb-2 border-b border-slate-200">
             <button
               onClick={() => setShowAppInstallModal(false)}
-              className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-blue-600 transition-colors cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-full shadow-xs"
+              className="flex items-center gap-2 text-xs font-extrabold text-slate-700 hover:text-[#16A34A] transition-colors cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-full shadow-xs"
             >
               <ArrowLeft size={16} /> Back to Subscription Builder
             </button>
 
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3.5 py-1.5 rounded-full">
-              <CheckCircle2 size={15} /> Card Added to Order Tracking
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-black text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3.5 py-1.5 rounded-full">
+              <CheckCircle2 size={15} className="text-[#16A34A]" /> Card Added to Order Tracking
             </span>
 
             <button
@@ -982,16 +987,16 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Center Main View (2-Column Spacious Grid) */}
-          <div className="max-w-6xl w-full mx-auto my-auto py-4 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center">
-            
+          <div className="max-w-6xl w-full mx-auto my-auto py-4 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center text-left">
+
             {/* LEFT COLUMN: Confirmation Info & Card Details */}
             <div className="space-y-5">
               <div className="space-y-2">
-                <div className="inline-flex items-center gap-2 bg-blue-50 text-blue-700 border border-blue-200 px-3.5 py-1 rounded-full text-xs font-extrabold">
-                  <Smartphone size={15} /> FillCarts App Purchase
-                </div>
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-1">
+                  <Smartphone size={14} /> FillCarts App Purchase
+                </span>
 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+                <h2 className="text-3xl sm:text-4xl font-extrabold text-[#17231A] leading-tight">
                   Complete Purchase via FillCarts App
                 </h2>
 
@@ -1002,10 +1007,10 @@ export default function SubscriptionPage() {
 
               {/* Card Summary Box */}
               {selectedCardForAppInstall && (
-                <div className="bg-white border border-slate-200/90 rounded-3xl p-5 md:p-6 shadow-sm space-y-3 text-xs">
+                <div className="bg-white border border-emerald-100 rounded-3xl p-5 md:p-6 shadow-sm space-y-3 text-xs">
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
-                    <span className="font-extrabold text-sm text-slate-900">{selectedCardForAppInstall.name || "Subscription Card"}</span>
-                    <span className="font-mono text-xs font-bold text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200">
+                    <span className="font-extrabold text-sm text-[#17231A]">{selectedCardForAppInstall.name || "Subscription Card"}</span>
+                    <span className="font-mono text-xs font-black text-[#166534] bg-[#ECFDF3] px-2.5 py-1 rounded-lg border border-emerald-200">
                       {selectedCardForAppInstall.orderId || "SUB-ORD"}
                     </span>
                   </div>
@@ -1017,14 +1022,14 @@ export default function SubscriptionPage() {
                     </div>
                     <div>
                       <span className="text-slate-400 font-semibold block text-[11px]">Delivery Frequency</span>
-                      <span className="text-blue-600 font-bold">{selectedCardForAppInstall.frequency || "Daily"}</span>
+                      <span className="text-[#16A34A] font-bold">{selectedCardForAppInstall.frequency || "Daily"}</span>
                     </div>
                   </div>
 
                   {selectedCardForAppInstall.duration && (
                     <div className="pt-2 border-t border-slate-100">
                       <span className="text-slate-400 font-semibold block text-[11px]">Subscription Validity</span>
-                      <span className="text-blue-700 font-bold block">
+                      <span className="text-[#166534] font-bold block">
                         📅 {selectedCardForAppInstall.duration}
                       </span>
                     </div>
@@ -1039,25 +1044,25 @@ export default function SubscriptionPage() {
 
                   <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-slate-900 font-extrabold text-sm">
                     <span>Recurring Total per Cycle</span>
-                    <span className="text-blue-600 font-mono text-lg">₹{selectedCardForAppInstall.total || 0}</span>
+                    <span className="text-[#166534] font-mono text-lg font-black">₹{selectedCardForAppInstall.total || 0}</span>
                   </div>
                 </div>
               )}
             </div>
 
             {/* RIGHT COLUMN: QR Code Card & App Install Action */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-6">
-              
+            <div className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-lg text-center space-y-6">
+
               <div className="space-y-3">
-                <div className="w-32 h-32 bg-slate-50 p-2.5 rounded-3xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto">
+                <div className="w-32 h-32 bg-[#FFFCF5] p-2.5 rounded-3xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto">
                   <QrCode size={110} className="text-slate-900" />
                 </div>
 
                 <div>
                   <div className="font-extrabold text-slate-900 text-base">Scan QR to Install App</div>
-                  <div className="text-slate-500 text-xs mt-1">Point phone camera to install FillCarts directly on Android & iOS.</div>
-                  <div className="text-emerald-600 font-bold text-xs mt-2 inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
-                    <CheckCircle2 size={14} /> Instant Account Sync Enabled
+                  <div className="text-slate-500 text-xs mt-1 font-medium">Point phone camera to install FillCarts directly on Android & iOS.</div>
+                  <div className="text-[#166534] font-bold text-xs mt-2 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 px-3 py-1 rounded-full">
+                    <CheckCircle2 size={14} className="text-[#16A34A]" /> Instant Account Sync Enabled
                   </div>
                 </div>
               </div>
@@ -1067,14 +1072,14 @@ export default function SubscriptionPage() {
                   <a
                     href="#download-playstore"
                     onClick={() => alert("Downloading FillCarts for Android...")}
-                    className="bg-slate-900 hover:bg-slate-950 text-white py-3.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                   >
                     <Download size={16} /> Google Play
                   </a>
                   <a
                     href="#download-appstore"
                     onClick={() => alert("Downloading FillCarts for iOS...")}
-                    className="bg-slate-900 hover:bg-slate-950 text-white py-3.5 px-3 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                    className="bg-slate-900 hover:bg-slate-800 text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
                   >
                     <Smartphone size={16} /> App Store
                   </a>
@@ -1090,7 +1095,7 @@ export default function SubscriptionPage() {
           </div>
 
           {/* Bottom Notice */}
-          <div className="max-w-6xl w-full mx-auto text-center shrink-0 pt-2 border-t border-slate-200/80">
+          <div className="max-w-6xl w-full mx-auto text-center shrink-0 pt-2 border-t border-slate-200">
             <p className="text-[11px] text-slate-400 font-semibold">
               🔒 AutoPay setup required in Mobile App to start scheduled deliveries. Card saved in your Order Tracking tab.
             </p>
@@ -1104,4 +1109,3 @@ export default function SubscriptionPage() {
     </div>
   );
 }
-

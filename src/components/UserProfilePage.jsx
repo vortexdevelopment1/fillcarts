@@ -808,12 +808,12 @@ export default function UserProfilePage() {
               <div>
                 <div className="flex justify-between items-start gap-4 mb-1.5">
                   <div>
-                    <h1 className="text-2xl font-bold" style={{ fontFamily: "'Fraunces', serif" }}>Saved Addresses</h1>
-                    <p className="text-xs text-slate-400 font-semibold">Manage saved address locations for seamless shipping checkout.</p>
+                    <h1 className="text-2xl font-extrabold text-[#17231A] mb-1">Saved Addresses</h1>
+                    <p className="text-xs text-slate-500 font-semibold">Manage saved address locations for seamless shipping checkout.</p>
                   </div>
                   <button
                     onClick={() => handleOpenAddressModal()}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-full text-xs transition-colors flex items-center gap-1 shadow cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-full text-xs transition-colors flex items-center gap-1 shadow-sm cursor-pointer"
                   >
                     <Plus size={13} /> Add Address
                   </button>
@@ -874,7 +874,7 @@ export default function UserProfilePage() {
                 {showAddressModal && (
                   <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
                     <div className="bg-white rounded-[28px] w-full max-w-sm p-6 shadow-2xl relative overflow-hidden animate-[scaleUp_0.3s_ease-out]">
-                      <h2 className="text-lg font-black text-slate-900 leading-snug mb-4" style={{ fontFamily: "'Fraunces', serif" }}>
+                      <h2 className="text-lg font-extrabold text-[#17231A] leading-snug mb-4">
                         {editingAddress ? "Edit Address" : "Add New Address"}
                       </h2>
 
@@ -962,12 +962,12 @@ export default function UserProfilePage() {
               <div>
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                   <div>
-                    <h1 className="text-2xl font-bold mb-1" style={{ fontFamily: "'Fraunces', serif" }}>My Subscriptions</h1>
-                    <p className="text-xs text-slate-400 font-semibold">Track auto-deliveries, modify frequencies, and manage subscription cards.</p>
+                    <h1 className="text-2xl font-extrabold text-[#17231A] mb-1">My Subscriptions</h1>
+                    <p className="text-xs text-slate-500 font-semibold">Track auto-deliveries, modify frequencies, and manage subscription cards.</p>
                   </div>
                   <Link
                     to="/subscriptions"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2.5 rounded-full text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm shrink-0"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2.5 rounded-full text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm shrink-0"
                   >
                     <span>Build & Track Subscriptions</span>
                     <ArrowLeft size={14} className="rotate-180" />
@@ -1109,8 +1109,8 @@ export default function UserProfilePage() {
             {/* TAB 5: E-GIFT CARDS */}
             {currentTab === "giftcards" && (
               <div>
-                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>E-Gift Cards</h1>
-                <p className="text-xs text-slate-400 font-semibold mb-6">Manage credits, purchase gift cards, or redeem promo card codes.</p>
+                <h1 className="text-2xl font-extrabold text-[#17231A] mb-1.5">E-Gift Cards</h1>
+                <p className="text-xs text-slate-500 font-semibold mb-6">Manage credits, purchase gift cards, or redeem promo card codes.</p>
 
                 <div className="grid md:grid-cols-[300px_1fr] gap-6 items-start">
                   {/* Glowing Gift Card */}
@@ -1199,9 +1199,9 @@ export default function UserProfilePage() {
             {/* TAB 5: HELP CENTER */}
             {currentTab === "help" && (
               <div>
-                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Help Center & FAQs</h1>
-                <p className="text-xs text-slate-400 font-semibold mb-6">Need assistance? Explore the support resources or reach out to our active helpdesk.</p>
-                <div className="border border-slate-100 rounded-3xl p-2 bg-slate-50/30">
+                <h1 className="text-2xl font-extrabold text-[#17231A] mb-1.5">Help Center & FAQs</h1>
+                <p className="text-xs text-slate-500 font-semibold mb-6">Need assistance? Explore the support resources or reach out to our active helpdesk.</p>
+                <div className="border border-emerald-100 rounded-3xl p-2 bg-[#FFFCF5]">
                   <SupportContent />
                 </div>
               </div>
@@ -1210,8 +1210,8 @@ export default function UserProfilePage() {
             {/* TAB 6: ACCOUNT PRIVACY */}
             {currentTab === "privacy" && (
               <div>
-                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Account Privacy</h1>
-                <p className="text-xs text-slate-400 font-semibold mb-6">Manage data privacy settings, session authentication, and account state.</p>
+                <h1 className="text-2xl font-extrabold text-[#17231A] mb-1.5">Account Privacy</h1>
+                <p className="text-xs text-slate-500 font-semibold mb-6">Manage data privacy settings, session authentication, and account state.</p>
 
                 <div className="space-y-6 max-w-xl">
                   {/* Account Deletion Panel */}
