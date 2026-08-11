@@ -116,7 +116,7 @@ router.post("/register-customer", (req, res) => {
 });
 
 // LOGIN CUSTOMER WITH SAVED PROFILE
-router.post("/login-customer", (req, res) => {
+router.post(["/login-customer", "/customer/login"], (req, res) => {
   const { phone, email, password } = req.body;
   const identifier = normalizeIdentifier(phone || email);
 

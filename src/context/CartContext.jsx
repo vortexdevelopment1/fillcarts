@@ -210,7 +210,7 @@ export function CartProvider({ children }) {
       {/* Global Login Prompt Modal */}
       {showLoginModal && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[99999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-sm p-6 shadow-2xl relative overflow-hidden text-center animate-[scaleUp_0.3s_ease-out]">
+          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl relative overflow-hidden text-center animate-[scaleUp_0.3s_ease-out]">
             <button
               onClick={() => setShowLoginModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-7 h-7 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
@@ -219,28 +219,28 @@ export function CartProvider({ children }) {
             </button>
 
             <div className="mt-2 mb-6">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-3">
+              <div className="w-12 h-12 bg-[#ECFDF3] text-[#16A34A] rounded-full flex items-center justify-center mx-auto mb-3">
                 <Lock size={20} />
               </div>
-              <h2 className="text-lg font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
+              <h2 className="text-lg font-black text-[#17231A] leading-snug">
                 Login Required
               </h2>
               <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[240px] mx-auto leading-relaxed">
-                Please log in to add items to your cart, save addresses, and track your doorstep delivery.
+                Please log in to add items to your cart, manage subscriptions, and track doorstep delivery.
               </p>
             </div>
 
             <div className="flex gap-2">
               <button
                 onClick={() => setShowLoginModal(false)}
-                className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold py-3.5 rounded-xl text-xs transition-colors cursor-pointer"
+                className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <a
                 href="/login"
                 onClick={() => setShowLoginModal(false)}
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-3.5 rounded-xl text-xs transition-colors inline-block text-center shadow-lg shadow-blue-100 cursor-pointer"
+                className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-3 rounded-xl text-xs transition-colors inline-block text-center shadow-md cursor-pointer"
               >
                 Login Now
               </a>

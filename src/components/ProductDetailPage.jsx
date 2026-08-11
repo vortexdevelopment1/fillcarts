@@ -19,7 +19,7 @@ const productDatabase = [
   { id: "grocery-5", name: "Tata Salt 1kg", category: "Grocery", brand: "Tata", price: 28, mrp: 32, rating: "4.9", reviews: "5,400", img: "grocery-item-5", desc: "Vacuum evaporated iodized salt ensuring purity and essential iodine for health." },
   { id: "grocery-6", name: "Tea Leaves 250g", category: "Grocery", brand: "Red Label", price: 115, mrp: 130, rating: "4.6", reviews: "850", img: "grocery-item-6", desc: "Rich Assam CTC black tea blend for strong aroma and refreshing taste." },
   { id: "grocery-7", name: "Poha 500g", category: "Grocery", brand: "Local Fresh", price: 42, mrp: 50, rating: "4.5", reviews: "620", img: "grocery-item-7", desc: "Thick beaten rice flakes for quick, light and healthy breakfast poha." },
-  
+
   { id: "fruits-0", name: "Fresh Bananas 1dz", category: "Fruits & Veg", brand: "Farm Fresh", price: 59, mrp: 70, rating: "4.6", reviews: "1,100", img: "fruits-item-0", desc: "Naturally ripened sweet Robusta bananas sourced fresh daily from local orchards." },
   { id: "fruits-1", name: "Red Apples 1kg", category: "Fruits & Veg", brand: "Shimla Fresh", price: 149, mrp: 180, rating: "4.8", reviews: "2,100", img: "fruits-item-1", desc: "Crisp and juicy Shimla red apples packed with natural vitamins." },
   { id: "fruits-2", name: "Onions 1kg", category: "Fruits & Veg", brand: "Nasik Fresh", price: 35, mrp: 45, rating: "4.4", reviews: "4,200", img: "fruits-item-2", desc: "Fresh Nasik red onions, crisp and essential for everyday Indian cooking." },
@@ -167,19 +167,19 @@ export default function ProductDetailPage() {
       {/* ========================================================================= */}
       <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
         <div className="grid lg:grid-cols-[1fr_1.15fr] gap-8 md:gap-12 items-start">
-          
+
           {/* LEFT COLUMN: E-Commerce Multi-Image Gallery & Trust Badges */}
           <div className="space-y-4 lg:sticky lg:top-24">
-            
+
             {/* Main Product Hero Gallery Display Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm text-center relative flex flex-col items-center justify-center overflow-hidden group">
-              
+
               {/* Top Image Overlay Badges */}
               <div className="w-full flex items-center justify-between absolute top-4 left-0 px-6 z-10">
                 <span className="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full shadow-xs flex items-center gap-1">
                   <Star size={12} fill="currentColor" /> {product.rating} (Bestseller)
                 </span>
-                
+
                 <span className="bg-slate-900/85 backdrop-blur-md text-white font-bold text-[11px] px-3 py-1 rounded-full border border-white/20">
                   Expiry : 30 Aug 2026
                 </span>
@@ -200,9 +200,8 @@ export default function ProductDetailPage() {
                   <button
                     key={i}
                     onClick={() => setActiveThumbIdx(i)}
-                    className={`w-14 h-14 rounded-xl border-2 overflow-hidden transition-all cursor-pointer ${
-                      activeThumbIdx === i ? "border-amber-500 scale-105 shadow-xs" : "border-slate-200 opacity-60 hover:opacity-100"
-                    }`}
+                    className={`w-14 h-14 rounded-xl border-2 overflow-hidden transition-all cursor-pointer ${activeThumbIdx === i ? "border-amber-500 scale-105 shadow-xs" : "border-slate-200 opacity-60 hover:opacity-100"
+                      }`}
                   >
                     <img src={imgUrl} alt="Thumbnail" className="w-full h-full object-cover" />
                   </button>
@@ -241,7 +240,7 @@ export default function ProductDetailPage() {
 
           {/* RIGHT COLUMN: Rich Product Details, Variant Selector, Pincode & Action Buttons */}
           <div className="space-y-6">
-            
+
             {/* Title & Pricing Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
@@ -325,11 +324,10 @@ export default function ProductDetailPage() {
                     <button
                       key={idx}
                       onClick={() => setSelectedVariantIdx(idx)}
-                      className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${
-                        isSelected
-                          ? "border-amber-500 bg-amber-50/50 ring-2 ring-amber-400/50 shadow-xs"
-                          : "border-slate-200 bg-white hover:border-slate-300"
-                      }`}
+                      className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${isSelected
+                        ? "border-amber-500 bg-amber-50/50 ring-2 ring-amber-400/50 shadow-xs"
+                        : "border-slate-200 bg-white hover:border-slate-300"
+                        }`}
                     >
                       <div className="text-xs font-extrabold text-slate-900">{v.size}</div>
                       <div className="text-[11px] font-bold text-amber-600 mt-0.5">{v.off}</div>
@@ -404,7 +402,7 @@ export default function ProductDetailPage() {
             {/* Seller Details Card (Exact Match with Image 1) */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-2">
               <div className="text-sm font-bold text-slate-900">Seller Details</div>
-              
+
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
                 <span>Seller Name: Fresh Mart Superstore</span>
                 <CheckCircle2 size={16} className="text-blue-600 fill-blue-600 text-white" />
@@ -422,7 +420,7 @@ export default function ProductDetailPage() {
             {/* Action Buttons: Add to Cart & Download App to Buy */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                
+
                 {/* Add to Cart */}
                 {inCart ? (
                   <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-2xl p-2 px-4">
@@ -581,7 +579,7 @@ export default function ProductDetailPage() {
                     alt={rel.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
-                  
+
                   {/* Yellow Plus Cart Button matching uploaded Image 1 */}
                   <button
                     onClick={(e) => {

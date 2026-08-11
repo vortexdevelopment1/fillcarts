@@ -105,6 +105,23 @@ export const CATEGORY_IMAGE_MAP = {
   electronics: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80"
 };
 
+// Local Stores Curated Images
+export const STORE_IMAGE_MAP = {
+  freshMart: "https://images.unsplash.com/photo-1604719312566-8912e9227c6a?w=600&auto=format&fit=crop&q=80",
+  dailyNeeds: "https://images.unsplash.com/photo-1578916171728-46686eac8d58?w=600&auto=format&fit=crop&q=80",
+  cityBakery: "https://images.unsplash.com/photo-1517433670267-08bbd4be890f?w=600&auto=format&fit=crop&q=80",
+  greenOrganics: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80",
+  medPlus: "https://images.unsplash.com/photo-1576602976047-174e57a47881?w=600&auto=format&fit=crop&q=80"
+};
+
+// Subscription Collage Images
+export const SUBSCRIPTION_IMAGE_MAP = {
+  milk: "https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop&q=80",
+  bread: "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=600&auto=format&fit=crop&q=80",
+  water: "https://images.unsplash.com/photo-1548839140-29a749e1bc4e?w=600&auto=format&fit=crop&q=80",
+  eggs: "https://images.unsplash.com/photo-1516448620398-c5f44bf9f441?w=600&auto=format&fit=crop&q=80"
+};
+
 export function getProductImage(productName = "", categoryKey = "grocery") {
   const nameLower = String(productName).toLowerCase();
   for (const [key, url] of Object.entries(PRODUCT_IMAGE_MAP)) {
@@ -114,3 +131,4 @@ export function getProductImage(productName = "", categoryKey = "grocery") {
   }
   return CATEGORY_IMAGE_MAP[categoryKey] || CATEGORY_IMAGE_MAP.grocery;
 }
+
