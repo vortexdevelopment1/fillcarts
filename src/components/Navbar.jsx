@@ -1,11 +1,12 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Zap, Gift, CreditCard, Sparkles, MapPin, Search, User,
   ShoppingCart, ChevronRight, ChevronDown, QrCode, X, Navigation,
-  Compass, Loader2, CheckCircle2, Building2
+  Compass, Loader2, CheckCircle2, Building2, Check
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import api from "../api";
 
 export default function Navbar({ searchPlaceholder = "Search products, stores...", onSearchChange }) {
   const { cartCount, user, logoutUser, setShowLoginModal, userLocation, changeLocation } = useCart();
@@ -14,9 +15,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
   const location = useLocation();
   const navigate = useNavigate();
 
+  // App Modal state
   const [showAppModal, setShowAppModal] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
-  const [modalDesc, setModalDesc] = useState("");
 
   // Location selector state
   const [showLocationModal, setShowLocationModal] = useState(false);
@@ -111,12 +111,6 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
     window.location.reload();
   };
 
-  const handleSearchSubmit = (e) => {
-    if (e.key === "Enter" && searchValue.trim()) {
-      navigate(`/categories?q=${encodeURIComponent(searchValue.trim())}`);
-    }
-  };
-
   const handleSearchInput = (e) => {
     setSearchValue(e.target.value);
     if (onSearchChange) {
@@ -124,17 +118,10 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
     }
   };
 
-  const handleSaveLocation = (loc) => {
-    if (loc.trim()) {
-      setCurrentLocation(loc.trim());
-      setShowLocationModal(false);
-    }
-  };
-
   const navLinks = [
     { label: "Categories", to: "/categories" },
     { label: "Offers", to: "/#offers", badge: "HOT", badgeBg: "bg-amber-500" },
-    { label: "Subscription", to: "/subscriptions", badge: "⭐", badgeBg: "bg-emerald-600" },
+    { label: "Subscription", to: "/subscriptions", badge: "⭐", badgeBg: "bg-[#16A34A]" },
     { label: "Features", to: "/features" },
   ];
 
@@ -146,28 +133,31 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
   return (
     <header className="w-full sticky top-0 z-50 shadow-sm border-b border-emerald-900/10">
-      {/* 5. TOP OFFER BAR WITH MARQUEE ANIMATION */}
-      <div className="bg-[#0B2616] text-emerald-50 text-xs font-semibold h-9 overflow-hidden flex items-center border-b border-emerald-950">
+      {/* 5. TOP OFFER BAR WITH MARQUEE ANIMATION (VISUAL ONLY) */}
+      <div className="bg-[#0B2616] text-emerald-50 text-xs font-semibold h-9 overflow-hidden flex items-center border-b border-emerald-950 select-none">
         <div className="flex whitespace-nowrap animate-[marquee_22s_linear_infinite]">
           {[...Array(2)].map((_, i) => (
             <div key={i} className="flex">
               <span className="px-10 flex items-center gap-2">
-                <Zap size={13} className="text-amber-400 fill-amber-400" /> Express Local Delivery
+                <Zap size={13} className="text-amber-400" /> Express Local Delivery
               </span>
+
               <span className="px-10 flex items-center gap-2">
-                <Gift size={13} className="text-emerald-300" /> Today's offers live now
+                <Gift size={13} className="text-blue-400" /> Today's offers live now
               </span>
+
               <span className="px-10 flex items-center gap-2">
-                <CreditCard size={13} className="text-amber-300" /> Free delivery above ₹299
+                <CreditCard size={13} className="text-teal-400" /> Free delivery above ₹299
               </span>
+
               <span className="px-10 flex items-center gap-2">
-                <Sparkles size={13} className="text-teal-300" /> 100% Fresh & Quality Assured
+                <Sparkles size={13} className="text-violet-400" /> 100% Fresh & Quality Assured
               </span>
             </div>
           ))}
         </div>
-        <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
       </div>
+      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
 
       {/* 6. MAIN NAVBAR */}
       <div className="glass-nav bg-white/95 backdrop-blur-md">
@@ -179,31 +169,38 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] inline-block ml-0.5" />
           </Link>
 
+          {/* Location Selector Trigger */}
           <button
             onClick={() => setShowLocationModal(true)}
-            className="hidden md:flex items-center gap-2 border border-slate-200 hover:border-blue-500 rounded-full px-3.5 py-1.5 bg-white flex-shrink-0 transition-all cursor-pointer shadow-xs text-left group"
+            className="hidden md:flex items-center gap-2 border border-slate-200 hover:border-[#16A34A] rounded-full px-3.5 py-1.5 bg-white flex-shrink-0 transition-all cursor-pointer shadow-2xs text-left group"
           >
-            <div className="w-7 h-7 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+            <div className="w-7 h-7 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
               <MapPin size={14} />
             </div>
             <div className="flex flex-col leading-none pr-1">
               <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400 flex items-center gap-1">
-                Deliver to {userLocation?.isGps ? <span className="text-emerald-600 font-bold">● Live GPS</span> : "Location"}
+                Deliver to {userLocation?.isGps ? <span className="text-[#166534] font-bold">● Live GPS</span> : "Location"}
               </span>
-              <span className="text-xs font-black text-slate-900 truncate max-w-[130px] mt-0.5">
+              <span className="text-xs font-black text-[#17231A] truncate max-w-[130px] mt-0.5">
                 {userLocation?.area || userLocation?.city || "Select City"}
               </span>
             </div>
-            <ChevronDown size={13} className="text-slate-400 group-hover:text-blue-600 transition-colors shrink-0" />
+            <ChevronDown size={13} className="text-slate-400 group-hover:text-[#16A34A] transition-colors shrink-0" />
           </button>
 
-          <div className="hidden md:flex items-center gap-2 bg-white border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1">
-            <Search size={15} />
+          {/* Search Input Bar */}
+          <div className="hidden md:flex items-center gap-2 bg-[#FFFCF5] border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1 focus-within:border-[#16A34A]">
+            <Search size={15} className="text-slate-400" />
             <input
               value={searchValue}
               onChange={handleSearchInput}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchValue.trim()) {
+                  navigate(`/categories?q=${encodeURIComponent(searchValue.trim())}`);
+                }
+              }}
               placeholder={searchPlaceholder}
-              className="bg-transparent outline-none w-full text-slate-900 text-sm"
+              className="bg-transparent outline-none w-full text-slate-900 text-sm font-medium"
             />
           </div>
 
@@ -214,7 +211,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               <div className="relative">
                 <button
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-1.5 bg-slate-50 hover:bg-emerald-50 border border-slate-200 hover:border-emerald-300 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
                 >
                   <div className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
                     {user.name ? user.name[0].toUpperCase() : "U"}
@@ -224,7 +221,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute top-11 right-0 bg-white border border-slate-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left animate-in fade-in zoom-in-95 duration-150">
+                  <div className="absolute top-11 right-0 bg-white border border-emerald-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left">
                     <div className="pb-3 border-b border-slate-100 mb-2">
                       <h3 className="font-extrabold text-sm text-[#17231A]">{user.name || "Customer"}</h3>
                       <p className="text-xs text-slate-500 truncate font-medium">{user.phone || user.email}</p>
@@ -251,7 +248,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                         className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
                       >
                         <span>Subscriptions</span>
-                        <span className="bg-emerald-100 text-[#166534] text-[10px] font-bold px-1.5 py-0.5 rounded">Active</span>
+                        <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded">Active</span>
                       </Link>
                       <Link
                         to="/profile?tab=addresses"
@@ -289,7 +286,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                   setShowLoginModal(true);
                 }
               }}
-              className="w-9 h-9 rounded-full bg-slate-50 border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] flex items-center justify-center relative text-slate-700 hover:text-[#166534] transition-all cursor-pointer"
+              className="w-9 h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] flex items-center justify-center relative text-[#17231A] hover:text-[#166534] transition-all cursor-pointer shadow-2xs"
               title="Cart"
             >
               <ShoppingCart size={17} />
@@ -317,13 +314,14 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             {navLinks.map((link, i) => {
               const active = isActiveRoute(link.to);
               return (
-                <a
+                <Link
                   key={i}
-                  href={link.to}
-                  className={`flex items-center gap-1.5 whitespace-nowrap py-1 transition-all ${active
+                  to={link.to}
+                  className={`flex items-center gap-1.5 whitespace-nowrap py-1 transition-all ${
+                    active
                       ? "text-[#16A34A] font-extrabold border-b-2 border-[#16A34A]"
                       : "text-slate-700 hover:text-[#16A34A]"
-                    }`}
+                  }`}
                 >
                   <span>{link.label}</span>
                   {link.badge && (
@@ -331,7 +329,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                       {link.badge}
                     </span>
                   )}
-                </a>
+                </Link>
               );
             })}
 
@@ -343,79 +341,10 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
         </nav>
       </div>
 
-      {/* Location Picker Modal */}
-      {showLocationModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-md p-6 shadow-2xl relative text-left">
-            <button
-              onClick={() => setShowLocationModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
-            >
-              <X size={15} />
-            </button>
-
-            <div className="mb-4">
-              <div className="w-10 h-10 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center mb-3">
-                <MapPin size={20} />
-              </div>
-              <h3 className="text-lg font-bold text-[#17231A]">Set Delivery Location</h3>
-              <p className="text-xs text-slate-500 mt-0.5">Select your area to discover local stores & fast 15-minute delivery</p>
-            </div>
-
-            <div className="space-y-3 mb-5">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Enter area, pincode or street name..."
-                  value={tempLocationInput}
-                  onChange={(e) => setTempLocationInput(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-900 outline-none focus:border-[#16A34A] focus:ring-1 focus:ring-[#16A34A]"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Popular Locations</div>
-                {[
-                  "Indiranagar, Bengaluru",
-                  "Koramangala, Bengaluru",
-                  "HSR Layout, Bengaluru",
-                  "Bandra West, Mumbai",
-                  "Connaught Place, New Delhi"
-                ].map((loc) => (
-                  <button
-                    key={loc}
-                    onClick={() => handleSaveLocation(loc)}
-                    className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] flex items-center justify-between transition-colors cursor-pointer"
-                  >
-                    <span>{loc}</span>
-                    {currentLocation === loc && <Check size={14} className="text-[#16A34A]" />}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowLocationModal(false)}
-                className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleSaveLocation(tempLocationInput || currentLocation)}
-                className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
-              >
-                Save Location
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Download App Modal */}
       {showAppModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white border border-emerald-100 rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center">
             <button
               onClick={() => setShowAppModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
@@ -465,8 +394,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
       {/* Location Selector Modal */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white rounded-[32px] w-full max-w-md p-6 shadow-2xl relative overflow-hidden text-left animate-[scaleUp_0.3s_ease-out]">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-[9999] flex items-center justify-center p-4">
+          <div className="bg-white border border-emerald-100 rounded-[32px] w-full max-w-md p-6 shadow-2xl relative overflow-hidden text-left">
             <button
               onClick={() => setShowLocationModal(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
@@ -475,11 +404,11 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100">
+              <div className="w-12 h-12 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center shrink-0 border border-emerald-200">
                 <MapPin size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-black text-slate-900 leading-snug" style={{ fontFamily: "'Fraunces', serif" }}>
+                <h3 className="text-lg font-extrabold text-[#17231A] leading-snug">
                   Select Delivery Location
                 </h3>
                 <p className="text-xs text-slate-500 font-semibold mt-0.5">
@@ -489,15 +418,15 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             </div>
 
             {/* Current Active Location Display Pill */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-3.5 mb-4 flex items-center justify-between">
+            <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-3.5 mb-4 flex items-center justify-between">
               <div>
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Location</div>
-                <div className="text-xs font-extrabold text-slate-900 flex items-center gap-1.5 mt-0.5">
-                  <MapPin size={13} className="text-blue-600" />
+                <div className="text-xs font-extrabold text-[#17231A] flex items-center gap-1.5 mt-0.5">
+                  <MapPin size={13} className="text-[#16A34A]" />
                   <span>{userLocation?.formatted || `${userLocation?.area}, ${userLocation?.city}`}</span>
                 </div>
               </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+              <span className="text-[10px] font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
                 ⚡ Active
               </span>
             </div>
@@ -506,7 +435,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             <button
               onClick={handleDetectGps}
               disabled={isDetectingGps}
-              className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-extrabold p-3.5 rounded-2xl text-xs transition-all shadow-md shadow-blue-100 flex items-center justify-center gap-2 cursor-pointer mb-4"
+              className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold p-3.5 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mb-4"
             >
               {isDetectingGps ? (
                 <>
@@ -522,7 +451,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             </button>
 
             {gpsError && (
-              <p className="text-[11px] font-bold text-red-600 bg-red-50 p-2.5 rounded-xl mb-4 border border-red-100">
+              <p className="text-[11px] font-bold text-rose-600 bg-rose-50 p-2.5 rounded-xl mb-4 border border-rose-200">
                 {gpsError}
               </p>
             )}
@@ -530,15 +459,15 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             {/* Saved Profile Addresses if available */}
             {user && (
               <div className="mb-4">
-                <div className="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
-                  <Building2 size={13} className="text-blue-600" /> Your Saved Addresses
+                <div className="text-xs font-black text-[#17231A] mb-2 flex items-center gap-1.5">
+                  <Building2 size={13} className="text-[#16A34A]" /> Your Saved Addresses
                 </div>
                 {loadingSavedAddresses ? (
                   <div className="text-xs text-slate-400 font-bold py-2 flex items-center gap-2">
-                    <Loader2 size={14} className="animate-spin" /> Loading addresses...
+                    <Loader2 size={14} className="animate-spin text-[#16A34A]" /> Loading addresses...
                   </div>
                 ) : savedAddresses.length === 0 && !user.address ? (
-                  <div className="text-xs text-slate-400 font-semibold bg-slate-50 p-3 rounded-xl border border-slate-100">
+                  <div className="text-xs text-slate-400 font-semibold bg-[#FFFCF5] p-3 rounded-xl border border-slate-100">
                     No saved addresses found. Enter one below or add in your profile.
                   </div>
                 ) : (
@@ -556,10 +485,10 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                           });
                           setShowLocationModal(false);
                         }}
-                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-colors flex items-center justify-between cursor-pointer group"
+                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-colors flex items-center justify-between cursor-pointer group"
                       >
                         <div className="min-w-0 pr-2">
-                          <div className="text-xs font-extrabold text-slate-900 group-hover:text-blue-600">Primary Profile Address</div>
+                          <div className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534]">Primary Profile Address</div>
                           <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{user.address}</div>
                         </div>
                         <ChevronRight size={14} className="text-slate-400 shrink-0" />
@@ -579,10 +508,10 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                           });
                           setShowLocationModal(false);
                         }}
-                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50/50 transition-colors flex items-center justify-between cursor-pointer group"
+                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-colors flex items-center justify-between cursor-pointer group"
                       >
                         <div className="min-w-0 pr-2">
-                          <div className="text-xs font-extrabold text-slate-900 group-hover:text-blue-600">{addr.type} Address</div>
+                          <div className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534]">{addr.type} Address</div>
                           <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{addr.address_line}</div>
                         </div>
                         <ChevronRight size={14} className="text-slate-400 shrink-0" />
@@ -595,8 +524,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
             {/* Popular Cities Quick Select */}
             <div className="mb-4">
-              <div className="text-xs font-black text-slate-800 mb-2 flex items-center gap-1.5">
-                <Compass size={13} className="text-blue-600" /> Popular Cities
+              <div className="text-xs font-black text-[#17231A] mb-2 flex items-center gap-1.5">
+                <Compass size={13} className="text-[#16A34A]" /> Popular Cities
               </div>
               <div className="flex flex-wrap gap-1.5">
                 {popularCities.map((item) => {
@@ -617,8 +546,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                       }}
                       className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
                         isSelected
-                          ? "bg-slate-900 text-white border-slate-900 shadow-xs"
-                          : "bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100 hover:border-slate-300"
+                          ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
+                          : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3] hover:border-emerald-300"
                       }`}
                     >
                       {item.city}
@@ -630,26 +559,26 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
             {/* Manual Custom Locality Form */}
             <form onSubmit={handleSaveCustomLocation} className="border-t border-slate-100 pt-3 space-y-2.5">
-              <div className="text-xs font-black text-slate-800">Or Enter City / Area / Pincode Manually</div>
+              <div className="text-xs font-black text-[#17231A]">Or Enter City / Area / Pincode Manually</div>
               <div className="grid grid-cols-2 gap-2">
                 <input
                   type="text"
                   placeholder="City / Area"
                   value={customCity}
                   onChange={(e) => setCustomCity(e.target.value)}
-                  className="px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white"
+                  className="px-3 py-2 text-xs font-semibold bg-[#FFFCF5] border border-slate-200 rounded-xl outline-none focus:border-[#16A34A]"
                 />
                 <input
                   type="text"
                   placeholder="6-digit Pincode"
                   value={customPincode}
                   onChange={(e) => setCustomPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="px-3 py-2 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500 focus:bg-white"
+                  className="px-3 py-2 text-xs font-semibold bg-[#FFFCF5] border border-slate-200 rounded-xl outline-none focus:border-[#16A34A]"
                 />
               </div>
               <button
                 type="submit"
-                className="w-full bg-slate-900 hover:bg-slate-800 text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
               >
                 Set Delivery Location
               </button>
@@ -657,6 +586,6 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
           </div>
         </div>
       )}
-    </div>
+    </header>
   );
 }
