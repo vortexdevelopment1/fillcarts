@@ -59,7 +59,9 @@ export default function CartPage() {
           });
           setPastItems(Array.from(itemsMap.values()));
         } catch (e) {
-          console.error("Failed to load purchase history", e);
+          if (e?.response?.status !== 401) {
+            console.error("Failed to load purchase history", e);
+          }
         }
       }
     };
@@ -79,7 +81,9 @@ export default function CartPage() {
             setSelectedAddress("profile");
           }
         } catch (e) {
-          console.error("Failed to load saved addresses", e);
+          if (e?.response?.status !== 401) {
+            console.error("Failed to load saved addresses", e);
+          }
         }
       }
     };

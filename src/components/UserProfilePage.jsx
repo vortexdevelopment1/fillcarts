@@ -104,7 +104,9 @@ export default function UserProfilePage() {
       const res = await api.get("/orders");
       setOrders(res.data.orders || []);
     } catch (err) {
-      console.error(err);
+      if (err?.response?.status !== 401) {
+        console.error(err);
+      }
     } finally {
       setIsLoadingOrders(false);
     }
@@ -142,7 +144,9 @@ export default function UserProfilePage() {
       const res = await api.get("/addresses");
       setAddresses(res.data.addresses || []);
     } catch (err) {
-      console.error(err);
+      if (err?.response?.status !== 401) {
+        console.error(err);
+      }
     } finally {
       setIsLoadingAddresses(false);
     }
@@ -414,7 +418,9 @@ export default function UserProfilePage() {
       const res = await api.get("/giftcard");
       setGiftBalance(res.data.balance || 0);
     } catch (err) {
-      console.error(err);
+      if (err?.response?.status !== 401) {
+        console.error(err);
+      }
     }
   };
 
