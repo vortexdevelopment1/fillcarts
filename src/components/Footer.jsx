@@ -7,7 +7,7 @@ const footerColumns = [
     links: [
       { l: "Browse Categories", to: "/categories" },
       { l: "Today's Offers", to: "/#offers" },
-      { l: "Daily Subscriptions ⭐", to: "/subscriptions" },
+      { l: "Daily Subscriptions ", to: "/subscriptions" },
       { l: "Platform Features", to: "/features" },
     ],
   },
