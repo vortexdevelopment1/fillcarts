@@ -156,7 +156,9 @@ export default function SubscriptionPage() {
             }
           }
         } catch (e) {
-          console.error("Failed to fetch saved addresses", e);
+          if (e?.response?.status !== 401) {
+            console.error("Failed to fetch saved addresses", e);
+          }
         }
       } else {
         const guestAddress = localStorage.getItem("fillcarts_user_address");
