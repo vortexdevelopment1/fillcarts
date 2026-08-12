@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Zap, Gift, CreditCard, Sparkles, MapPin, Search, User,
   ShoppingCart, ChevronRight, ChevronDown, QrCode, X, Navigation,
-  Compass, Loader2, CheckCircle2, Building2, Check
+  Compass, Loader2, CheckCircle2, Building2, Check, Store, Bike
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import api from "../api";
@@ -333,9 +333,30 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               );
             })}
 
-            {/* Quick sub-text or category pill indicator */}
-            <div className="ml-auto hidden md:flex items-center gap-2 text-[11px] font-semibold text-slate-500">
-              <span>📍 Neighborhood Stores: <strong className="text-[#166534]">24 Active</strong></span>
+            {/* Become a Vendor & Become a Rider Links */}
+            <div className="ml-auto flex items-center gap-2 sm:gap-3 text-xs font-bold whitespace-nowrap">
+              <Link
+                to="/become-vendor"
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all ${
+                  isActiveRoute("/become-vendor")
+                    ? "bg-[#ECFDF3] text-[#166534] border-emerald-300 font-extrabold shadow-2xs"
+                    : "text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
+                }`}
+              >
+                <Store size={13} className="text-[#16A34A]" />
+                <span>Become a Vendor</span>
+              </Link>
+              <Link
+                to="/become-rider"
+                className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all ${
+                  isActiveRoute("/become-rider")
+                    ? "bg-[#ECFDF3] text-[#166534] border-emerald-300 font-extrabold shadow-2xs"
+                    : "text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
+                }`}
+              >
+                <Bike size={13} className="text-[#16A34A]" />
+                <span>Become a Rider</span>
+              </Link>
             </div>
           </div>
         </nav>
