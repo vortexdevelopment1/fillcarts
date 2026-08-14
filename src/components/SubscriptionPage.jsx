@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ChevronRight, Repeat, Clock, Milk, ShoppingBasket,
   Sparkles, Star, Plus, Trash2,
@@ -49,11 +49,8 @@ function genProducts(catKey) {
   }));
 }
 
-const initialSeedOrders = [];
-
-const STORAGE_KEY = "fillcarts_subscription_orders";
-
 export default function SubscriptionPage() {
+  const navigate = useNavigate();
   const { user } = useCart();
   const [activeCategory, setActiveCategory] = useState("dairy");
   const [basket, setBasket] = useState([
@@ -63,13 +60,12 @@ export default function SubscriptionPage() {
   const [frequency, setFrequency] = useState("Daily");
   const [timeSlot, setTimeSlot] = useState("6:30 AM - 7:30 AM");
 
-  // Subscription Date Range (Kab se Kab tak)
   const todayDefault = new Date().toISOString().split("T")[0];
   const oneMonthDefault = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split("T")[0];
 
   const [startDate, setStartDate] = useState(todayDefault);
   const [endDate, setEndDate] = useState(oneMonthDefault);
-  const [durationType, setDurationType] = useState("1_month"); // 7_days | 1_month | 3_months | until_cancelled | custom
+  const [durationType, setDurationType] = useState("1_month");
 
   const handleDurationTypeChange = (type) => {
     setDurationType(type);
@@ -92,61 +88,23 @@ export default function SubscriptionPage() {
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [userAddress, setUserAddress] = useState("Flat 402, Green Valley Apartments, Bengaluru");
 
-  // Modals & Navigation state
   const [showAppInstallModal, setShowAppInstallModal] = useState(false);
   const [selectedCardForAppInstall, setSelectedCardForAppInstall] = useState(null);
-  const [viewTab, setViewTab] = useState("create"); // create | my_subscriptions
-  const [orderFilter, setOrderFilter] = useState("All"); // All | Active Schedule | App Setup Pending | Paused
+  const [viewTab, setViewTab] = useState("create");
+  const [orderFilter, setOrderFilter] = useState("All");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
 
-  // Dynamically fetch logged-in user profile address and saved addresses
-  useEffect(() => {
-    const fetchUserAddresses = async () => {
-      if (user) {
-        let addrStr = "";
-        if (user.address) {
-          addrStr = user.address;
-          if (user.pincode) addrStr += `, Pincode: ${user.pincode}`;
-        }
-        if (addrStr) {
-          setUserAddress(addrStr);
-        }
-
-        try {
-          const res = await api.get("/addresses");
-          if (res.data && res.data.addresses && res.data.addresses.length > 0) {
-            setSavedAddresses(res.data.addresses);
-            const first = res.data.addresses[0];
-            const firstStr = `[${first.type}] ${first.address_line}${first.pincode ? `, Pincode: ${first.pincode}` : ""}`;
-            if (!user.address) {
-              setUserAddress(firstStr);
-            }
-          }
-        } catch (e) {
-          if (e?.response?.status !== 401) {
-            console.error("Failed to fetch saved addresses", e);
-          }
-        }
-      } else {
-        const guestAddress = localStorage.getItem("fillcarts_user_address");
-        if (guestAddress) {
-          setUserAddress(guestAddress);
-        }
-      }
-    };
-
-    fetchUserAddresses();
-  }, [user]);
-
-  const handleAddressChange = (val) => {
-    setUserAddress(val);
-    localStorage.setItem("fillcarts_user_address", val);
+  const getStorageKey = (u) => {
+    if (!u) return null;
+    return `fillcarts_subscription_orders_${u.id || u.phone || u.email || 'user'}`;
   };
 
-  // Persistent Orders State (Defaults to empty list []; ONLY generated when user explicitly builds a card)
+  // Persistent Orders State (Empty when not logged in; created ONLY when user is logged in)
   const [myOrders, setMyOrders] = useState(() => {
+    if (!user) return [];
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const key = getStorageKey(user);
+      const saved = localStorage.getItem(key);
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) return parsed;
@@ -157,39 +115,39 @@ export default function SubscriptionPage() {
     return [];
   });
 
-  // Save to LocalStorage whenever myOrders changes & dispatch update event
+  // Sync orders when user changes
   useEffect(() => {
+    if (!user) {
+      setMyOrders([]);
+      return;
+    }
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(myOrders));
-      window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
+      const key = getStorageKey(user);
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) setMyOrders(parsed);
+      } else {
+        setMyOrders([]);
+      }
+    } catch (e) {
+      setMyOrders([]);
+    }
+  }, [user]);
+
+  // Save to LocalStorage whenever myOrders changes
+  useEffect(() => {
+    if (!user) return;
+    try {
+      const key = getStorageKey(user);
+      if (key) {
+        localStorage.setItem(key, JSON.stringify(myOrders));
+        window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
+      }
     } catch (e) {
       console.error("Failed to save subscription orders to localStorage", e);
     }
-  }, [myOrders]);
-
-  // Sync state dynamically when updated from Profile Page or another tab
-  useEffect(() => {
-    const handleStorageUpdate = () => {
-      try {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved !== null) {
-          const parsed = JSON.parse(saved);
-          if (Array.isArray(parsed)) {
-            setMyOrders(parsed);
-          }
-        }
-      } catch (e) {
-        console.error("Error reading updated subscription orders:", e);
-      }
-    };
-
-    window.addEventListener("storage", handleStorageUpdate);
-    window.addEventListener("fillcarts_subscriptions_updated", handleStorageUpdate);
-    return () => {
-      window.removeEventListener("storage", handleStorageUpdate);
-      window.removeEventListener("fillcarts_subscriptions_updated", handleStorageUpdate);
-    };
-  }, []);
+  }, [myOrders, user]);
 
   // Products generated for the active category
   const activeCategoryProducts = useMemo(() => {
@@ -220,8 +178,14 @@ export default function SubscriptionPage() {
     });
   };
 
-  // Dynamically Create a Subscription Order Card
+  // Dynamically Create a Subscription Order Card (Requires Login)
   const handleCreateSubscriptionCard = () => {
+    if (!user) {
+      alert("Please log in to create a subscription card.");
+      navigate("/login");
+      return;
+    }
+
     if (basket.length === 0) {
       alert("Please add at least 1 item to your subscription card.");
       return;
@@ -804,7 +768,19 @@ export default function SubscriptionPage() {
 
             {/* Subscriptions Order Cards List */}
             <div className="space-y-6">
-              {filteredOrders.length === 0 ? (
+              {!user ? (
+                <div className="bg-white border border-emerald-100 rounded-3xl p-12 text-center max-w-md mx-auto shadow-xs space-y-3">
+                  <FileText size={36} className="text-slate-300 mx-auto" />
+                  <h3 className="text-base font-extrabold text-[#17231A]">No active subscription cards</h3>
+                  <p className="text-xs text-slate-500 font-medium">Please log in to view and create your subscription cards.</p>
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
+                  >
+                    Log In to Subscribe
+                  </button>
+                </div>
+              ) : filteredOrders.length === 0 ? (
                 <div className="bg-white border border-emerald-100 rounded-3xl p-12 text-center max-w-md mx-auto shadow-xs">
                   <FileText size={36} className="text-slate-300 mx-auto mb-3" />
                   <h3 className="text-base font-extrabold text-[#17231A]">No matching subscription cards found</h3>
