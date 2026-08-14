@@ -317,3 +317,128 @@ export function getProductById(id) {
     desc: `Wholesome and fresh ${cleanedName} delivered straight to your doorstep with 15-minute express local fulfillment.`
   };
 }
+
+export function getVariantsForProduct(product) {
+  if (!product) return [];
+
+  const nameLower = (product.name || "").toLowerCase();
+  const catLower = (product.category || product.categoryKey || "").toLowerCase();
+  const price = product.price || 99;
+  const mrp = product.mrp || Math.round(price * 1.2);
+
+  // Helper to compute discount label
+  const calcOff = (p, m) => {
+    if (m > p) {
+      const pct = Math.round(((m - p) / m) * 100);
+      return `${pct}% Off`;
+    }
+    return "Best Value";
+  };
+
+  // A. STATIONERY & OFFICE SUPPLIES (Pens, Notebooks, Files, Tape, Pencils, Markers)
+  if (
+    catLower.includes("stationery") || nameLower.includes("pen") || nameLower.includes("notebook") ||
+    nameLower.includes("pencil") || nameLower.includes("marker") || nameLower.includes("paper") ||
+    nameLower.includes("file") || nameLower.includes("folder") || nameLower.includes("tape")
+  ) {
+    return [
+      { size: "1 Unit", off: calcOff(price, mrp), price: price, mrp: mrp },
+      { size: "Pack of 5", off: calcOff(Math.round(price * 4.4), Math.round(mrp * 4.4)), price: Math.round(price * 4.4), mrp: Math.round(mrp * 4.4) },
+      { size: "Pack of 10 (Bulk)", off: calcOff(Math.round(price * 8.2), Math.round(mrp * 8.2)), price: Math.round(price * 8.2), mrp: Math.round(mrp * 8.2) },
+    ];
+  }
+
+  // B. LIQUIDS & FLUIDS (Milk, Oils, Beverages, Ghee, Shampoos, Liquid Cleaner, Syrups, Facewash, Sanitizer)
+  if (
+    (catLower.includes("dairy") && (nameLower.includes("milk") || nameLower.includes("chaas") || nameLower.includes("buttermilk") || nameLower.includes("ghee"))) ||
+    nameLower.includes("oil") || nameLower.includes("liquid") || nameLower.includes("cleaner") ||
+    nameLower.includes("shampoo") || nameLower.includes("syrup") || nameLower.includes("facewash") || nameLower.includes("face wash") ||
+    nameLower.includes("sanitizer") || nameLower.includes("lotion") || nameLower.includes("ml") || nameLower.includes("1l")
+  ) {
+    if (nameLower.includes("milk") || nameLower.includes("oil") || nameLower.includes("cleaner") || nameLower.includes("ghee")) {
+      return [
+        { size: "500 ml", off: calcOff(Math.round(price * 0.55), Math.round(mrp * 0.55)), price: Math.round(price * 0.55), mrp: Math.round(mrp * 0.55) },
+        { size: "1 L", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "2 L", off: calcOff(Math.round(price * 1.9), Math.round(mrp * 1.9)), price: Math.round(price * 1.9), mrp: Math.round(mrp * 1.9) },
+        { size: "5 L Can", off: calcOff(Math.round(price * 4.5), Math.round(mrp * 4.5)), price: Math.round(price * 4.5), mrp: Math.round(mrp * 4.5) },
+      ];
+    } else {
+      return [
+        { size: "100 ml", off: calcOff(Math.max(20, Math.round(price * 0.6)), Math.max(25, Math.round(mrp * 0.6))), price: Math.max(20, Math.round(price * 0.6)), mrp: Math.max(25, Math.round(mrp * 0.6)) },
+        { size: "200 ml", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "340 ml", off: calcOff(Math.round(price * 1.6), Math.round(mrp * 1.6)), price: Math.round(price * 1.6), mrp: Math.round(mrp * 1.6) },
+        { size: "500 ml Value Pack", off: calcOff(Math.round(price * 2.2), Math.round(mrp * 2.2)), price: Math.round(price * 2.2), mrp: Math.round(mrp * 2.2) },
+      ];
+    }
+  }
+
+  // C. MEDICINES, ELECTRONICS, PREPARED FOOD, BAKERY, PERSONAL CARE (Count / Pack / Piece)
+  if (
+    catLower.includes("electronics") ||
+    catLower.includes("pharmacy") ||
+    catLower.includes("food") ||
+    catLower.includes("bakery") ||
+    catLower.includes("personal") ||
+    catLower.includes("pet") ||
+    nameLower.includes("cable") || nameLower.includes("earphone") || nameLower.includes("power bank") ||
+    nameLower.includes("bulb") || nameLower.includes("tablet") || nameLower.includes("strip") ||
+    nameLower.includes("thermometer") || nameLower.includes("mask") || nameLower.includes("burger") ||
+    nameLower.includes("pizza") || nameLower.includes("biryani") || nameLower.includes("roll") ||
+    nameLower.includes("dosa") || nameLower.includes("bread") || nameLower.includes("croissant") ||
+    nameLower.includes("muffin") || nameLower.includes("bun") || nameLower.includes("cookies") ||
+    nameLower.includes("toothpaste") || nameLower.includes("razor") || nameLower.includes("toy")
+  ) {
+    if (nameLower.includes("strip") || nameLower.includes("tablet") || nameLower.includes("dolo") || nameLower.includes("limcee")) {
+      return [
+        { size: "1 Strip (15 Tabs)", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "2 Strips (30 Tabs)", off: calcOff(Math.round(price * 1.9), Math.round(mrp * 1.9)), price: Math.round(price * 1.9), mrp: Math.round(mrp * 1.9) },
+        { size: "5 Strips (Family Pack)", off: calcOff(Math.round(price * 4.5), Math.round(mrp * 4.5)), price: Math.round(price * 4.5), mrp: Math.round(mrp * 4.5) },
+      ];
+    } else if (nameLower.includes("mask")) {
+      return [
+        { size: "Pack of 10", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "Pack of 25", off: calcOff(Math.round(price * 2.2), Math.round(mrp * 2.2)), price: Math.round(price * 2.2), mrp: Math.round(mrp * 2.2) },
+        { size: "Box of 50", off: calcOff(Math.round(price * 4.0), Math.round(mrp * 4.0)), price: Math.round(price * 4.0), mrp: Math.round(mrp * 4.0) },
+      ];
+    } else if (catLower.includes("electronics") || nameLower.includes("thermometer")) {
+      return [
+        { size: "1 Unit", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "Twin Pack (2 Units)", off: calcOff(Math.round(price * 1.85), Math.round(mrp * 1.85)), price: Math.round(price * 1.85), mrp: Math.round(mrp * 1.85) },
+      ];
+    } else if (catLower.includes("food")) {
+      return [
+        { size: "Single Portion", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "Meal Combo (For 2)", off: calcOff(Math.round(price * 1.8), Math.round(mrp * 1.8)), price: Math.round(price * 1.8), mrp: Math.round(mrp * 1.8) },
+        { size: "Family Feast (For 4)", off: calcOff(Math.round(price * 3.4), Math.round(mrp * 3.4)), price: Math.round(price * 3.4), mrp: Math.round(price * 3.4) },
+      ];
+    } else if (catLower.includes("bakery")) {
+      return [
+        { size: "Standard Pack", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "Family Size Pack", off: calcOff(Math.round(price * 1.75), Math.round(mrp * 1.75)), price: Math.round(price * 1.75), mrp: Math.round(mrp * 1.75) },
+      ];
+    } else {
+      return [
+        { size: "1 Unit", off: calcOff(price, mrp), price: price, mrp: mrp },
+        { size: "Pack of 2", off: calcOff(Math.round(price * 1.85), Math.round(mrp * 1.85)), price: Math.round(price * 1.85), mrp: Math.round(mrp * 1.85) },
+        { size: "Value Pack (4 Units)", off: calcOff(Math.round(price * 3.5), Math.round(mrp * 3.5)), price: Math.round(price * 3.5), mrp: Math.round(mrp * 3.5) },
+      ];
+    }
+  }
+
+  // D. WEIGHT-BASED GROCERY STAPLES & FRESH PRODUCE (Atta, Rice, Sugar, Dal, Bananas, Apples, Tomatoes, Onions, Potatoes, Carrots, etc.)
+  if (nameLower.includes("5kg") || nameLower.includes("3kg")) {
+    return [
+      { size: "1 kg", off: calcOff(Math.round(price * 0.22), Math.round(mrp * 0.22)), price: Math.round(price * 0.22), mrp: Math.round(price * 0.22) },
+      { size: "2 kg", off: calcOff(Math.round(price * 0.42), Math.round(mrp * 0.42)), price: Math.round(price * 0.42), mrp: Math.round(mrp * 0.42) },
+      { size: "5 kg Bag", off: calcOff(price, mrp), price: price, mrp: mrp },
+      { size: "10 kg Jumbo Pack", off: calcOff(Math.round(price * 1.9), Math.round(mrp * 1.9)), price: Math.round(price * 1.9), mrp: Math.round(mrp * 1.9) },
+    ];
+  }
+
+  return [
+    { size: "250 g", off: calcOff(Math.max(15, Math.round(price * 0.3)), Math.max(20, Math.round(mrp * 0.3))), price: Math.max(15, Math.round(price * 0.3)), mrp: Math.max(20, Math.round(mrp * 0.3)) },
+    { size: "500 g", off: calcOff(Math.max(30, Math.round(price * 0.55)), Math.max(35, Math.round(mrp * 0.55))), price: Math.max(30, Math.round(price * 0.55)), mrp: Math.max(35, Math.round(mrp * 0.55)) },
+    { size: "1 kg", off: calcOff(price, mrp), price: price, mrp: mrp },
+    { size: "2 kg", off: calcOff(Math.round(price * 1.85), Math.round(mrp * 1.85)), price: Math.round(price * 1.85), mrp: Math.round(mrp * 1.85) },
+  ];
+}
