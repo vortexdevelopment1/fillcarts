@@ -224,3 +224,96 @@ export const STORES = [
   { id: "store-city-bakery", name: "City Artisan Bakery", category: "Fresh Breads & Pastries", rating: "4.9", distance: "1.5 km", deliveryTime: "25 min", img: STORE_IMAGE_MAP.cityBakery },
   { id: "store-green-organics", name: "Green Leaf Farm Organics", category: "Fruits & Vegetables", rating: "4.8", distance: "900 m", deliveryTime: "15 min", img: STORE_IMAGE_MAP.greenOrganics }
 ];
+
+const categoryNamesMap = {
+  grocery: "Grocery",
+  fruits: "Fruits & Vegetables",
+  dairy: "Dairy",
+  bakery: "Bakery",
+  pharmacy: "Pharmacy",
+  food: "Food",
+  pet: "Pet Care",
+  home: "Home Essentials",
+  personal: "Personal Care",
+  electronics: "Electronics"
+};
+
+const productNamesMap = {
+  grocery: ["Basmati Rice 5kg", "Toor Dal 1kg", "Sunflower Oil 1L", "Sugar 1kg", "Atta 5kg", "Salt 1kg", "Tea Leaves 250g", "Poha 500g"],
+  fruits: ["Fresh Bananas 1dz", "Red Apples 1kg", "Onions 1kg", "Tomatoes 1kg", "Potatoes 1kg", "Green Grapes 500g", "Spinach Bunch", "Carrots 500g"],
+  dairy: ["Toned Milk 1L", "Curd 400g", "Paneer 200g", "Butter 100g", "Cheese Slices", "Ghee 500ml", "Buttermilk 200ml", "Flavoured Yogurt"],
+  bakery: ["Brown Bread", "Butter Croissant", "Chocolate Muffin", "Multigrain Bread", "Bun Pack", "Cookies 200g", "Cup Cakes 4pc", "Rusk 200g"],
+  pharmacy: ["Paracetamol Strip", "Vitamin C Tablets", "Hand Sanitizer", "Digital Thermometer", "Face Masks 10pc", "Cough Syrup", "Antiseptic Cream", "First Aid Kit"],
+  food: ["Veg Burger", "Paneer Roll", "Margherita Pizza", "Chicken Biryani", "Masala Dosa", "Veg Thali", "Cold Coffee", "Chowmein"],
+  pet: ["Dog Food 3kg", "Cat Litter 5kg", "Pet Shampoo", "Chew Toy", "Bird Seed 1kg", "Pet Bowl Set", "Puppy Treats", "Fish Food"],
+  home: ["Dish Wash Liquid", "Floor Cleaner 1L", "Laundry Detergent", "Air Freshener", "Trash Bags 30pc", "Tissue Box", "Broom Set", "Toilet Cleaner"],
+  personal: ["Face Wash 100ml", "Shampoo 340ml", "Toothpaste 150g", "Body Lotion", "Hair Oil 200ml", "Deodorant Spray", "Razor Pack", "Lip Balm"],
+  electronics: ["USB Cable 1m", "Earphones", "Power Bank 10000mAh", "LED Bulb 9W", "Extension Board", "Phone Stand", "Bluetooth Speaker", "Wall Charger"],
+};
+
+export function getProductById(id) {
+  if (!id) return null;
+
+  // 1. Check direct match in static PRODUCTS dataset
+  const catalogItem = PRODUCTS.find((p) => p.id === id);
+  if (catalogItem) {
+    return {
+      id: catalogItem.id,
+      name: catalogItem.name,
+      category: catalogItem.categoryName || categoryNamesMap[catalogItem.categoryKey] || "Grocery",
+      brand: catalogItem.store || "FillCarts Local Partner",
+      price: catalogItem.price,
+      mrp: catalogItem.mrp || Math.round(catalogItem.price * 1.2),
+      rating: String(catalogItem.rating || "4.8"),
+      reviews: "1,420",
+      img: catalogItem.img || getProductImage(catalogItem.name, catalogItem.categoryKey),
+      desc: `Fresh, high quality ${catalogItem.name} sourced directly from trusted local kiranas and verified neighborhood vendors.`
+    };
+  }
+
+  // 2. Parse categoryKey-index format (e.g. "pharmacy-2", "food-0", "fruits-4")
+  const parts = String(id).split("-");
+  if (parts.length >= 2) {
+    const catKey = parts[0];
+    const idx = parseInt(parts[1], 10);
+    const names = productNamesMap[catKey];
+    if (names && !isNaN(idx) && names[idx]) {
+      const name = names[idx];
+      const category = categoryNamesMap[catKey] || catKey;
+      const price = 39 + ((idx * 37) % 260);
+      const mrp = price + 20 + (idx % 3) * 10;
+      const rating = (3.8 + ((idx * 7) % 12) / 10).toFixed(1);
+      return {
+        id,
+        name,
+        category,
+        brand: idx % 2 === 0 ? "Fresh Mart" : "Daily Needs Express",
+        price,
+        mrp,
+        rating,
+        reviews: `${500 + idx * 230}`,
+        img: getProductImage(name, catKey),
+        desc: `Fresh ${name} sourced from verified local stores. Quality inspected and delivered in 15-20 minutes.`
+      };
+    }
+  }
+
+  // 3. Fallback for custom or deal- IDs
+  const cleanedName = String(id)
+    .replace(/^(deal-|cat-|prod-)/, "")
+    .replace(/-/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+
+  return {
+    id,
+    name: cleanedName || "Fresh Grocery Item",
+    category: "Grocery Essentials",
+    brand: "FillCarts Verified Store",
+    price: 99,
+    mrp: 120,
+    rating: "4.8",
+    reviews: "1,150",
+    img: getProductImage(cleanedName, "grocery"),
+    desc: `Wholesome and fresh ${cleanedName} delivered straight to your doorstep with 15-minute express local fulfillment.`
+  };
+}
