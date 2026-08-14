@@ -9,48 +9,16 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage } from "../utils/productImages";
-
-const productDatabase = [
-  { id: "grocery-0", name: "Basmati Rice 5kg", category: "Grocery", brand: "India Gate", price: 299, mrp: 349, rating: "4.8", reviews: "1,840", img: "grocery-item-0", desc: "Premium long-grain aromatic Basmati rice, aged to perfection for non-sticky fluffy cooking." },
-  { id: "grocery-1", name: "Fortune Moong dal", category: "Grocery", brand: "Fortune", price: 129, mrp: 160, rating: "4.7", reviews: "2,410", img: "grocery-item-1", desc: "Choose wholesome nutrition with fortune Unpolished Moong Dal, naturally processed to retain essential nutrients and deliver authentic taste in every bite." },
-  { id: "grocery-2", name: "Sunflower Oil 1L", category: "Grocery", brand: "Fortune", price: 145, mrp: 175, rating: "4.6", reviews: "980", img: "grocery-item-2", desc: "100% pure refined sunflower oil enriched with Vitamin A & D for healthy everyday cooking." },
-  { id: "grocery-3", name: "Sugar 1kg", category: "Grocery", brand: "Madhur", price: 48, mrp: 55, rating: "4.5", reviews: "1,200", img: "grocery-item-3", desc: "Pure sulfur-free refined white sugar crystals, ideal for tea, coffee, and sweets." },
-  { id: "grocery-4", name: "Fortune Atta 5kg", category: "Grocery", brand: "Fortune", price: 210, mrp: 245, rating: "4.8", reviews: "3,150", img: "grocery-item-4", desc: "100% pure MP Sharbati whole wheat atta for soft, fluffy and nutritious rotis." },
-  { id: "grocery-5", name: "Tata Salt 1kg", category: "Grocery", brand: "Tata", price: 28, mrp: 32, rating: "4.9", reviews: "5,400", img: "grocery-item-5", desc: "Vacuum evaporated iodized salt ensuring purity and essential iodine for health." },
-  { id: "grocery-6", name: "Tea Leaves 250g", category: "Grocery", brand: "Red Label", price: 115, mrp: 130, rating: "4.6", reviews: "850", img: "grocery-item-6", desc: "Rich Assam CTC black tea blend for strong aroma and refreshing taste." },
-  { id: "grocery-7", name: "Poha 500g", category: "Grocery", brand: "Local Fresh", price: 42, mrp: 50, rating: "4.5", reviews: "620", img: "grocery-item-7", desc: "Thick beaten rice flakes for quick, light and healthy breakfast poha." },
-
-  { id: "fruits-0", name: "Fresh Bananas 1dz", category: "Fruits & Veg", brand: "Farm Fresh", price: 59, mrp: 70, rating: "4.6", reviews: "1,100", img: "fruits-item-0", desc: "Naturally ripened sweet Robusta bananas sourced fresh daily from local orchards." },
-  { id: "fruits-1", name: "Red Apples 1kg", category: "Fruits & Veg", brand: "Shimla Fresh", price: 149, mrp: 180, rating: "4.8", reviews: "2,100", img: "fruits-item-1", desc: "Crisp and juicy Shimla red apples packed with natural vitamins." },
-  { id: "fruits-2", name: "Onions 1kg", category: "Fruits & Veg", brand: "Nasik Fresh", price: 35, mrp: 45, rating: "4.4", reviews: "4,200", img: "fruits-item-2", desc: "Fresh Nasik red onions, crisp and essential for everyday Indian cooking." },
-  { id: "fruits-3", name: "Tomatoes 1kg", category: "Fruits & Veg", brand: "Farm Fresh", price: 40, mrp: 50, rating: "4.5", reviews: "3,800", img: "fruits-item-3", desc: "Farm-fresh ripe red tomatoes ideal for curries and salads." },
-
-  { id: "dairy-0", name: "Toned Milk 1L", category: "Dairy", brand: "Amul", price: 66, mrp: 70, rating: "4.9", reviews: "6,200", img: "dairy-item-0", desc: "Pasteurized homogenized toned milk delivered fresh every morning at 7 AM." },
-  { id: "dairy-1", name: "Fresh Paneer 200g", category: "Dairy", brand: "Amul", price: 95, mrp: 110, rating: "4.8", reviews: "1,900", img: "dairy-item-1", desc: "Soft and creamy fresh cottage cheese rich in milk proteins." },
-
-  { id: "bakery-0", name: "Brown Bread", category: "Bakery", brand: "Britannia", price: 45, mrp: 50, rating: "4.7", reviews: "1,400", img: "bakery-item-0", desc: "Whole wheat freshly baked brown bread slices for healthy breakfasts." },
-  { id: "bakery-1", name: "Butter Croissant", category: "Bakery", brand: "Artisan Bakers", price: 65, mrp: 75, rating: "4.8", reviews: "720", img: "bakery-item-1", desc: "Flaky artisan butter croissant baked fresh daily by local bakeries." },
-];
+import { getProductById, PRODUCTS } from "../utils/catalogData";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { cart, addToCart, removeFromCart } = useCart();
 
-  // Find selected product or fallback
+  // Find selected product dynamically by ID
   const product = useMemo(() => {
-    return productDatabase.find((p) => p.id === id) || {
-      id: id || "grocery-1",
-      name: "Fortune Moong dal",
-      category: "Grocery",
-      brand: "Fortune",
-      price: 129,
-      mrp: 160,
-      rating: "4.7",
-      reviews: "2,410",
-      img: "grocery-item-1",
-      desc: "Choose wholesome nutrition with fortune Unpolished Moong Dal, naturally processed to retain essential nutrients and deliver authentic taste in every bite."
-    };
+    return getProductById(id);
   }, [id]);
 
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
@@ -88,7 +56,7 @@ export default function ProductDetailPage() {
 
   // Related products
   const relatedProducts = useMemo(() => {
-    return productDatabase.filter((p) => p.id !== product.id).slice(0, 4);
+    return PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
   }, [product]);
 
   const triggerToast = (msg) => {
