@@ -16,6 +16,7 @@ async function sendSMS(phone, otp) {
         route: "otp",
         numbers: phone,
       },
+      timeout: 3000,
     });
 
     return true;

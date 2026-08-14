@@ -255,9 +255,17 @@ export default function UserProfilePage() {
     setIsLoadingSubscriptions(true);
     let combinedSubscriptions = [];
 
-    // 1. Fetch from LocalStorage (Fillcarts Subscription Page Storage)
+    if (!user) {
+      setSubscriptions([]);
+      setIsLoadingSubscriptions(false);
+      return;
+    }
+
+    const storageKey = `fillcarts_subscription_orders_${user.id || user.phone || user.email || 'user'}`;
+
+    // 1. Fetch from LocalStorage for current authenticated user
     try {
-      const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+      const storedLocal = localStorage.getItem(storageKey);
       if (storedLocal) {
         const parsed = JSON.parse(storedLocal);
         if (Array.isArray(parsed)) {
@@ -348,9 +356,10 @@ export default function UserProfilePage() {
   const handleToggleSubscriptionStatus = async (sub) => {
     const nextStatus = sub.status === "Active" ? "Paused" : "Active";
 
-    if (sub.isLocalCard) {
+    if (sub.isLocalCard && user) {
       try {
-        const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+        const storageKey = `fillcarts_subscription_orders_${user.id || user.phone || user.email || 'user'}`;
+        const storedLocal = localStorage.getItem(storageKey);
         if (storedLocal) {
           const parsed = JSON.parse(storedLocal);
           const updated = parsed.map((item) => {
@@ -362,7 +371,8 @@ export default function UserProfilePage() {
             }
             return item;
           });
-          localStorage.setItem("fillcarts_subscription_orders", JSON.stringify(updated));
+          localStorage.setItem(storageKey, JSON.stringify(updated));
+          window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
         }
         showMessage(`Subscription ${nextStatus === "Active" ? "resumed" : "paused"} successfully!`);
         fetchSubscriptions();
@@ -385,13 +395,15 @@ export default function UserProfilePage() {
   const handleCancelSubscription = async (sub) => {
     if (!window.confirm("Are you sure you want to cancel this subscription?")) return;
 
-    if (sub.isLocalCard) {
+    if (sub.isLocalCard && user) {
       try {
-        const storedLocal = localStorage.getItem("fillcarts_subscription_orders");
+        const storageKey = `fillcarts_subscription_orders_${user.id || user.phone || user.email || 'user'}`;
+        const storedLocal = localStorage.getItem(storageKey);
         if (storedLocal) {
           const parsed = JSON.parse(storedLocal);
           const filtered = parsed.filter((item) => item.orderId !== sub.orderId);
-          localStorage.setItem("fillcarts_subscription_orders", JSON.stringify(filtered));
+          localStorage.setItem(storageKey, JSON.stringify(filtered));
+          window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
         }
         showMessage("Subscription cancelled successfully.");
         fetchSubscriptions();
