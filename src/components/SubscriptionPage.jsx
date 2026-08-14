@@ -49,40 +49,7 @@ function genProducts(catKey) {
   }));
 }
 
-const initialSeedOrders = [
-  {
-    orderId: "SUB-ORD-9021",
-    name: "Daily Fresh Dairy Routine",
-    items: [
-      { name: "Toned Milk 1L", qty: 2, price: 54 },
-      { name: "Curd 400g", qty: 1, price: 42 }
-    ],
-    frequency: "Daily",
-    timeSlot: "6:30 AM - 7:30 AM",
-    duration: "10 Aug 2026 to 10 Sep 2026 (1 Month)",
-    status: "Active Schedule",
-    nextDate: "Tomorrow (7:00 AM Slot)",
-    orderDate: "Created on 6 Aug 2026",
-    address: "Flat 402, Green Valley Apartments, Bengaluru",
-    total: 135
-  },
-  {
-    orderId: "SUB-ORD-4410",
-    name: "Weekly Mandi Produce & Atta",
-    items: [
-      { name: "Fresh Local Tomatoes (1 kg)", qty: 2, price: 32 },
-      { name: "Aashirvaad Whole Wheat Atta (5 kg)", qty: 1, price: 245 }
-    ],
-    frequency: "Weekly (Sundays)",
-    timeSlot: "8:00 AM - 9:00 AM",
-    duration: "10 Aug 2026 to 10 Nov 2026 (3 Months)",
-    status: "App Setup Pending",
-    nextDate: "Sunday (8:30 AM Slot)",
-    orderDate: "Created on 4 Aug 2026",
-    address: "Flat 402, Green Valley Apartments, Bengaluru",
-    total: 278
-  }
-];
+const initialSeedOrders = [];
 
 const STORAGE_KEY = "fillcarts_subscription_orders";
 
@@ -176,28 +143,53 @@ export default function SubscriptionPage() {
     localStorage.setItem("fillcarts_user_address", val);
   };
 
-  // Persistent Orders State
+  // Persistent Orders State (Defaults to empty list []; ONLY generated when user explicitly builds a card)
   const [myOrders, setMyOrders] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed)) return parsed;
       }
     } catch (e) {
       console.error("Failed to read subscription orders from localStorage", e);
     }
-    return initialSeedOrders;
+    return [];
   });
 
-  // Save to LocalStorage whenever myOrders changes
+  // Save to LocalStorage whenever myOrders changes & dispatch update event
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(myOrders));
+      window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
     } catch (e) {
       console.error("Failed to save subscription orders to localStorage", e);
     }
   }, [myOrders]);
+
+  // Sync state dynamically when updated from Profile Page or another tab
+  useEffect(() => {
+    const handleStorageUpdate = () => {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved !== null) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) {
+            setMyOrders(parsed);
+          }
+        }
+      } catch (e) {
+        console.error("Error reading updated subscription orders:", e);
+      }
+    };
+
+    window.addEventListener("storage", handleStorageUpdate);
+    window.addEventListener("fillcarts_subscriptions_updated", handleStorageUpdate);
+    return () => {
+      window.removeEventListener("storage", handleStorageUpdate);
+      window.removeEventListener("fillcarts_subscriptions_updated", handleStorageUpdate);
+    };
+  }, []);
 
   // Products generated for the active category
   const activeCategoryProducts = useMemo(() => {
@@ -372,8 +364,8 @@ export default function SubscriptionPage() {
             <button
               onClick={() => setViewTab("create")}
               className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "create"
-                  ? "bg-[#16A34A] text-white shadow-md"
-                  : "text-[#166534] hover:bg-[#ECFDF3]"
+                ? "bg-[#16A34A] text-white shadow-md"
+                : "text-[#166534] hover:bg-[#ECFDF3]"
                 }`}
             >
               <Plus size={14} /> Build Subscription Card
@@ -381,8 +373,8 @@ export default function SubscriptionPage() {
             <button
               onClick={() => setViewTab("my_subscriptions")}
               className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "my_subscriptions"
-                  ? "bg-[#16A34A] text-white shadow-md"
-                  : "text-[#166534] hover:bg-[#ECFDF3]"
+                ? "bg-[#16A34A] text-white shadow-md"
+                : "text-[#166534] hover:bg-[#ECFDF3]"
                 }`}
             >
               <FileText size={14} /> Dynamic Order Tracking ({myOrders.length})
@@ -645,8 +637,8 @@ export default function SubscriptionPage() {
                         key={c.key}
                         onClick={() => setActiveCategory(c.key)}
                         className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${isActive
-                            ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
-                            : "bg-[#FFFCF5] border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-[#ECFDF3]"
+                          ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
+                          : "bg-[#FFFCF5] border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-[#ECFDF3]"
                           }`}
                       >
                         <IconComp size={14} className={isActive ? "text-white" : c.color} />
@@ -788,8 +780,8 @@ export default function SubscriptionPage() {
                     key={st}
                     onClick={() => setOrderFilter(st)}
                     className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all border whitespace-nowrap cursor-pointer ${orderFilter === st
-                        ? "bg-[#16A34A] text-white border-[#16A34A]"
-                        : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3]"
+                      ? "bg-[#16A34A] text-white border-[#16A34A]"
+                      : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3]"
                       }`}
                   >
                     {st}
