@@ -206,75 +206,93 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
           {/* Right Action Icons */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Account / User Menu */}
-            {user ? (
-              <div className="relative">
-                <button
-                  onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-1.5 bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
-                >
-                  <div className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
-                    {user.name ? user.name[0].toUpperCase() : "U"}
-                  </div>
-                  <span className="hidden sm:inline">Hi, {user.name?.split(" ")[0]}</span>
-                  <ChevronDown size={12} className="text-slate-400" />
-                </button>
+            {(() => {
+              const activeUser = user || {
+                name: "Guest Customer",
+                phone: "9876543210",
+                email: "guest@fillcart.com"
+              };
 
-                {profileOpen && (
-                  <div className="absolute top-11 right-0 bg-white border border-emerald-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left">
-                    <div className="pb-3 border-b border-slate-100 mb-2">
-                      <h3 className="font-extrabold text-sm text-[#17231A]">{user.name || "Customer"}</h3>
-                      <p className="text-xs text-slate-500 truncate font-medium">{user.phone || user.email}</p>
+              return (
+                <div className="relative">
+                  <button
+                    onClick={() => setProfileOpen(!profileOpen)}
+                    className="flex items-center gap-1.5 bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-3.5 py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
+                  >
+                    <div className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
+                      {activeUser.name ? activeUser.name[0].toUpperCase() : "U"}
                     </div>
+                    <span className="hidden sm:inline">Hi, {activeUser.name?.split(" ")[0]}</span>
+                    <ChevronDown size={12} className="text-slate-400" />
+                  </button>
 
-                    <div className="space-y-0.5">
-                      <Link
-                        to="/profile?tab=profile"
-                        onClick={() => setProfileOpen(false)}
-                        className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
-                      >
-                        My Profile
-                      </Link>
-                      <Link
-                        to="/profile?tab=orders"
-                        onClick={() => setProfileOpen(false)}
-                        className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
-                      >
-                        My Orders
-                      </Link>
-                      <Link
-                        to="/profile?tab=subscriptions"
-                        onClick={() => setProfileOpen(false)}
-                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
-                      >
-                        <span>Subscriptions</span>
-                        <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded">Active</span>
-                      </Link>
-                      <Link
-                        to="/profile?tab=addresses"
-                        onClick={() => setProfileOpen(false)}
-                        className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
-                      >
-                        Saved Addresses
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                      >
-                        Log Out
-                      </button>
+                  {profileOpen && (
+                    <div className="absolute top-11 right-0 bg-white border border-emerald-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left">
+                      <div className="pb-3 border-b border-slate-100 mb-2 flex items-center justify-between">
+                        <div className="min-w-0 pr-2">
+                          <h3 className="font-extrabold text-sm text-[#17231A] truncate">{activeUser.name}</h3>
+                          <p className="text-xs text-slate-500 truncate font-medium">{activeUser.phone || activeUser.email}</p>
+                        </div>
+                        {user ? (
+                          <span className="text-[9px] font-extrabold bg-[#ECFDF3] text-[#166534] px-1.5 py-0.5 rounded border border-emerald-200 shrink-0">Verified</span>
+                        ) : (
+                          <Link to="/login" onClick={() => setProfileOpen(false)} className="text-[10px] font-extrabold bg-amber-50 text-amber-800 px-2 py-0.5 rounded border border-amber-200 hover:bg-amber-100 shrink-0">Log In</Link>
+                        )}
+                      </div>
+
+                      <div className="space-y-0.5">
+                        <Link
+                          to="/profile?tab=profile"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
+                        >
+                          My Profile
+                        </Link>
+                        <Link
+                          to="/profile?tab=orders"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
+                        >
+                          My Orders
+                        </Link>
+                        <Link
+                          to="/profile?tab=subscriptions"
+                          onClick={() => setProfileOpen(false)}
+                          className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
+                        >
+                          <span>Subscriptions</span>
+                          <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-[10px] font-bold px-1.5 py-0.5 rounded">Active</span>
+                        </Link>
+                        <Link
+                          to="/profile?tab=addresses"
+                          onClick={() => setProfileOpen(false)}
+                          className="block px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"
+                        >
+                          Saved Addresses
+                        </Link>
+
+                        {user ? (
+                          <button
+                            onClick={handleLogout}
+                            className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          >
+                            Log Out
+                          </button>
+                        ) : (
+                          <Link
+                            to="/login"
+                            onClick={() => setProfileOpen(false)}
+                            className="block w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-[#16A34A] hover:bg-[#ECFDF3] transition-colors cursor-pointer mt-1 border-t border-slate-100 pt-2"
+                          >
+                            🔑 Log In / Register
+                          </Link>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <Link
-                to="/login"
-                className="flex items-center gap-1.5 bg-[#ECFDF3] hover:bg-emerald-100 text-[#166534] font-extrabold px-4 py-2 rounded-full text-xs transition-colors border border-emerald-200/60"
-              >
-                <User size={14} className="text-[#16A34A]" />
-                <span>Login</span>
-              </Link>
-            )}
+                  )}
+                </div>
+              );
+            })()}
 
             {/* Cart Button */}
             <Link
