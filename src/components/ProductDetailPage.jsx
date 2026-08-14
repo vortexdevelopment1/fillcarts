@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage } from "../utils/productImages";
-import { getProductById, PRODUCTS } from "../utils/catalogData";
+import { getProductById, getVariantsForProduct, PRODUCTS } from "../utils/catalogData";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -32,15 +32,15 @@ export default function ProductDetailPage() {
   const [pincodeStatus, setPincodeStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
   const [toastMessage, setToastMessage] = useState("");
 
-  // Quantity Variants (Matching exact uploaded design)
+  // Dynamically generated quantity/unit variants based on product type
   const variants = useMemo(() => {
-    return [
-      { size: "1 kg", off: "19% Off", price: product.price, mrp: product.mrp },
-      { size: "250 g", off: "19% Off", price: Math.max(25, Math.round(product.price * 0.3)), mrp: Math.max(30, Math.round(product.mrp * 0.3)) },
-      { size: "500 g", off: "19% Off", price: Math.max(45, Math.round(product.price * 0.55)), mrp: Math.max(55, Math.round(product.mrp * 0.55)) },
-      { size: "2 kg", off: "20% Off", price: Math.round(product.price * 1.8), mrp: Math.round(product.mrp * 1.8) },
-    ];
+    return getVariantsForProduct(product);
   }, [product]);
+
+  useEffect(() => {
+    setSelectedVariantIdx(0);
+    setActiveThumbIdx(0);
+  }, [product?.id]);
 
   const activeVariant = variants[selectedVariantIdx] || variants[0];
   const inCart = cart.find((item) => item.id === product.id);
