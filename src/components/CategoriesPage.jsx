@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
+import SearchDropdown from "./SearchDropdown";
 
 // Default Category Data
 const initialCategories = [
@@ -283,26 +284,17 @@ export default function CategoriesPage() {
             </div>
           </div>
 
-          {/* Large Ecommerce Search Input */}
-          <div className="max-w-2xl relative">
-            <div className="flex items-center bg-[#FFFCF5] border-2 border-emerald-500/20 focus-within:border-[#16A34A] rounded-2xl px-4 py-2.5 shadow-sm transition-all">
-              <Search size={18} className="text-[#16A34A] flex-shrink-0 mr-2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search products or categories..."
-                className="w-full bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder-slate-400"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-200/50 cursor-pointer"
-                >
-                  <X size={15} />
-                </button>
-              )}
-            </div>
+          {/* Large Ecommerce Search Input with Auto-Suggestions */}
+          <div className="max-w-2xl">
+            <SearchDropdown
+              placeholder="Search products or categories..."
+              defaultValue={searchQuery}
+              onSearchSubmit={(val) => {
+                window.location.href = `/search?q=${encodeURIComponent(val)}`;
+              }}
+              showSubmitButton={true}
+              inputClassName="bg-[#FFFCF5] border-2 border-emerald-500/20 focus:border-[#16A34A] rounded-2xl py-3 shadow-xs"
+            />
           </div>
         </div>
       </section>

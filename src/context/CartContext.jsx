@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import api from "../api";
+import api, { setOnUnauthorized } from "../api";
 import { Lock, X } from "lucide-react";
 
 const CartContext = createContext(null);
@@ -9,6 +9,13 @@ export function CartProvider({ children }) {
   const [loadingUser, setLoadingUser] = useState(true);
   const [cart, setCart] = useState([]);
   const [showLoginModal, setShowLoginModal] = useState(false);
+
+  // Register global 401 unauthorized handler to clear invalid user session
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      setUser(null);
+    });
+  }, []);
 
   // Global Location State
   const [userLocation, setUserLocation] = useState(() => {
@@ -86,11 +93,17 @@ export function CartProvider({ children }) {
             setCart([]);
           }
         } catch (e) {
-          console.error("Failed to fetch cart from server", e);
+          if (e.response?.status === 401) {
+            setUser(null);
+          } else {
+            console.error("Failed to fetch cart from server", e);
+          }
           setCart(parsedLocalUserCart);
         }
       } else {
-        setCart([]);
+        const guestKey = "fillcarts_guest_cart";
+        const guestStored = localStorage.getItem(guestKey);
+        setCart(guestStored ? JSON.parse(guestStored) : []);
       }
     };
 
@@ -107,7 +120,11 @@ export function CartProvider({ children }) {
         try {
           await api.post("/cart", { cart });
         } catch (e) {
-          console.error("Failed to save cart to server", e);
+          if (e.response?.status === 401) {
+            setUser(null);
+          } else {
+            console.error("Failed to save cart to server", e);
+          }
         }
       };
       saveCartToServer();
