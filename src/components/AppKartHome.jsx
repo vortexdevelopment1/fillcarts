@@ -11,6 +11,7 @@ import { useCart } from "../context/CartContext";
 import {
   getProductImage, CATEGORY_IMAGE_MAP, STORE_IMAGE_MAP, SUBSCRIPTION_IMAGE_MAP
 } from "../utils/productImages";
+import SearchDropdown from "./SearchDropdown";
 
 const categoryList = [
   { key: "grocery", name: "Grocery", sub: "Atta, Dal, Oils & Staples", img: CATEGORY_IMAGE_MAP.grocery },
@@ -149,27 +150,17 @@ export default function AppKartHome() {
                 Shop groceries, bakery, dairy, food and everyday essentials from trusted local stores.
               </p>
 
-              {/* Large Ecommerce Search Bar */}
-              <form onSubmit={handleHeroSearch} className="max-w-xl relative group">
-                <div className="flex items-center bg-white border-2 border-emerald-500/30 group-focus-within:border-[#16A34A] rounded-2xl p-2 shadow-lg shadow-emerald-950/5 transition-all">
-                  <div className="pl-3 text-[#16A34A]">
-                    <Search size={20} />
-                  </div>
-                  <input
-                    type="text"
-                    value={heroQuery}
-                    onChange={(e) => setHeroQuery(e.target.value)}
-                    placeholder="Search products, stores or categories..."
-                    className="w-full px-3 py-2 text-sm sm:text-base font-semibold text-slate-800 outline-none placeholder-slate-400"
-                  />
-                  <button
-                    type="submit"
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-6 py-3 rounded-xl text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer shadow-sm flex-shrink-0"
-                  >
-                    <span>Search</span>
-                    <ArrowRight size={16} />
-                  </button>
-                </div>
+              {/* Large Ecommerce Search Bar with Auto-Suggestions */}
+              <div className="max-w-xl relative group">
+                <SearchDropdown
+                  placeholder="Search products, stores or categories..."
+                  defaultValue={heroQuery}
+                  onSearchSubmit={(val) => {
+                    navigate(`/search?q=${encodeURIComponent(val)}`);
+                  }}
+                  showSubmitButton={true}
+                  inputClassName="bg-white border-2 border-emerald-500/30 focus:border-[#16A34A] rounded-2xl py-3 shadow-lg shadow-emerald-950/5"
+                />
 
                 {/* Location indicator below search bar */}
                 <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-500 px-1">
@@ -177,7 +168,7 @@ export default function AppKartHome() {
                   <span>Delivering to: <strong className="text-[#17231A]">Indiranagar, Bengaluru</strong></span>
                   <span className="text-emerald-700 font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full text-[10px] ml-1">⚡ 15-30 Min Delivery</span>
                 </div>
-              </form>
+              </div>
 
               {/* CTA Buttons */}
               <div className="flex items-center gap-4 pt-2">

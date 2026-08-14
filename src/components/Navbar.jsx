@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import api from "../api";
+import SearchDropdown from "./SearchDropdown";
 
 export default function Navbar({ searchPlaceholder = "Search products, stores...", onSearchChange }) {
   const { cartCount, user, logoutUser, setShowLoginModal, userLocation, changeLocation } = useCart();
@@ -188,19 +189,17 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             <ChevronDown size={13} className="text-slate-400 group-hover:text-[#16A34A] transition-colors shrink-0" />
           </button>
 
-          {/* Search Input Bar */}
-          <div className="hidden md:flex items-center gap-2 bg-[#FFFCF5] border border-slate-200 rounded-full px-4 py-2 text-base text-slate-500 max-w-xs flex-1 focus-within:border-[#16A34A]">
-            <Search size={15} className="text-slate-400" />
-            <input
-              value={searchValue}
-              onChange={handleSearchInput}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && searchValue.trim()) {
-                  navigate(`/categories?q=${encodeURIComponent(searchValue.trim())}`);
-                }
-              }}
+          {/* Search Input Bar with Auto-Suggestions */}
+          <div className="hidden md:flex flex-1 max-w-sm">
+            <SearchDropdown
               placeholder={searchPlaceholder}
-              className="bg-transparent outline-none w-full text-slate-900 text-sm font-medium"
+              defaultValue={searchValue}
+              onSearchSubmit={(val) => {
+                setSearchValue(val);
+                if (onSearchChange) onSearchChange(val);
+                navigate(`/search?q=${encodeURIComponent(val)}`);
+              }}
+              inputClassName="bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-full shadow-2xs"
             />
           </div>
 
