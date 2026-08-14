@@ -9,7 +9,8 @@ const db = mysql.createConnection({
   host: process.env.DB_HOST || "localhost",
   user: process.env.DB_USER || "root",
   password: process.env.DB_PASSWORD || "",
-  database: process.env.DB_NAME || "authentication"
+  database: process.env.DB_NAME || "authentication",
+  connectTimeout: 2000
 });
 
 const createRequiredTables = () => {
@@ -120,6 +121,21 @@ db.on("error", (err) => {
   isDbConnected = false;
 });
 
+const originalQuery = db.query.bind(db);
+db.query = function (sql, params, callback) {
+  if (typeof params === "function") {
+    callback = params;
+    params = [];
+  }
+  if (!isDbConnected) {
+    if (typeof callback === "function") {
+      setImmediate(() => callback(new Error("Database offline"), []));
+    }
+    return;
+  }
+  return originalQuery(sql, params, callback);
+};
+
 db.connect((err) => {
   if (err) {
     console.warn("⚠️ MySQL Connection Failed:", err.message);
@@ -135,5 +151,7 @@ db.connect((err) => {
     }
   }
 });
+
+module.exports = db;
 
 module.exports = db;
