@@ -213,17 +213,6 @@ export default function ProductDetailPage() {
             {/* Main Product Hero Gallery Display Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm text-center relative flex flex-col items-center justify-center overflow-hidden group">
 
-              {/* Top Image Overlay Badges */}
-              <div className="w-full flex items-center justify-between absolute top-4 left-0 px-6 z-10">
-                <span className="bg-amber-500 text-slate-950 font-black text-xs px-3 py-1 rounded-full shadow-xs flex items-center gap-1">
-                  <Star size={12} fill="currentColor" /> {product.rating} (Bestseller)
-                </span>
-
-                <span className="bg-slate-900/85 backdrop-blur-md text-white font-bold text-[11px] px-3 py-1 rounded-full border border-white/20">
-                  Expiry : 30 Aug 2026
-                </span>
-              </div>
-
               {/* Main Image View */}
               <div className="w-full h-72 md:h-96 flex items-center justify-center py-4 relative">
                 <img
@@ -388,9 +377,23 @@ export default function ProductDetailPage() {
                   {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
                 </button>
                 {showDetails && (
-                  <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed mt-2.5">
-                    {product.desc}
-                  </p>
+                  <div className="space-y-3 mt-2.5">
+                    <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed">
+                      {product.desc}
+                    </p>
+
+                    {/* Manufacturing & Expiry Dates Info */}
+                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100/80">
+                      <div className="bg-slate-50 border border-slate-200/70 p-2.5 rounded-xl">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MFG Date</div>
+                        <div className="text-xs font-extrabold text-slate-800 mt-0.5">15 Aug 2026</div>
+                      </div>
+                      <div className="bg-slate-50 border border-slate-200/70 p-2.5 rounded-xl">
+                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expiry Date</div>
+                        <div className="text-xs font-extrabold text-emerald-700 mt-0.5">30 Aug 2026</div>
+                      </div>
+                    </div>
+                  </div>
                 )}
               </div>
 
@@ -617,47 +620,84 @@ export default function ProductDetailPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 md:gap-6">
-            {relatedProducts.map((rel) => (
-              <div
-                key={rel.id}
-                onClick={() => navigate(`/product/${rel.id}`)}
-                className="bg-white border border-slate-200/90 rounded-3xl overflow-hidden p-3.5 md:p-4 hover:-translate-y-1 hover:shadow-lg transition-all cursor-pointer group shadow-xs relative"
-              >
-                <div className="aspect-square bg-slate-100 rounded-2xl overflow-hidden mb-3 relative">
-                  <img
-                    src={getProductImage(rel.name, rel.category?.toLowerCase() || "grocery")}
-                    alt={rel.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+            {relatedProducts.map((rel) => {
+              const inCart = cart.find((item) => item.id === rel.id);
+              const catStr = (rel.categoryKey || rel.category || "").toLowerCase();
+              const isRelSubEligible = catStr.includes("dairy") || catStr.includes("bakery") || rel.id.startsWith("dairy") || rel.id.startsWith("bakery");
 
-                  {/* Yellow Plus Cart Button matching uploaded Image 1 */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      addToCart(rel);
-                      triggerToast(`Added ${rel.name} to Cart!`);
-                    }}
-                    className="absolute bottom-2 right-2 w-7 h-7 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 flex items-center justify-center shadow-md font-bold transition-all cursor-pointer"
-                  >
-                    <Plus size={16} />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-1 text-[11px] text-amber-500 font-bold mb-1">
-                  <Star size={11} fill="currentColor" /> {rel.rating}
-                </div>
-
-                <div className="font-bold text-xs md:text-sm text-slate-900 truncate mb-1">{rel.name}</div>
-
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="font-extrabold text-sm md:text-base text-slate-900">₹{rel.price}</span>
-                    <span className="text-[11px] text-slate-400 line-through ml-1.5">₹{rel.mrp}</span>
+              return (
+                <Link
+                  key={rel.id}
+                  to={`/product/${rel.id}`}
+                  className="bg-white border border-emerald-100 hover:border-emerald-300 rounded-2xl overflow-hidden hover:-translate-y-1 hover:shadow-md transition-all flex flex-col justify-between group cursor-pointer text-slate-900 block"
+                >
+                  <div className="aspect-square bg-slate-50 relative overflow-hidden">
+                    <img
+                      src={rel.img || getProductImage(rel.name, rel.categoryKey || "grocery")}
+                      alt={rel.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
+                      <Star size={10} className="fill-amber-400 text-amber-400" />
+                      {rel.rating || "4.8"}
+                    </span>
                   </div>
-                </div>
-              </div>
-            ))}
+
+                  <div className="p-3 text-left flex-1 flex flex-col justify-between">
+                    <div>
+                      <span className="text-[10px] font-semibold text-slate-400 block truncate">{rel.brand || "Fresh Mart"}</span>
+                      <h4 className="font-extrabold text-xs text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
+                        {rel.name}
+                      </h4>
+
+                      {isRelSubEligible && (
+                        <div className="mt-1.5 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-md">
+                          <Repeat size={10} className="text-[#16A34A]" />
+                          <span>Save 10% with Subscription</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <div>
+                        <div className="text-sm font-black text-[#166534]">₹{rel.price}</div>
+                        <div className="text-[10px] text-slate-400 line-through font-semibold">₹{rel.mrp || Math.round(rel.price * 1.2)}</div>
+                      </div>
+
+                      {/* Add to Cart Actions with Event Propagation Prevention */}
+                      <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
+                        {inCart ? (
+                          <div className="flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 rounded-full p-0.5">
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromCart(rel.id); }}
+                              className="w-5 h-5 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-100 cursor-pointer shadow-xs"
+                            >
+                              <Minus size={10} />
+                            </button>
+                            <span className="w-4 text-center text-xs font-black text-[#166534]">{inCart.quantity}</span>
+                            <button
+                              onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(rel); }}
+                              className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center hover:bg-[#15803D] cursor-pointer shadow-xs"
+                            >
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(rel); triggerToast(`Added ${rel.name} to Cart!`); }}
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-extrabold px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                          >
+                            <Plus size={13} /> Add
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         </section>
 

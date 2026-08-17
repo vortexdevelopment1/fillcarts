@@ -379,7 +379,7 @@ export function getRelatedProducts(product) {
     candidates.push(...fallbackMatches);
   }
 
-  return candidates.slice(0, 4);
+  return candidates;
 }
 
 export function getVariantsForProduct(product) {
