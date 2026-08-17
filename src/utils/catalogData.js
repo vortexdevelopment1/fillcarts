@@ -318,6 +318,70 @@ export function getProductById(id) {
   };
 }
 
+export function getRelatedProducts(product) {
+  if (!product) return [];
+
+  // Determine category key or name
+  let catKey = "";
+  if (product.id && typeof product.id === "string" && product.id.includes("-")) {
+    const parts = product.id.split("-");
+    if (parts[0] && categoryNamesMap[parts[0]]) {
+      catKey = parts[0];
+    }
+  }
+
+  if (!catKey && product.category) {
+    const foundKey = Object.keys(categoryNamesMap).find(
+      (key) => categoryNamesMap[key].toLowerCase() === product.category.toLowerCase()
+    );
+    if (foundKey) catKey = foundKey;
+  }
+
+  if (!catKey && product.categoryKey) {
+    catKey = product.categoryKey;
+  }
+
+  let candidates = [];
+
+  if (catKey) {
+    const catName = categoryNamesMap[catKey];
+
+    // A. Static products in PRODUCTS matching category
+    const staticMatches = PRODUCTS.filter((p) => {
+      if (p.id === product.id) return false;
+      return p.categoryKey === catKey || (catName && p.categoryName && p.categoryName.toLowerCase() === catName.toLowerCase());
+    }).map((p) => getProductById(p.id));
+
+    candidates.push(...staticMatches);
+
+    // B. Dynamic/generated items for this category (indices 0 to 7)
+    for (let i = 0; i < 8; i++) {
+      const genId = `${catKey}-${i}`;
+      if (genId !== product.id && !candidates.some((c) => c.id === genId)) {
+        const item = getProductById(genId);
+        if (item) candidates.push(item);
+      }
+    }
+  } else if (product.category) {
+    const staticMatches = PRODUCTS.filter((p) => {
+      if (p.id === product.id) return false;
+      return p.categoryName && p.categoryName.toLowerCase() === product.category.toLowerCase();
+    }).map((p) => getProductById(p.id));
+
+    candidates.push(...staticMatches);
+  }
+
+  // Fallback if less than 4 items: pick from PRODUCTS
+  if (candidates.length < 4) {
+    const fallbackMatches = PRODUCTS.filter(
+      (p) => p.id !== product.id && !candidates.some((c) => c.id === p.id)
+    ).map((p) => getProductById(p.id));
+    candidates.push(...fallbackMatches);
+  }
+
+  return candidates.slice(0, 4);
+}
+
 export function getVariantsForProduct(product) {
   if (!product) return [];
 

@@ -623,4 +623,4 @@ export default function AppKartHome() {
       <Footer />
     </div>
   );
-}
+}

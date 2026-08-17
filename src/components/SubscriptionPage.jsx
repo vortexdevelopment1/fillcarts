@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronRight, Repeat, Clock, Milk, ShoppingBasket,
   Sparkles, Star, Plus, Trash2,
@@ -51,11 +51,29 @@ function genProducts(catKey) {
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useCart();
-  const [activeCategory, setActiveCategory] = useState("dairy");
-  const [basket, setBasket] = useState([
-    { id: "dairy-0", name: "Toned Milk 1L", qty: 1, price: 54 }
-  ]);
+
+  const initialSubscribeProduct = location.state?.subscribeProduct;
+
+  const [activeCategory, setActiveCategory] = useState(() => {
+    if (initialSubscribeProduct?.categoryKey) return initialSubscribeProduct.categoryKey;
+    return "dairy";
+  });
+
+  const [basket, setBasket] = useState(() => {
+    if (initialSubscribeProduct) {
+      return [{
+        id: initialSubscribeProduct.id || `sub-prod-${Date.now()}`,
+        name: initialSubscribeProduct.name,
+        qty: 1,
+        price: initialSubscribeProduct.price
+      }];
+    }
+    return [
+      { id: "dairy-0", name: "Toned Milk 1L", qty: 1, price: 54 }
+    ];
+  });
   const [searchQuery, setSearchQuery] = useState("");
   const [frequency, setFrequency] = useState("Daily");
   const [timeSlot, setTimeSlot] = useState("6:30 AM - 7:30 AM");
@@ -95,13 +113,12 @@ export default function SubscriptionPage() {
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
 
   const getStorageKey = (u) => {
-    if (!u) return null;
+    if (!u) return "fillcarts_subscription_orders_guest";
     return `fillcarts_subscription_orders_${u.id || u.phone || u.email || 'user'}`;
   };
 
-  // Persistent Orders State (Empty when not logged in; created ONLY when user is logged in)
+  // Persistent Orders State (Guest & User Storage)
   const [myOrders, setMyOrders] = useState(() => {
-    if (!user) return [];
     try {
       const key = getStorageKey(user);
       const saved = localStorage.getItem(key);
@@ -115,34 +132,54 @@ export default function SubscriptionPage() {
     return [];
   });
 
-  // Sync orders when user changes
+  // Handle incoming location state & event listener updates
   useEffect(() => {
-    if (!user) {
-      setMyOrders([]);
-      return;
+    const syncOrders = () => {
+      try {
+        const key = getStorageKey(user);
+        const saved = localStorage.getItem(key);
+        if (saved !== null) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed)) setMyOrders(parsed);
+        }
+      } catch (e) {}
+    };
+
+    syncOrders();
+
+    if (location.state?.tab) {
+      setViewTab(location.state.tab);
     }
-    try {
-      const key = getStorageKey(user);
-      const saved = localStorage.getItem(key);
-      if (saved !== null) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) setMyOrders(parsed);
-      } else {
-        setMyOrders([]);
-      }
-    } catch (e) {
-      setMyOrders([]);
+
+    if (location.state?.newOrderCard) {
+      const newCard = location.state.newOrderCard;
+      setMyOrders(prev => {
+        if (prev.some(o => o.orderId === newCard.orderId)) return prev;
+        return [newCard, ...prev];
+      });
     }
-  }, [user]);
+
+    if (location.state?.subscribeProduct) {
+      const sp = location.state.subscribeProduct;
+      if (sp.categoryKey) setActiveCategory(sp.categoryKey);
+      setBasket([{
+        id: sp.id || `sub-prod-${Date.now()}`,
+        name: sp.name,
+        qty: 1,
+        price: sp.price
+      }]);
+    }
+
+    window.addEventListener("fillcarts_subscriptions_updated", syncOrders);
+    return () => window.removeEventListener("fillcarts_subscriptions_updated", syncOrders);
+  }, [user, location.state]);
 
   // Save to LocalStorage whenever myOrders changes
   useEffect(() => {
-    if (!user) return;
     try {
       const key = getStorageKey(user);
       if (key) {
         localStorage.setItem(key, JSON.stringify(myOrders));
-        window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
       }
     } catch (e) {
       console.error("Failed to save subscription orders to localStorage", e);

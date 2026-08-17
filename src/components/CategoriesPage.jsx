@@ -5,7 +5,7 @@ import Navbar from "./Navbar";
 import {
   Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed, PawPrint, Home,
   Sparkles, Smartphone, Search, Star, Plus, Minus, ChevronRight,
-  ChevronDown, ArrowUpDown, X, ArrowRight, RefreshCw, AlertCircle, ShoppingBag
+  ChevronDown, ArrowUpDown, X, ArrowRight, RefreshCw, AlertCircle, ShoppingBag, Repeat
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
@@ -123,11 +123,10 @@ export function CategoryCard({ category, isActive, onClick }) {
   return (
     <button
       onClick={() => onClick(category.key)}
-      className={`group text-left border rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer flex flex-col justify-between h-full ${
-        isActive
-          ? "bg-[#ECFDF3] border-[#16A34A] ring-2 ring-[#16A34A]/20"
-          : "bg-white border-slate-200 hover:border-emerald-300 hover:bg-[#FFFCF5]"
-      }`}
+      className={`group text-left border rounded-2xl p-3.5 transition-all duration-300 hover:-translate-y-1 hover:shadow-md cursor-pointer flex flex-col justify-between h-full ${isActive
+        ? "bg-[#ECFDF3] border-[#16A34A] ring-2 ring-[#16A34A]/20"
+        : "bg-white border-slate-200 hover:border-emerald-300 hover:bg-[#FFFCF5]"
+        }`}
     >
       <div className="space-y-3 w-full">
         {/* Category Image with Fallback */}
@@ -180,7 +179,7 @@ export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState(queryParam || "");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortOpen, setSortOpen] = useState(false);
-  
+
   // State handlers for API simulation
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -411,9 +410,8 @@ export default function CategoriesPage() {
                         <button
                           key={o}
                           onClick={() => { setSortBy(o); setSortOpen(false); }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                            sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
-                          }`}
+                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
+                            }`}
                         >
                           {o}
                         </button>
@@ -457,6 +455,13 @@ export default function CategoriesPage() {
                             <h4 className="font-extrabold text-xs text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
                               {p.name}
                             </h4>
+
+                            {(active === "dairy" || active === "bakery" || p.id?.startsWith("dairy") || p.id?.startsWith("bakery") || p.categoryKey === "dairy" || p.categoryKey === "bakery") && (
+                              <div className="mt-1.5 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-md">
+                                <Repeat size={10} className="text-[#16A34A]" />
+                                <span>Save 10% with Subscription</span>
+                              </div>
+                            )}
                           </div>
 
                           <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
@@ -508,4 +513,4 @@ export default function CategoriesPage() {
     </div>
   );
 }
-
+

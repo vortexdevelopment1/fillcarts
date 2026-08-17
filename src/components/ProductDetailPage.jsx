@@ -5,11 +5,11 @@ import Footer from "./Footer";
 import {
   Star, Plus, Minus, ChevronRight, ChevronDown, ChevronUp, ShoppingCart,
   Smartphone, ArrowLeft, Heart, Share2, CheckCircle2, QrCode, Download, X,
-  ShieldCheck, Truck, Clock, Sparkles, MapPin, Store, Check, ThumbsUp, RefreshCw, AlertCircle
+  ShieldCheck, Truck, Clock, Sparkles, MapPin, Store, Check, ThumbsUp, RefreshCw, AlertCircle, Repeat
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage } from "../utils/productImages";
-import { getProductById, getVariantsForProduct, PRODUCTS } from "../utils/catalogData";
+import { getProductById, getVariantsForProduct, getRelatedProducts, PRODUCTS } from "../utils/catalogData";
 
 export default function ProductDetailPage() {
   const { id } = useParams();
@@ -31,6 +31,77 @@ export default function ProductDetailPage() {
   const [pincode, setPincode] = useState("452001");
   const [pincodeStatus, setPincodeStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
   const [toastMessage, setToastMessage] = useState("");
+  const { user } = useCart();
+
+  const isSubscriptionEligible = useMemo(() => {
+    if (!product) return false;
+    const cat = (product.categoryKey || product.categoryName || product.category || "").toLowerCase();
+    const pid = String(product.id || "").toLowerCase();
+    return cat.includes("dairy") || cat.includes("bakery") || pid.startsWith("dairy") || pid.startsWith("bakery");
+  }, [product]);
+
+  const handleSubscribeAndSave = () => {
+    const todayStr = new Date().toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric"
+    });
+
+    const categoryKey = product?.categoryKey ||
+      (product?.category?.toLowerCase().includes("dairy") ? "dairy" :
+       product?.category?.toLowerCase().includes("bakery") ? "bakery" : "dairy");
+
+    const currentVariant = variants[selectedVariantIdx] || variants[0] || {};
+    const subPrice = Math.round((currentVariant.price || product?.price || 50) * 0.9);
+
+    const newSubCard = {
+      orderId: `SUB-ORD-${Math.floor(1000 + Math.random() * 9000)}`,
+      name: `${product?.name || "Product"} (${currentVariant.size || "1 Unit"}) Subscription`,
+      items: [
+        {
+          name: `${product?.name || "Product"} (${currentVariant.size || "1 Unit"})`,
+          qty: 1,
+          price: subPrice
+        }
+      ],
+      frequency: "Daily",
+      timeSlot: "Morning (6:30 AM - 7:30 AM)",
+      duration: "Until Cancelled (Flexible)",
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: "",
+      status: "Active Schedule",
+      nextDate: "Tomorrow (7:00 AM Slot)",
+      orderDate: `Created on ${todayStr}`,
+      address: user?.address || "Flat 402, Green Valley Apartments, Bengaluru",
+      total: subPrice,
+      img: product?.img,
+      categoryKey: categoryKey
+    };
+
+    const userKey = user ? `fillcarts_subscription_orders_${user.id || user.phone || user.email || 'user'}` : "fillcarts_subscription_orders_guest";
+    try {
+      const existing = JSON.parse(localStorage.getItem(userKey) || "[]");
+      const updated = [newSubCard, ...existing.filter(o => o.orderId !== newSubCard.orderId)];
+      localStorage.setItem(userKey, JSON.stringify(updated));
+      window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
+    } catch (e) {
+      console.error("Error saving subscription:", e);
+    }
+
+    navigate("/subscriptions", {
+      state: {
+        tab: "create",
+        newOrderCard: newSubCard,
+        subscribeProduct: {
+          id: product?.id || `sub-${Date.now()}`,
+          name: `${product?.name} (${currentVariant.size || "1 Unit"})`,
+          categoryKey,
+          price: subPrice,
+          img: product?.img
+        }
+      }
+    });
+  };
 
   // Dynamically generated quantity/unit variants based on product type
   const variants = useMemo(() => {
@@ -54,9 +125,9 @@ export default function ProductDetailPage() {
     mainProductImg,
   ];
 
-  // Related products
+  // Related products (filtered by category)
   const relatedProducts = useMemo(() => {
-    return PRODUCTS.filter((p) => p.id !== product.id).slice(0, 4);
+    return getRelatedProducts(product);
   }, [product]);
 
   const triggerToast = (msg) => {
@@ -431,6 +502,18 @@ export default function ProductDetailPage() {
                   <Smartphone size={17} /> Download App to Buy
                 </button>
               </div>
+
+              {/* Subscribe and Save 10% Button Link (Only for Subscription Eligible Products) */}
+              {isSubscriptionEligible && (
+                <button
+                  type="button"
+                  onClick={handleSubscribeAndSave}
+                  className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-4 px-4 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer border border-emerald-600 group"
+                >
+                  <Repeat size={18} className="group-hover:rotate-180 transition-transform duration-500" />
+                  <span>Subscribe & Save 10% (₹{Math.round(activeVariant.price * 0.9)})</span>
+                </button>
+              )}
             </div>
 
           </div>
