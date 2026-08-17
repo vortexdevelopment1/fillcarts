@@ -52,7 +52,25 @@ function genProducts(catKey) {
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useCart();
+  const { user, userLocation } = useCart();
+
+  const getCustomerAddress = (u, loc) => {
+    if (u) {
+      if (typeof u.address === "string" && u.address.trim()) {
+        return u.address + (u.pincode ? `, Pincode: ${u.pincode}` : "");
+      }
+      if (u.address_line) {
+        return `${u.address_line}${u.city ? `, ${u.city}` : ""}${u.pincode ? `, Pincode: ${u.pincode}` : ""}`;
+      }
+      if (u.city || u.pincode || u.area) {
+        return `${u.area || ""}, ${u.city || ""} (${u.pincode || ""})`.trim();
+      }
+    }
+    if (loc && (loc.formatted || loc.area || loc.city)) {
+      return loc.formatted || `${loc.area || ""}, ${loc.city || ""} (${loc.pincode || ""})`.trim();
+    }
+    return "Vijay Nagar, Indore (452010)";
+  };
 
   const initialSubscribeProduct = location.state?.subscribeProduct;
 
@@ -104,7 +122,14 @@ export default function SubscriptionPage() {
 
   const [customCardTitle, setCustomCardTitle] = useState("");
   const [savedAddresses, setSavedAddresses] = useState([]);
-  const [userAddress, setUserAddress] = useState("Flat 402, Green Valley Apartments, Bengaluru");
+  const [userAddress, setUserAddress] = useState(() => getCustomerAddress(user, userLocation));
+
+  useEffect(() => {
+    const fetched = getCustomerAddress(user, userLocation);
+    if (fetched) {
+      setUserAddress(fetched);
+    }
+  }, [user, userLocation]);
 
   const [showAppInstallModal, setShowAppInstallModal] = useState(false);
   const [selectedCardForAppInstall, setSelectedCardForAppInstall] = useState(null);
@@ -149,14 +174,6 @@ export default function SubscriptionPage() {
 
     if (location.state?.tab) {
       setViewTab(location.state.tab);
-    }
-
-    if (location.state?.newOrderCard) {
-      const newCard = location.state.newOrderCard;
-      setMyOrders(prev => {
-        if (prev.some(o => o.orderId === newCard.orderId)) return prev;
-        return [newCard, ...prev];
-      });
     }
 
     if (location.state?.subscribeProduct) {

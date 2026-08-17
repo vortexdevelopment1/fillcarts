@@ -41,12 +41,6 @@ export default function ProductDetailPage() {
   }, [product]);
 
   const handleSubscribeAndSave = () => {
-    const todayStr = new Date().toLocaleDateString("en-GB", {
-      day: "numeric",
-      month: "short",
-      year: "numeric"
-    });
-
     const categoryKey = product?.categoryKey ||
       (product?.category?.toLowerCase().includes("dairy") ? "dairy" :
        product?.category?.toLowerCase().includes("bakery") ? "bakery" : "dairy");
@@ -54,44 +48,9 @@ export default function ProductDetailPage() {
     const currentVariant = variants[selectedVariantIdx] || variants[0] || {};
     const subPrice = Math.round((currentVariant.price || product?.price || 50) * 0.9);
 
-    const newSubCard = {
-      orderId: `SUB-ORD-${Math.floor(1000 + Math.random() * 9000)}`,
-      name: `${product?.name || "Product"} (${currentVariant.size || "1 Unit"}) Subscription`,
-      items: [
-        {
-          name: `${product?.name || "Product"} (${currentVariant.size || "1 Unit"})`,
-          qty: 1,
-          price: subPrice
-        }
-      ],
-      frequency: "Daily",
-      timeSlot: "Morning (6:30 AM - 7:30 AM)",
-      duration: "Until Cancelled (Flexible)",
-      startDate: new Date().toISOString().split("T")[0],
-      endDate: "",
-      status: "Active Schedule",
-      nextDate: "Tomorrow (7:00 AM Slot)",
-      orderDate: `Created on ${todayStr}`,
-      address: user?.address || "Flat 402, Green Valley Apartments, Bengaluru",
-      total: subPrice,
-      img: product?.img,
-      categoryKey: categoryKey
-    };
-
-    const userKey = user ? `fillcarts_subscription_orders_${user.id || user.phone || user.email || 'user'}` : "fillcarts_subscription_orders_guest";
-    try {
-      const existing = JSON.parse(localStorage.getItem(userKey) || "[]");
-      const updated = [newSubCard, ...existing.filter(o => o.orderId !== newSubCard.orderId)];
-      localStorage.setItem(userKey, JSON.stringify(updated));
-      window.dispatchEvent(new Event("fillcarts_subscriptions_updated"));
-    } catch (e) {
-      console.error("Error saving subscription:", e);
-    }
-
     navigate("/subscriptions", {
       state: {
         tab: "create",
-        newOrderCard: newSubCard,
         subscribeProduct: {
           id: product?.id || `sub-${Date.now()}`,
           name: `${product?.name} (${currentVariant.size || "1 Unit"})`,
