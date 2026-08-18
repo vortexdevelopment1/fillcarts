@@ -244,15 +244,17 @@ export default function CategoriesPage() {
     return list;
   }, [active, searchQuery, sortBy, ratingFilter, priceFilter]);
 
-  // Handle Category Selection with Automatic Smooth Scroll down to Products section
-  const handleSelectCategory = (catKey) => {
+  // Handle Category Selection without unwanted automatic scroll when clicked from sticky filter bar
+  const handleSelectCategory = (catKey, shouldScroll = false) => {
     setActive(catKey);
     setSearchParams({ cat: catKey });
-    setTimeout(() => {
-      if (productsSectionRef.current) {
-        productsSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-    }, 50);
+    if (shouldScroll) {
+      setTimeout(() => {
+        if (productsSectionRef.current) {
+          productsSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }, 50);
+    }
   };
 
   const handleRetry = () => {
@@ -268,8 +270,8 @@ export default function CategoriesPage() {
       {/* Shared Common Navbar */}
       <Navbar searchPlaceholder="Search products or categories..." onSearchChange={(val) => setSearchQuery(val)} />
 
-      {/* 1. STICKY FILTER BAR (Right below Navbar) */}
-      <section className="bg-white border-b border-slate-200 sticky top-[69px] z-30 shadow-xs py-3">
+      {/* 1. STICKY FILTER BAR (Fixed right below Navbar) */}
+      <section className="bg-white border-b border-slate-200 sticky top-[96px] sm:top-[100px] z-30 shadow-xs py-3">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-3">
           {/* Row 1: Categories Filter Chips */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
@@ -284,7 +286,7 @@ export default function CategoriesPage() {
               return (
                 <button
                   key={cat.id}
-                  onClick={() => handleSelectCategory(cat.key)}
+                  onClick={() => handleSelectCategory(cat.key, false)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     isActive
                       ? "bg-[#16A34A] text-white shadow-xs ring-2 ring-[#16A34A]/20 scale-105"
@@ -397,92 +399,13 @@ export default function CategoriesPage() {
       </section>
 
       {/* MAIN CONTENT AREA */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-12 flex-1 w-full">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-12 flex-1 w-full">
         {error ? (
           <CategoryErrorState onRetry={handleRetry} />
         ) : (
           <>
-            {/* 1. ALL CATEGORIES OVERVIEW SECTION */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-extrabold text-[#17231A]">All Categories Overview</h2>
-                  <p className="text-xs text-slate-500 font-medium mt-0.5">
-                    Click any category to view its items with automatic smooth scrolling
-                  </p>
-                </div>
-                {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery("")}
-                    className="text-xs font-bold text-[#16A34A] hover:underline cursor-pointer"
-                  >
-                    Clear Filter
-                  </button>
-                )}
-              </div>
-
-              {/* Category Overview Cards */}
-              {loading ? (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {[...Array(10)].map((_, i) => (
-                    <CategorySkeleton key={i} />
-                  ))}
-                </div>
-              ) : filteredCategories.length === 0 ? (
-                <CategoryEmptyState onReset={() => setSearchQuery("")} />
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                  {filteredCategories.map((cat) => (
-                    <CategoryCard
-                      key={cat.id}
-                      category={cat}
-                      isActive={active === cat.key}
-                      onClick={handleSelectCategory}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-
-            {/* 2. TRENDING / POPULAR NEAR YOU SECTION */}
-            {!searchQuery && popularCategories.length > 0 && (
-              <section className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block">
-                      Trending Local Demand
-                    </span>
-                    <h3 className="text-xl font-extrabold text-[#17231A]">Popular Near You</h3>
-                  </div>
-                  <span className="text-xs font-bold text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200">
-                    Top Demand Picks
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {popularCategories.map((popCat) => (
-                    <button
-                      key={popCat.id}
-                      onClick={() => handleSelectCategory(popCat.key)}
-                      className="bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-emerald-100 hover:border-emerald-300 rounded-2xl p-3.5 flex items-center gap-3 transition-all text-left cursor-pointer group"
-                    >
-                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
-                        <img src={popCat.img} alt={popCat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                      </div>
-                      <div className="min-w-0">
-                        <div className="font-extrabold text-xs text-[#17231A] group-hover:text-[#16A34A] truncate">
-                          {popCat.name}
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-semibold">{popCat.count}+ Items</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* 3. PRODUCTS LIST ACCORDING TO CATEGORY (Automatic Scroll Target) */}
-            <section ref={productsSectionRef} id="products-section" className="space-y-6 pt-4 border-t border-slate-200/60 scroll-mt-24">
+            {/* 1. PRODUCTS LIST ACCORDING TO SELECTED CATEGORY (Directly under Sticky Filter Bar) */}
+            <section ref={productsSectionRef} id="products-section" className="space-y-6 scroll-mt-32">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-emerald-100 p-5 rounded-2xl shadow-xs">
                 <div className="flex items-center gap-3">
                   <div className="w-11 h-11 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold shadow-2xs">
@@ -592,6 +515,85 @@ export default function CategoriesPage() {
                 </div>
               )}
             </section>
+
+            {/* 2. ALL CATEGORIES OVERVIEW SECTION */}
+            <section className="space-y-4 pt-6 border-t border-slate-200/60">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#17231A]">Explore All Categories</h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Browse store categories or pick one to view products above
+                  </p>
+                </div>
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="text-xs font-bold text-[#16A34A] hover:underline cursor-pointer"
+                  >
+                    Clear Filter
+                  </button>
+                )}
+              </div>
+
+              {/* Category Overview Cards */}
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {[...Array(10)].map((_, i) => (
+                    <CategorySkeleton key={i} />
+                  ))}
+                </div>
+              ) : filteredCategories.length === 0 ? (
+                <CategoryEmptyState onReset={() => setSearchQuery("")} />
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {filteredCategories.map((cat) => (
+                    <CategoryCard
+                      key={cat.id}
+                      category={cat}
+                      isActive={active === cat.key}
+                      onClick={(key) => handleSelectCategory(key, true)}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* 3. TRENDING / POPULAR NEAR YOU SECTION */}
+            {!searchQuery && popularCategories.length > 0 && (
+              <section className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block">
+                      Trending Local Demand
+                    </span>
+                    <h3 className="text-xl font-extrabold text-[#17231A]">Popular Near You</h3>
+                  </div>
+                  <span className="text-xs font-bold text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200">
+                    Top Demand Picks
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {popularCategories.map((popCat) => (
+                    <button
+                      key={popCat.id}
+                      onClick={() => handleSelectCategory(popCat.key, true)}
+                      className="bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-emerald-100 hover:border-emerald-300 rounded-2xl p-3.5 flex items-center gap-3 transition-all text-left cursor-pointer group"
+                    >
+                      <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
+                        <img src={popCat.img} alt={popCat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="font-extrabold text-xs text-[#17231A] group-hover:text-[#16A34A] truncate">
+                          {popCat.name}
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-semibold">{popCat.count}+ Items</div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         )}
       </main>

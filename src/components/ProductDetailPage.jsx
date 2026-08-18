@@ -233,7 +233,7 @@ export default function ProductDetailPage() {
                 </span>
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight" style={{ fontFamily: "'Fraunces', serif" }}>
+              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
                 {product.name}
               </h1>
 
@@ -482,7 +482,7 @@ export default function ProductDetailPage() {
         <section className="mt-16 pt-10 border-t border-slate-200/90 space-y-8">
           <div>
             <span className="block text-xs font-extrabold tracking-widest uppercase text-amber-600 mb-1">Customer Reviews</span>
-            <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
               Ratings & Feedback
             </h2>
           </div>
@@ -490,7 +490,7 @@ export default function ProductDetailPage() {
           <div className="grid md:grid-cols-[300px_1fr] gap-8 bg-white border border-slate-200/90 p-6 md:p-8 rounded-3xl shadow-xs">
             {/* Rating Summary */}
             <div className="space-y-4 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 md:pr-8 pb-6 md:pb-0">
-              <div className="text-5xl font-black text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>{product.rating}</div>
+              <div className="text-5xl font-black text-slate-900">{product.rating}</div>
               <div className="flex items-center justify-center md:justify-start gap-1 text-amber-500">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} size={18} fill="currentColor" />
