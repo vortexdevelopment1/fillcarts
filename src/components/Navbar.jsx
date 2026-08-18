@@ -120,6 +120,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
   };
 
   const navLinks = [
+    { label: "Home", to: "/" },
     { label: "Categories", to: "/categories" },
     { label: "Offers", to: "/#offers", badge: "HOT", badgeBg: "bg-amber-500" },
     { label: "Subscription", to: "/subscriptions", badge: "⭐", badgeBg: "bg-[#16A34A]" },
@@ -190,7 +191,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
           </button>
 
           {/* Search Input Bar with Auto-Suggestions */}
-          <div className="hidden md:flex flex-1 max-w-sm">
+          <div className="flex flex-1 max-w-xs sm:max-w-sm">
             <SearchDropdown
               placeholder={searchPlaceholder}
               defaultValue={searchValue}

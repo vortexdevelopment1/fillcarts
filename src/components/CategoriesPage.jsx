@@ -4,12 +4,11 @@ import Footer from "./Footer";
 import Navbar from "./Navbar";
 import {
   Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed, PawPrint, Home,
-  Sparkles, Smartphone, Search, Star, Plus, Minus, ChevronRight,
+  Sparkles, Smartphone, Star, Plus, Minus, SlidersHorizontal,
   ChevronDown, ArrowUpDown, X, ArrowRight, RefreshCw, AlertCircle, ShoppingBag, Repeat
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
-import SearchDropdown from "./SearchDropdown";
 
 // Default Category Data
 const initialCategories = [
@@ -116,7 +115,7 @@ export function CategoryErrorState({ onRetry }) {
   );
 }
 
-/** Individual Category Card Component with Fallback Safety */
+/** Individual Category Card Component */
 export function CategoryCard({ category, isActive, onClick }) {
   const [imgSrc, setImgSrc] = useState(category.img || CATEGORY_IMAGE_MAP[category.key] || CATEGORY_IMAGE_MAP.grocery);
 
@@ -129,7 +128,7 @@ export function CategoryCard({ category, isActive, onClick }) {
         }`}
     >
       <div className="space-y-3 w-full">
-        {/* Category Image with Fallback */}
+        {/* Category Image */}
         <div className="relative aspect-4/3 bg-slate-50 rounded-xl overflow-hidden">
           <img
             src={imgSrc}
@@ -179,6 +178,11 @@ export default function CategoriesPage() {
   const [searchQuery, setSearchQuery] = useState(queryParam || "");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortOpen, setSortOpen] = useState(false);
+  const [filterMode, setFilterMode] = useState("all");
+
+  // Advanced Filters: Rating & Price Range
+  const [ratingFilter, setRatingFilter] = useState("all");
+  const [priceFilter, setPriceFilter] = useState("all");
 
   // State handlers for API simulation
   const [loading, setLoading] = useState(false);
@@ -198,11 +202,14 @@ export default function CategoriesPage() {
 
   // Filter categories by search term
   const filteredCategories = useMemo(() => {
-    if (!searchQuery.trim()) return categories;
-    const q = searchQuery.toLowerCase();
-    return categories.filter(
-      (c) => c.name.toLowerCase().includes(q) || c.sub?.toLowerCase().includes(q)
-    );
+    let list = categories;
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      list = list.filter(
+        (c) => c.name.toLowerCase().includes(q) || c.sub?.toLowerCase().includes(q)
+      );
+    }
+    return list;
   }, [categories, searchQuery]);
 
   // Filter popular categories
@@ -214,23 +221,33 @@ export default function CategoriesPage() {
     return categories.find((c) => c.key === active) || categories[0];
   }, [categories, active]);
 
-  // Generate products for active category
+  // Generate and filter products for active category
   const products = useMemo(() => {
     let list = genProducts(active);
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
       list = list.filter((p) => p.name.toLowerCase().includes(q));
     }
+    if (ratingFilter === "4.5") {
+      list = list.filter((p) => Number(p.rating) >= 4.5);
+    } else if (ratingFilter === "4.0") {
+      list = list.filter((p) => Number(p.rating) >= 4.0);
+    }
+    if (priceFilter === "under100") {
+      list = list.filter((p) => p.price <= 100);
+    } else if (priceFilter === "100to300") {
+      list = list.filter((p) => p.price >= 100 && p.price <= 300);
+    }
     if (sortBy === "Price: Low to High") list = [...list].sort((a, b) => a.price - b.price);
     if (sortBy === "Price: High to Low") list = [...list].sort((a, b) => b.price - a.price);
-    if (sortBy === "Rating") list = [...list].sort((a, b) => b.rating - a.rating);
+    if (sortBy === "Rating") list = [...list].sort((a, b) => Number(b.rating) - Number(a.rating));
     return list;
-  }, [active, searchQuery, sortBy]);
+  }, [active, searchQuery, sortBy, ratingFilter, priceFilter]);
 
+  // Handle Category Selection with Automatic Smooth Scroll down to Products section
   const handleSelectCategory = (catKey) => {
     setActive(catKey);
     setSearchParams({ cat: catKey });
-    // Smooth scroll down to products section
     setTimeout(() => {
       if (productsSectionRef.current) {
         productsSectionRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -251,58 +268,149 @@ export default function CategoriesPage() {
       {/* Shared Common Navbar */}
       <Navbar searchPlaceholder="Search products or categories..." onSearchChange={(val) => setSearchQuery(val)} />
 
-
-      {/* 1. PAGE HEADER & SEARCH SECTION */}
-      <section className="bg-white border-b border-slate-100 py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-5 text-center sm:text-left">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-            <div>
-              <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block mb-1">
-                Explore Neighborhood Marketplace
-              </span>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-[#17231A] tracking-tight">
-                Shop by Category
-              </h1>
-              <p className="text-xs sm:text-sm text-slate-500 font-medium mt-1">
-                Find everyday essentials from trusted local stores near you.
-              </p>
+      {/* 1. STICKY FILTER BAR (Right below Navbar) */}
+      <section className="bg-white border-b border-slate-200 sticky top-[69px] z-30 shadow-xs py-3">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 space-y-3">
+          {/* Row 1: Categories Filter Chips */}
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5 w-full">
+            <div className="flex items-center gap-1.5 text-xs font-extrabold text-slate-500 pr-2.5 border-r border-slate-200 shrink-0">
+              <SlidersHorizontal size={14} className="text-[#16A34A]" />
+              <span>Categories:</span>
             </div>
 
-            {/* Quick Stats Pill */}
-            <div className="hidden md:flex items-center gap-2 bg-[#ECFDF3] border border-emerald-200 rounded-full px-4 py-2 text-xs font-bold text-[#166534]">
-              <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-              <span>10 Categories • 1,800+ Verified Products</span>
-            </div>
+            {categories.map((cat) => {
+              const Icon = cat.icon;
+              const isActive = active === cat.key;
+              return (
+                <button
+                  key={cat.id}
+                  onClick={() => handleSelectCategory(cat.key)}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
+                    isActive
+                      ? "bg-[#16A34A] text-white shadow-xs ring-2 ring-[#16A34A]/20 scale-105"
+                      : "bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-[#166534] border border-slate-200/60"
+                  }`}
+                >
+                  {Icon && <Icon size={13} className={isActive ? "text-white" : "text-[#16A34A]"} />}
+                  <span>{cat.name}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Large Ecommerce Search Input with Auto-Suggestions */}
-          <div className="max-w-2xl">
-            <SearchDropdown
-              placeholder="Search products or categories..."
-              defaultValue={searchQuery}
-              onSearchSubmit={(val) => {
-                window.location.href = `/search?q=${encodeURIComponent(val)}`;
-              }}
-              showSubmitButton={true}
-              inputClassName="bg-[#FFFCF5] border-2 border-emerald-500/20 focus:border-[#16A34A] rounded-2xl py-3 shadow-xs"
-            />
+          {/* Row 2: Advanced Filtering by Rating & Price + Sorting */}
+          <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-slate-100">
+            {/* Rating & Price Quick Filter Chips */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
+              <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Filter By:</span>
+              
+              {/* Rating Filter Chips */}
+              <button
+                onClick={() => setRatingFilter(ratingFilter === "4.5" ? "all" : "4.5")}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${
+                  ratingFilter === "4.5"
+                    ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
+                }`}
+              >
+                <Star size={12} className="fill-amber-400 text-amber-400" /> 4.5+ Rating
+              </button>
+
+              <button
+                onClick={() => setRatingFilter(ratingFilter === "4.0" ? "all" : "4.0")}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${
+                  ratingFilter === "4.0"
+                    ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
+                }`}
+              >
+                <Star size={12} className="fill-amber-400 text-amber-400" /> 4.0+ Rating
+              </button>
+
+              {/* Price Range Filter Chips */}
+              <button
+                onClick={() => setPriceFilter(priceFilter === "under100" ? "all" : "under100")}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${
+                  priceFilter === "under100"
+                    ? "bg-[#166534] text-white border-[#166534] shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
+                }`}
+              >
+                Under ₹100
+              </button>
+
+              <button
+                onClick={() => setPriceFilter(priceFilter === "100to300" ? "all" : "100to300")}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${
+                  priceFilter === "100to300"
+                    ? "bg-[#166534] text-white border-[#166534] shadow-xs"
+                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
+                }`}
+              >
+                ₹100 - ₹300
+              </button>
+            </div>
+
+            {/* Right Side: Sort & Reset Controls */}
+            <div className="flex items-center gap-2 shrink-0 ml-auto">
+              <div className="relative">
+                <button
+                  onClick={() => setSortOpen(!sortOpen)}
+                  className="flex items-center gap-1.5 bg-slate-50 hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-3.5 py-1 text-xs font-extrabold text-slate-700 cursor-pointer transition-colors"
+                >
+                  <ArrowUpDown size={13} className="text-[#16A34A]" /> Sort: {sortBy} <ChevronDown size={13} />
+                </button>
+
+                {sortOpen && (
+                  <div className="absolute right-0 top-9 bg-white border border-slate-100 rounded-2xl shadow-xl w-48 p-2 z-40 space-y-1">
+                    {sortOptions.map((o) => (
+                      <button
+                        key={o}
+                        onClick={() => { setSortBy(o); setSortOpen(false); }}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
+                          sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
+                        }`}
+                      >
+                        {o}
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {(ratingFilter !== "all" || priceFilter !== "all" || searchQuery || sortBy !== "Popularity") && (
+                <button
+                  onClick={() => {
+                    setRatingFilter("all");
+                    setPriceFilter("all");
+                    setSearchQuery("");
+                    setSortBy("Popularity");
+                  }}
+                  className="text-xs font-bold text-rose-600 hover:bg-rose-50 border border-rose-200 px-3 py-1 rounded-full transition-colors cursor-pointer flex items-center gap-1"
+                >
+                  <X size={12} /> Reset
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
       {/* MAIN CONTENT AREA */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-12 flex-1 w-full">
-        {/* Error State Handler */}
         {error ? (
           <CategoryErrorState onRetry={handleRetry} />
         ) : (
           <>
-            {/* 2. CATEGORY NAVIGATION GRID */}
+            {/* 1. ALL CATEGORIES OVERVIEW SECTION */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-extrabold text-[#17231A]">
-                  All Categories {searchQuery && `(${filteredCategories.length})`}
-                </h2>
+                <div>
+                  <h2 className="text-xl font-extrabold text-[#17231A]">All Categories Overview</h2>
+                  <p className="text-xs text-slate-500 font-medium mt-0.5">
+                    Click any category to view its items with automatic smooth scrolling
+                  </p>
+                </div>
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery("")}
@@ -313,7 +421,7 @@ export default function CategoriesPage() {
                 )}
               </div>
 
-              {/* Loading Skeletons */}
+              {/* Category Overview Cards */}
               {loading ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {[...Array(10)].map((_, i) => (
@@ -336,9 +444,9 @@ export default function CategoriesPage() {
               )}
             </section>
 
-            {/* 5. FEATURED CATEGORIES ("Popular Near You") */}
+            {/* 2. TRENDING / POPULAR NEAR YOU SECTION */}
             {!searchQuery && popularCategories.length > 0 && (
-              <section className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 space-y-4">
+              <section className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 space-y-4 shadow-xs">
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block">
@@ -346,8 +454,8 @@ export default function CategoriesPage() {
                     </span>
                     <h3 className="text-xl font-extrabold text-[#17231A]">Popular Near You</h3>
                   </div>
-                  <span className="text-xs font-bold text-slate-500 bg-slate-50 px-3 py-1 rounded-full">
-                    Top Picks
+                  <span className="text-xs font-bold text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200">
+                    Top Demand Picks
                   </span>
                 </div>
 
@@ -356,7 +464,7 @@ export default function CategoriesPage() {
                     <button
                       key={popCat.id}
                       onClick={() => handleSelectCategory(popCat.key)}
-                      className="bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-emerald-100 hover:border-emerald-300 rounded-2xl p-3 flex items-center gap-3 transition-all text-left cursor-pointer group"
+                      className="bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-emerald-100 hover:border-emerald-300 rounded-2xl p-3.5 flex items-center gap-3 transition-all text-left cursor-pointer group"
                     >
                       <div className="w-12 h-12 rounded-xl overflow-hidden bg-slate-100 flex-shrink-0">
                         <img src={popCat.img} alt={popCat.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
@@ -373,50 +481,37 @@ export default function CategoriesPage() {
               </section>
             )}
 
-            {/* 6. CATEGORY → PRODUCT FLOW LISTING */}
+            {/* 3. PRODUCTS LIST ACCORDING TO CATEGORY (Automatic Scroll Target) */}
             <section ref={productsSectionRef} id="products-section" className="space-y-6 pt-4 border-t border-slate-200/60 scroll-mt-24">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border border-emerald-100 p-5 rounded-2xl shadow-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold">
-                    {activeCat.icon ? <activeCat.icon size={20} /> : <ShoppingBag size={20} />}
+                  <div className="w-11 h-11 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold shadow-2xs">
+                    {activeCat.icon ? <activeCat.icon size={22} /> : <ShoppingBag size={22} />}
                   </div>
                   <div>
-                    <h2 className="text-xl font-extrabold text-[#17231A]">{activeCat.name} Products</h2>
-                    <p className="text-xs text-slate-500 font-medium">
+                    <h2 className="text-xl sm:text-2xl font-extrabold text-[#17231A]">
+                      {activeCat.name} Products
+                    </h2>
+                    <p className="text-xs text-slate-500 font-semibold mt-0.5">
                       Showing {products.length} products available for express local fulfillment
                     </p>
                   </div>
                 </div>
 
-                {/* Sort Dropdown */}
-                <div className="relative flex-shrink-0">
+                {searchQuery && (
                   <button
-                    onClick={() => setSortOpen(!sortOpen)}
-                    className="flex items-center gap-2 bg-slate-50 hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-4 py-2 text-xs font-extrabold cursor-pointer transition-colors text-slate-700"
+                    onClick={() => setSearchQuery("")}
+                    className="text-xs font-bold text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
                   >
-                    <ArrowUpDown size={13} /> Sort: {sortBy} <ChevronDown size={13} />
+                    Clear Search: "{searchQuery}"
                   </button>
-                  {sortOpen && (
-                    <div className="absolute right-0 top-11 bg-white border border-slate-100 rounded-2xl shadow-xl w-48 p-2 z-30 space-y-1">
-                      {sortOptions.map((o) => (
-                        <button
-                          key={o}
-                          onClick={() => { setSortBy(o); setSortOpen(false); }}
-                          className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
-                            }`}
-                        >
-                          {o}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
+                )}
               </div>
 
               {/* Product Grid */}
               {products.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-slate-500 font-semibold shadow-xs">
-                  No products match your current search query. Try searching another term.
+                  No products match your current filters or search query. Try resetting filters.
                 </div>
               ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
@@ -462,7 +557,7 @@ export default function CategoriesPage() {
                               <div className="text-[10px] text-slate-400 line-through font-semibold">₹{p.mrp}</div>
                             </div>
 
-                            {/* Add to Cart Actions with Event Propagation Prevention */}
+                            {/* Add to Cart Actions */}
                             <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                               {inCart ? (
                                 <div className="flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 rounded-full p-0.5">
@@ -505,4 +600,3 @@ export default function CategoriesPage() {
     </div>
   );
 }
-

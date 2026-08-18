@@ -150,24 +150,11 @@ export default function AppKartHome() {
                 Shop groceries, bakery, dairy, food and everyday essentials from trusted local stores.
               </p>
 
-              {/* Large Ecommerce Search Bar with Auto-Suggestions */}
-              <div className="max-w-xl relative group">
-                <SearchDropdown
-                  placeholder="Search products, stores or categories..."
-                  defaultValue={heroQuery}
-                  onSearchSubmit={(val) => {
-                    navigate(`/search?q=${encodeURIComponent(val)}`);
-                  }}
-                  showSubmitButton={true}
-                  inputClassName="bg-white border-2 border-emerald-500/30 focus:border-[#16A34A] rounded-2xl py-3 shadow-lg shadow-emerald-950/5"
-                />
-
-                {/* Location indicator below search bar */}
-                <div className="mt-3 flex items-center gap-2 text-xs font-semibold text-slate-500 px-1">
-                  <MapPin size={14} className="text-[#16A34A]" />
-                  <span>Delivering to: <strong className="text-[#17231A]">Indiranagar, Bengaluru</strong></span>
-                  <span className="text-emerald-700 font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full text-[10px] ml-1">⚡ 15-30 Min Delivery</span>
-                </div>
+              {/* Location indicator */}
+              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 px-1">
+                <MapPin size={14} className="text-[#16A34A]" />
+                <span>Delivering to: <strong className="text-[#17231A]">Indiranagar, Bengaluru</strong></span>
+                <span className="text-emerald-700 font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full text-[10px] ml-1">⚡ 15-30 Min Delivery</span>
               </div>
 
               {/* CTA Buttons */}
