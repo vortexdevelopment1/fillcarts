@@ -686,20 +686,6 @@ export default function SupportPage() {
       {/* Shared Common Navbar */}
       <Navbar />
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Link to="/" className="hover:text-[#16A34A]">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-[#166534] font-bold">Support & Help Center</span>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3 py-1 rounded-full">
-            <LifeBuoy size={14} className="text-[#16A34A]" /> 24/7 Resolution Desk
-          </div>
-        </div>
-      </div>
 
       <SupportContent />
 

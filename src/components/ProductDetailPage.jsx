@@ -120,12 +120,6 @@ export default function ProductDetailPage() {
             >
               <ArrowLeft size={15} /> Back to Categories
             </button>
-            <span className="text-slate-300">|</span>
-            <Link to="/" className="hover:text-amber-600">Home</Link>
-            <ChevronRight size={12} />
-            <Link to="/categories" className="hover:text-amber-600">{product.category}</Link>
-            <ChevronRight size={12} />
-            <span className="text-slate-900 font-bold truncate max-w-xs">{product.name}</span>
           </div>
 
           <div className="flex items-center gap-2 shrink-0">

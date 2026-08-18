@@ -193,14 +193,9 @@ export default function BecomeVendorPage() {
       {/* Shared Common Navbar */}
       <Navbar searchPlaceholder="Search vendor partner resources..." />
 
-      {/* Breadcrumb & Journey Progress Indicator */}
+      {/* Journey Progress Indicator */}
       <div className="bg-white border-b border-slate-100">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-semibold text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <Link to="/" className="hover:text-[#16A34A] transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <span className="text-[#166534] font-bold">Become a Vendor</span>
-          </div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-col sm:flex-row sm:items-center justify-end gap-2 text-xs font-semibold text-slate-500">
 
           {/* Progress Indicator */}
           <div className="hidden md:flex items-center gap-2 bg-[#ECFDF3] border border-emerald-200 px-3.5 py-1 rounded-full text-[11px] font-bold text-[#166534]">

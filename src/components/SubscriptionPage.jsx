@@ -345,22 +345,6 @@ export default function SubscriptionPage() {
       {/* Shared Navbar */}
       <Navbar />
 
-      {/* Breadcrumb */}
-      <div className="bg-white border-b border-slate-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 text-xs text-slate-500 font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Link to="/" className="hover:text-[#16A34A] transition-colors">Home</Link>
-            <ChevronRight size={12} />
-            <Link to="/categories" className="hover:text-[#16A34A] transition-colors">Categories</Link>
-            <ChevronRight size={12} />
-            <span className="text-[#166534] font-bold">Daily Essentials Subscriptions</span>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2 text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3 py-1 rounded-full">
-            <ShieldCheck size={14} className="text-[#16A34A]" /> 100% Fresh Morning Delivery
-          </div>
-        </div>
-      </div>
 
       {/* Soft Green Shaded Hero Header with Side-by-side max-w-6xl bounds */}
       <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4] to-[#FFFCF5] border-b border-emerald-200/60 py-10 px-4 sm:px-6 relative text-left">
