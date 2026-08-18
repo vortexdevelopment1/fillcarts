@@ -287,11 +287,10 @@ export default function CategoriesPage() {
                 <button
                   key={cat.id}
                   onClick={() => handleSelectCategory(cat.key, false)}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
-                    isActive
-                      ? "bg-[#16A34A] text-white shadow-xs ring-2 ring-[#16A34A]/20 scale-105"
-                      : "bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-[#166534] border border-slate-200/60"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${isActive
+                    ? "bg-[#16A34A] text-white shadow-xs ring-2 ring-[#16A34A]/20 scale-105"
+                    : "bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-[#166534] border border-slate-200/60"
+                    }`}
                 >
                   {Icon && <Icon size={13} className={isActive ? "text-white" : "text-[#16A34A]"} />}
                   <span>{cat.name}</span>
@@ -305,26 +304,24 @@ export default function CategoriesPage() {
             {/* Rating & Price Quick Filter Chips */}
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-0.5">
               <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider shrink-0">Filter By:</span>
-              
+
               {/* Rating Filter Chips */}
               <button
                 onClick={() => setRatingFilter(ratingFilter === "4.5" ? "all" : "4.5")}
-                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${
-                  ratingFilter === "4.5"
-                    ? "bg-amber-500 text-white border-amber-500 shadow-xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${ratingFilter === "4.5"
+                  ? "bg-amber-500 text-white border-amber-500 shadow-xs"
+                  : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
+                  }`}
               >
                 <Star size={12} className="fill-amber-400 text-amber-400" /> 4.5+ Rating
               </button>
 
               <button
                 onClick={() => setRatingFilter(ratingFilter === "4.0" ? "all" : "4.0")}
-                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${
-                  ratingFilter === "4.0"
-                    ? "bg-amber-600 text-white border-amber-600 shadow-xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer flex items-center gap-1 border ${ratingFilter === "4.0"
+                  ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                  : "bg-white text-slate-700 border-slate-200 hover:border-amber-300"
+                  }`}
               >
                 <Star size={12} className="fill-amber-400 text-amber-400" /> 4.0+ Rating
               </button>
@@ -332,22 +329,20 @@ export default function CategoriesPage() {
               {/* Price Range Filter Chips */}
               <button
                 onClick={() => setPriceFilter(priceFilter === "under100" ? "all" : "under100")}
-                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${
-                  priceFilter === "under100"
-                    ? "bg-[#166534] text-white border-[#166534] shadow-xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${priceFilter === "under100"
+                  ? "bg-[#166534] text-white border-[#166534] shadow-xs"
+                  : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
+                  }`}
               >
                 Under ₹100
               </button>
 
               <button
                 onClick={() => setPriceFilter(priceFilter === "100to300" ? "all" : "100to300")}
-                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${
-                  priceFilter === "100to300"
-                    ? "bg-[#166534] text-white border-[#166534] shadow-xs"
-                    : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
-                }`}
+                className={`px-3 py-1 rounded-full text-xs font-extrabold transition-all shrink-0 cursor-pointer border ${priceFilter === "100to300"
+                  ? "bg-[#166534] text-white border-[#166534] shadow-xs"
+                  : "bg-white text-slate-700 border-slate-200 hover:border-emerald-300"
+                  }`}
               >
                 ₹100 - ₹300
               </button>
@@ -369,9 +364,8 @@ export default function CategoriesPage() {
                       <button
                         key={o}
                         onClick={() => { setSortBy(o); setSortOpen(false); }}
-                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${
-                          sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
-                        }`}
+                        className={`w-full text-left px-3 py-2 rounded-xl text-xs font-bold transition-colors cursor-pointer ${sortBy === o ? "text-[#166534] bg-[#ECFDF3]" : "text-slate-700 hover:bg-slate-50"
+                          }`}
                       >
                         {o}
                       </button>

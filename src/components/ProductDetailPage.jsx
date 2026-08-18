@@ -110,43 +110,6 @@ export default function ProductDetailPage() {
       {/* Shared Common Navbar */}
       <Navbar />
 
-      {/* Breadcrumb Navigation Bar */}
-      <div className="bg-white border-b border-slate-200/80 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-3 text-xs text-slate-500 font-semibold flex items-center justify-between">
-          <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap">
-            <button
-              onClick={() => navigate("/categories")}
-              className="flex items-center gap-1.5 text-slate-700 hover:text-amber-600 font-bold mr-2 cursor-pointer transition-colors"
-            >
-              <ArrowLeft size={15} /> Back to Categories
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => {
-                setIsWishlisted(!isWishlisted);
-                triggerToast(isWishlisted ? "Removed from Wishlist" : "Saved to Wishlist ❤");
-              }}
-              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
-              title="Save to Wishlist"
-            >
-              <Heart size={16} className={isWishlisted ? "text-red-500 fill-red-500" : "text-slate-600"} />
-            </button>
-            <button
-              onClick={() => {
-                navigator.clipboard?.writeText(window.location.href);
-                triggerToast("Product link copied!");
-              }}
-              className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
-              title="Share Product"
-            >
-              <Share2 size={16} />
-            </button>
-          </div>
-        </div>
-      </div>
-
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed top-20 right-6 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-50 animate-bounce flex items-center gap-2 border border-slate-700">
@@ -190,33 +153,6 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* E-Commerce Trust Badges Grid */}
-            <div className="grid grid-cols-3 gap-3 text-center text-xs font-semibold">
-              <div className="bg-white border border-slate-200/90 p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 shadow-xs">
-                <div className="w-8 h-8 rounded-full bg-teal-50 text-teal-600 flex items-center justify-center">
-                  <ShieldCheck size={18} />
-                </div>
-                <span className="text-slate-900 font-bold">100% Quality</span>
-                <span className="text-[10px] text-slate-400">Checked daily</span>
-              </div>
-
-              <div className="bg-white border border-slate-200/90 p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 shadow-xs">
-                <div className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center">
-                  <Truck size={18} />
-                </div>
-                <span className="text-slate-900 font-bold">15-Min Delivery</span>
-                <span className="text-[10px] text-slate-400">Local Kirana Store</span>
-              </div>
-
-              <div className="bg-white border border-slate-200/90 p-3.5 rounded-2xl flex flex-col items-center justify-center gap-1.5 shadow-xs">
-                <div className="w-8 h-8 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
-                  <RefreshCw size={18} />
-                </div>
-                <span className="text-slate-900 font-bold">Instant Return</span>
-                <span className="text-[10px] text-slate-400">Hassle-free refund</span>
-              </div>
-            </div>
-
           </div>
 
           {/* RIGHT COLUMN: Rich Product Details, Variant Selector, Pincode & Action Buttons */}
@@ -224,16 +160,28 @@ export default function ProductDetailPage() {
 
             {/* Title & Pricing Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
                 <span className="text-xs font-black uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
                   {product.brand} Brand
                 </span>
-                <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                  <CheckCircle2 size={14} /> In Stock at Nearby Kirana
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
+                    <CheckCircle2 size={14} /> In Stock at Nearby Kirana
+                  </span>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard?.writeText(window.location.href);
+                      triggerToast("Product link copied!");
+                    }}
+                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                    title="Share Product"
+                  >
+                    <Share2 size={14} />
+                  </button>
+                </div>
               </div>
 
-              <h1 className="text-2xl md:text-3xl font-extrabold text-slate-900 leading-tight">
+              <h1 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">
                 {product.name}
               </h1>
 
@@ -249,10 +197,10 @@ export default function ProductDetailPage() {
 
               {/* Price Block */}
               <div className="space-y-1 pt-1">
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl md:text-4xl font-black text-slate-900">₹{activeVariant.price}</span>
-                  <span className="text-lg text-slate-400 line-through font-semibold">₹{activeVariant.mrp}</span>
-                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-lg">
+                <div className="flex items-baseline gap-2.5">
+                  <span className="text-xl md:text-2xl font-bold text-slate-900">₹{activeVariant.price}</span>
+                  <span className="text-sm text-slate-400 line-through font-medium">₹{activeVariant.mrp}</span>
+                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
                     {activeVariant.off}
                   </span>
                 </div>
@@ -477,80 +425,182 @@ export default function ProductDetailPage() {
         </div>
 
         {/* ========================================================================= */}
+        {/* ========================================================================= */}
         {/* CUSTOMER REVIEWS & RATINGS BREAKDOWN SECTION */}
         {/* ========================================================================= */}
         <section className="mt-16 pt-10 border-t border-slate-200/90 space-y-8">
-          <div>
-            <span className="block text-xs font-extrabold tracking-widest uppercase text-amber-600 mb-1">Customer Reviews</span>
-            <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-              Ratings & Feedback
-            </h2>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200/80 text-amber-700 text-xs font-black px-3 py-1 rounded-full mb-2 shadow-2xs">
+                <Star size={13} className="fill-amber-400 text-amber-400" />
+                <span>CUSTOMER RATINGS & REVIEWS</span>
+              </div>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
+                Ratings & Feedback
+              </h2>
+              <p className="text-xs text-slate-500 font-semibold mt-1">
+                Real feedback from verified buyers delivered by local Kirana stores
+              </p>
+            </div>
+
+            <button
+              onClick={() => triggerToast("Thank you! Review submission form opened.")}
+              className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-5 py-2.5 rounded-2xl transition-all cursor-pointer shadow-sm flex items-center gap-2 self-start sm:self-auto"
+            >
+              <Sparkles size={14} className="text-amber-400" /> Write a Review
+            </button>
           </div>
 
-          <div className="grid md:grid-cols-[300px_1fr] gap-8 bg-white border border-slate-200/90 p-6 md:p-8 rounded-3xl shadow-xs">
-            {/* Rating Summary */}
-            <div className="space-y-4 text-center md:text-left border-b md:border-b-0 md:border-r border-slate-100 md:pr-8 pb-6 md:pb-0">
-              <div className="text-5xl font-black text-slate-900">{product.rating}</div>
-              <div className="flex items-center justify-center md:justify-start gap-1 text-amber-500">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} size={18} fill="currentColor" />
-                ))}
+          <div className="grid lg:grid-cols-[320px_1fr] gap-8 bg-white border border-slate-200/90 p-6 md:p-8 rounded-3xl shadow-sm">
+            {/* Rating Summary Card */}
+            <div className="space-y-6 lg:border-r border-slate-100 lg:pr-8 pb-6 lg:pb-0 border-b lg:border-b-0">
+              <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-100/80 rounded-2xl p-5 text-center space-y-2">
+                <div className="text-5xl font-black text-slate-900 tracking-tight">{product.rating}</div>
+                <div className="flex items-center justify-center gap-1 text-amber-400">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={20} className="fill-amber-400 text-amber-400" />
+                  ))}
+                </div>
+                <div className="text-xs font-bold text-slate-600">
+                  Based on {product.reviews || "340"} verified ratings
+                </div>
+                <div className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-[#166534] text-[11px] font-extrabold px-3 py-1 rounded-full mt-1">
+                  <CheckCircle2 size={12} className="text-[#16A34A]" />
+                  <span>96% Buyers Recommend</span>
+                </div>
               </div>
-              <div className="text-xs font-bold text-slate-500">Based on {product.reviews} verified purchases</div>
 
-              <div className="space-y-2 pt-2 text-xs font-bold text-slate-600">
-                <div className="flex items-center gap-2">
-                  <span>5★</span>
-                  <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div className="bg-amber-500 h-full w-[82%]" />
+              {/* Progress Bar Distribution */}
+              <div className="space-y-2.5 text-xs font-bold text-slate-600">
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 text-right shrink-0">5 ★</span>
+                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[82%]" />
                   </div>
-                  <span>82%</span>
+                  <span className="w-8 text-slate-500 font-semibold">82%</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>4★</span>
-                  <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div className="bg-amber-500 h-full w-[12%]" />
+
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 text-right shrink-0">4 ★</span>
+                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[12%]" />
                   </div>
-                  <span>12%</span>
+                  <span className="w-8 text-slate-500 font-semibold">12%</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span>3★</span>
-                  <div className="flex-1 bg-slate-100 h-2 rounded-full overflow-hidden">
-                    <div className="bg-amber-500 h-full w-[4%]" />
+
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 text-right shrink-0">3 ★</span>
+                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[4%]" />
                   </div>
-                  <span>4%</span>
+                  <span className="w-8 text-slate-500 font-semibold">4%</span>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 text-right shrink-0">2 ★</span>
+                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-slate-300 h-full rounded-full w-[1%]" />
+                  </div>
+                  <span className="w-8 text-slate-500 font-semibold">1%</span>
+                </div>
+
+                <div className="flex items-center gap-2.5">
+                  <span className="w-6 text-right shrink-0">1 ★</span>
+                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                    <div className="bg-slate-300 h-full rounded-full w-[1%]" />
+                  </div>
+                  <span className="w-8 text-slate-500 font-semibold">1%</span>
                 </div>
               </div>
             </div>
 
-            {/* Sample Verified Reviews */}
+            {/* Verified Customer Reviews List */}
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Top Verified Reviews</h3>
-              <div className="space-y-3">
-                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      Rahul Sharma <CheckCircle2 size={13} className="text-blue-600" />
-                    </span>
-                    <span className="text-amber-500 font-bold flex items-center gap-0.5"><Star size={11} fill="currentColor" /> 5.0</span>
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+                  <span>Top Verified Reviews</span>
+                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">2 Reviews</span>
+                </h3>
+                <span className="text-xs font-bold text-[#16A34A]">Sort by: Most Recent</span>
+              </div>
+
+              <div className="space-y-3.5">
+                {/* Review Card 1 */}
+                <div className="bg-[#FFFCF5] border border-amber-100/90 hover:border-amber-300 p-4 rounded-2xl space-y-2.5 transition-all shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-xs shadow-2xs">
+                        RS
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                          <span>Rahul Sharma</span>
+                          <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.2 rounded-md border border-blue-200">
+                            <CheckCircle2 size={10} className="text-blue-600" /> Verified Buyer
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-semibold mt-0.5">2 days ago · Delivered to Vijay Nagar</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>5.0</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-600 font-medium">
-                    "Super fresh moong dal! Delivered in 14 minutes by the local rider. Packaging was totally sealed."
+
+                  <p className="text-xs text-slate-700 font-semibold leading-relaxed">
+                    "Super fresh quality! Delivered in just 14 minutes by the local rider. Packaging was totally sealed and authentic."
                   </p>
-                  <div className="text-[10px] text-slate-400 font-semibold">Verified Purchase · 2 days ago</div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-400 font-bold">
+                    <span>Verified Purchase</span>
+                    <button
+                      onClick={() => triggerToast("Feedback recorded: Helpful!")}
+                      className="hover:text-[#16A34A] flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <ThumbsUp size={12} /> Helpful (24)
+                    </button>
+                  </div>
                 </div>
 
-                <div className="bg-slate-50 border border-slate-200/80 p-4 rounded-2xl space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-slate-900 flex items-center gap-1.5">
-                      Priya Gupta <CheckCircle2 size={13} className="text-blue-600" />
-                    </span>
-                    <span className="text-amber-500 font-bold flex items-center gap-0.5"><Star size={11} fill="currentColor" /> 5.0</span>
+                {/* Review Card 2 */}
+                <div className="bg-[#FFFCF5] border border-amber-100/90 hover:border-amber-300 p-4 rounded-2xl space-y-2.5 transition-all shadow-2xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-black text-xs shadow-2xs">
+                        PG
+                      </div>
+                      <div>
+                        <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                          <span>Priya Gupta</span>
+                          <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.2 rounded-md border border-blue-200">
+                            <CheckCircle2 size={10} className="text-blue-600" /> Verified Buyer
+                          </span>
+                        </div>
+                        <div className="text-[10px] text-slate-400 font-semibold mt-0.5">1 week ago · Delivered to MP Nagar</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                      <span>5.0</span>
+                    </div>
                   </div>
-                  <p className="text-xs text-slate-600 font-medium">
-                    "Very clean unpolished grains. Cooks fast and tastes authentic. Highly recommended for daily cooking!"
+
+                  <p className="text-xs text-slate-700 font-semibold leading-relaxed">
+                    "Very clean unpolished grains. Cooks fast and tastes authentic. Highly recommended for daily household cooking!"
                   </p>
-                  <div className="text-[10px] text-slate-400 font-semibold">Verified Purchase · 1 week ago</div>
+
+                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-400 font-bold">
+                    <span>Verified Purchase</span>
+                    <button
+                      onClick={() => triggerToast("Feedback recorded: Helpful!")}
+                      className="hover:text-[#16A34A] flex items-center gap-1 transition-colors cursor-pointer"
+                    >
+                      <ThumbsUp size={12} /> Helpful (18)
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
@@ -564,7 +614,7 @@ export default function ProductDetailPage() {
           <div className="flex items-center justify-between">
             <div>
               <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-1">More Essentials</span>
-              <h2 className="text-2xl md:text-3xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
                 Related Products
               </h2>
             </div>
@@ -672,7 +722,7 @@ export default function ProductDetailPage() {
             </div>
 
             <div>
-              <h3 className="text-xl font-bold text-slate-900" style={{ fontFamily: "'Fraunces', serif" }}>
+              <h3 className="text-xl font-extrabold text-slate-900">
                 Complete Purchase on App
               </h3>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
