@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
@@ -6,7 +6,7 @@ import {
   Zap, Navigation, Radar, Wallet, RotateCcw,
   Store, CheckCircle2, ArrowRight, Smartphone, QrCode, Download,
   Sparkles, Star, Pause, Play, ChevronRight, ShoppingBag, Clock,
-  AlertCircle, RefreshCw, Layers
+  AlertCircle, RefreshCw, Layers, X
 } from "lucide-react";
 import { STORE_IMAGE_MAP, SUBSCRIPTION_IMAGE_MAP } from "../utils/productImages";
 
@@ -15,36 +15,210 @@ const coreFeatures = [
   {
     id: "feat-inventory",
     icon: Radar,
+    badge: "Live Stock Sync",
     title: "Real-Time Inventory",
-    desc: "Know what's available at your nearby local store before you place an order."
+    desc: "Know what's available at your nearby local store before you place an order.",
+    subtitle: "Direct live integration with neighborhood store point-of-sale systems",
+    details: [
+      "Live stock updates refreshed every 30 seconds directly from store inventory",
+      "Eliminates out-of-stock items and unwanted product substitutions",
+      "Set automated item substitution rules if an item sells out",
+      "Reserve high-demand items for up to 15 minutes before completing checkout"
+    ],
+    stats: [
+      { label: "Stock Accuracy", value: "99.4%" },
+      { label: "Sync Latency", value: "< 30 Sec" }
+    ],
+    actionLink: "/categories",
+    actionText: "Browse Available Items"
   },
   {
     id: "feat-tracking",
     icon: Navigation,
+    badge: "GPS Live Map",
     title: "Live Rider Tracking",
-    desc: "Track your delivery partner live on an interactive map from pickup to your doorstep."
+    desc: "Track your delivery partner live on an interactive map from pickup to your doorstep.",
+    subtitle: "Complete end-to-end visibility from order acceptance to doorstep arrival",
+    details: [
+      "Real-time GPS pin location updated continuously on an interactive map",
+      "Dynamic ETA predictions powered by real-time traffic and routing",
+      "1-click direct phone call and in-app messaging with your assigned rider",
+      "Secure PIN verification & contactless drop-off options"
+    ],
+    stats: [
+      { label: "Avg Delivery Time", value: "15-25 Mins" },
+      { label: "Location Accuracy", value: "Live GPS" }
+    ],
+    actionLink: "/categories",
+    actionText: "Order Now & Track"
   },
   {
     id: "feat-payments",
     icon: Wallet,
+    badge: "100% Encrypted",
     title: "Flexible Payments",
-    desc: "Pay easily with UPI, credit/debit cards, digital wallet or Cash on Delivery."
+    desc: "Pay easily with UPI, credit/debit cards, digital wallet or Cash on Delivery.",
+    subtitle: "Fast, flexible and secure payment options tailored for local checkout",
+    details: [
+      "Support for UPI (Google Pay, PhonePe, Paytm, BHIM) and all major Debit/Credit Cards",
+      "FillCarts Wallet for instant 1-tap checkout and automated cashback rewards",
+      "Cash on Delivery (COD) available for all neighborhood store orders",
+      "Bank-grade 256-bit SSL encryption & PCI-DSS certified security protocol"
+    ],
+    stats: [
+      { label: "Payment Options", value: "10+ Methods" },
+      { label: "Security Standard", value: "256-Bit SSL" }
+    ],
+    actionLink: "/categories",
+    actionText: "Shop with Easy Pay"
   },
   {
     id: "feat-returns",
     icon: RotateCcw,
+    badge: "Instant Credit",
     title: "Instant Returns",
-    desc: "Get a simple, hassle-free return experience with instant store credit."
+    desc: "Get a simple, hassle-free return experience with instant store credit.",
+    subtitle: "Zero-friction return policy for damaged, expired or incorrect items",
+    details: [
+      "1-tap return request initiation directly from your order history timeline",
+      "Instant refund credit added immediately to your FillCarts Wallet upon approval",
+      "Doorstep item pick-up by a neighborhood delivery partner",
+      "Dedicated 24/7 customer resolution team for swift order support"
+    ],
+    stats: [
+      { label: "Refund Speed", value: "Instant" },
+      { label: "Return Window", value: "24 Hours" }
+    ],
+    actionLink: "/support",
+    actionText: "Visit Support Center"
   }
 ];
 
 // --- REUSABLE COMPONENTS ---
 
+/** Feature Detail Modal Component */
+export function FeatureModal({ feature, onClose }) {
+  if (!feature) return null;
+
+  const IconComponent = feature.icon || Radar;
+
+  // Handle escape key to close modal
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "auto";
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl relative border border-emerald-100 text-left space-y-5 animate-in zoom-in-95 duration-200 max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Close Button */}
+        <button
+          onClick={onClose}
+          className="absolute top-5 right-5 w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 flex items-center justify-center transition-colors cursor-pointer"
+          aria-label="Close details modal"
+        >
+          <X size={18} />
+        </button>
+
+        {/* Modal Header */}
+        <div className="flex items-start gap-4 pr-8">
+          <div className="w-14 h-14 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center flex-shrink-0 shadow-xs">
+            <IconComponent size={28} />
+          </div>
+          <div>
+            {feature.badge && (
+              <span className="inline-block px-3 py-0.5 bg-emerald-100 text-[#166534] text-[11px] font-black rounded-full mb-1">
+                {feature.badge}
+              </span>
+            )}
+            <h3 className="text-xl sm:text-2xl font-extrabold text-[#17231A]">
+              {feature.title}
+            </h3>
+            {feature.subtitle && (
+              <p className="text-xs font-semibold text-slate-500 mt-0.5">
+                {feature.subtitle}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Feature Overview */}
+        <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
+          {feature.desc}
+        </p>
+
+        {/* Feature Highlights */}
+        {feature.details && feature.details.length > 0 && (
+          <div className="bg-[#FFFCF5] p-4.5 rounded-2xl border border-emerald-100/80 space-y-2.5">
+            <h4 className="text-xs font-black uppercase text-[#166534] tracking-wider">
+              Key Features & Benefits
+            </h4>
+            {feature.details.map((detail, idx) => (
+              <div key={idx} className="flex items-start gap-2.5 text-xs font-bold text-slate-700 leading-snug">
+                <CheckCircle2 size={16} className="text-[#16A34A] flex-shrink-0 mt-0.5" />
+                <span>{detail}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Stats Row */}
+        {feature.stats && feature.stats.length > 0 && (
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            {feature.stats.map((stat, idx) => (
+              <div key={idx} className="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/50 text-center">
+                <div className="text-lg font-extrabold text-[#166534]">{stat.value}</div>
+                <div className="text-[11px] font-bold text-slate-500">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Modal Actions Footer */}
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-3 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={onClose}
+            className="w-full sm:w-auto bg-slate-100 hover:bg-slate-200 text-slate-700 font-extrabold px-5 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+          >
+            Close
+          </button>
+          {feature.actionLink && (
+            <Link
+              to={feature.actionLink}
+              onClick={onClose}
+              className="w-full sm:w-auto bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-6 py-2.5 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer"
+            >
+              <span>{feature.actionText || "Explore"}</span>
+              <ArrowRight size={14} />
+            </Link>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /** Individual Feature Card Component */
-export function FeatureCard({ feature }) {
+export function FeatureCard({ feature, onLearnMore }) {
   const IconComponent = feature.icon || Radar;
   return (
-    <div className="group bg-white border border-emerald-100 hover:border-[#16A34A] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left">
+    <div
+      onClick={() => onLearnMore && onLearnMore(feature)}
+      className="group bg-white border border-emerald-100 hover:border-[#16A34A] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md flex flex-col justify-between text-left cursor-pointer"
+    >
       <div>
         <div className="w-12 h-12 rounded-2xl bg-slate-50 group-hover:bg-[#ECFDF3] text-slate-700 group-hover:text-[#16A34A] flex items-center justify-center mb-4 transition-colors">
           <IconComponent size={22} />
@@ -57,7 +231,7 @@ export function FeatureCard({ feature }) {
         </p>
       </div>
 
-      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-extrabold text-[#16A34A] opacity-80 group-hover:opacity-100">
+      <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs font-extrabold text-[#16A34A] group-hover:text-[#15803D]">
         <span>Learn More</span>
         <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
       </div>
@@ -66,14 +240,14 @@ export function FeatureCard({ feature }) {
 }
 
 /** Grid Container Component */
-export function FeatureGrid({ features }) {
+export function FeatureGrid({ features, onLearnMore }) {
   if (!features || features.length === 0) {
     return <FeatureEmptyState />;
   }
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       {features.map((feat) => (
-        <FeatureCard key={feat.id || feat.title} feature={feat} />
+        <FeatureCard key={feat.id || feat.title} feature={feat} onLearnMore={onLearnMore} />
       ))}
     </div>
   );
@@ -273,11 +447,18 @@ export function FeatureErrorState({ onRetry }) {
 export default function FeaturesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   return (
     <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
       {/* Shared Navbar */}
       <Navbar />
+
+      {/* Feature Details Modal */}
+      <FeatureModal
+        feature={selectedFeature}
+        onClose={() => setSelectedFeature(null)}
+      />
 
 
       {/* 1. FEATURES HERO SECTION */}
@@ -343,7 +524,7 @@ export default function FeaturesPage() {
                   ))}
                 </div>
               ) : (
-                <FeatureGrid features={coreFeatures} />
+                <FeatureGrid features={coreFeatures} onLearnMore={setSelectedFeature} />
               )}
             </section>
 
