@@ -14,11 +14,31 @@ import { getProductById, getVariantsForProduct, getRelatedProducts, PRODUCTS } f
 export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { cart, addToCart, removeFromCart } = useCart();
+  const cartContext = useCart() || {};
+  const { cart = [], addToCart = () => {}, removeFromCart = () => {}, user, userLocation } = cartContext;
 
   // Find selected product dynamically by ID
   const product = useMemo(() => {
-    return getProductById(id);
+    const found = getProductById(id);
+    if (found) return found;
+    
+    // Clean fallback product if ID is missing or invalid
+    const cleanedName = String(id || "Fresh Item")
+      .replace(/^(deal-|cat-|prod-)/, "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (c) => c.toUpperCase());
+
+    return {
+      id: id || "prod-default",
+      name: cleanedName || "Fresh Grocery Item",
+      category: "Grocery Essentials",
+      brand: "FillCarts Verified Store",
+      price: 99,
+      mrp: 120,
+      rating: "4.8",
+      reviews: "1,150",
+      desc: "Wholesome and fresh item delivered straight to your doorstep with 15-minute express local fulfillment."
+    };
   }, [id]);
 
   const [selectedVariantIdx, setSelectedVariantIdx] = useState(0);
@@ -28,10 +48,20 @@ export default function ProductDetailPage() {
   const [showNutrition, setShowNutrition] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [appModalOpen, setAppModalOpen] = useState(false);
-  const [pincode, setPincode] = useState("452001");
-  const [pincodeStatus, setPincodeStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
+
+  const [deliveryAddress, setDeliveryAddress] = useState(
+    userLocation?.formatted || (userLocation?.area ? `${userLocation.area}, ${userLocation.city}` : "Vijay Nagar, Indore")
+  );
+  const [deliveryStatus, setDeliveryStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
   const [toastMessage, setToastMessage] = useState("");
-  const { user } = useCart();
+
+  useEffect(() => {
+    if (userLocation) {
+      setDeliveryAddress(
+        userLocation.formatted || (userLocation.area ? `${userLocation.area}, ${userLocation.city}` : "Vijay Nagar, Indore")
+      );
+    }
+  }, [userLocation]);
 
   const isSubscriptionEligible = useMemo(() => {
     if (!product) return false;
@@ -64,7 +94,14 @@ export default function ProductDetailPage() {
 
   // Dynamically generated quantity/unit variants based on product type
   const variants = useMemo(() => {
-    return getVariantsForProduct(product);
+    const list = getVariantsForProduct(product);
+    if (Array.isArray(list) && list.length > 0) return list;
+    return [{
+      size: "1 Unit",
+      price: product?.price || 99,
+      mrp: product?.mrp || 120,
+      off: "Best Price"
+    }];
   }, [product]);
 
   useEffect(() => {
@@ -72,11 +109,18 @@ export default function ProductDetailPage() {
     setActiveThumbIdx(0);
   }, [product?.id]);
 
-  const activeVariant = variants[selectedVariantIdx] || variants[0];
-  const inCart = cart.find((item) => item.id === product.id);
+  const activeVariant = variants[selectedVariantIdx] || variants[0] || {
+    size: "1 Unit",
+    price: product?.price || 99,
+    mrp: product?.mrp || 120,
+    off: "Best Price"
+  };
+
+  const safeCart = Array.isArray(cart) ? cart : [];
+  const inCart = safeCart.find((item) => item?.id === product?.id);
 
   // Gallery thumbnails
-  const mainProductImg = getProductImage(product.name, product.category?.toLowerCase() || "grocery");
+  const mainProductImg = product?.img || getProductImage(product?.name || "Grocery", product?.category?.toLowerCase() || "grocery");
   const galleryImages = [
     mainProductImg,
     mainProductImg,
@@ -86,7 +130,7 @@ export default function ProductDetailPage() {
 
   // Related products (filtered by category)
   const relatedProducts = useMemo(() => {
-    return getRelatedProducts(product);
+    return getRelatedProducts(product) || [];
   }, [product]);
 
   const triggerToast = (msg) => {
@@ -94,12 +138,12 @@ export default function ProductDetailPage() {
     setTimeout(() => setToastMessage(""), 3000);
   };
 
-  const handlePincodeCheck = (e) => {
+  const handleAddressCheck = (e) => {
     e.preventDefault();
-    if (pincode.length === 6) {
-      setPincodeStatus(`⚡ Serviceable at ${pincode}! Delivery in 15-20 mins by local partner store.`);
+    if (deliveryAddress && deliveryAddress.trim().length >= 3) {
+      setDeliveryStatus(`⚡ Serviceable at ${deliveryAddress.trim()}! Delivery in 15-20 mins by local partner store.`);
     } else {
-      setPincodeStatus("Please enter a valid 6-digit Pincode");
+      setDeliveryStatus("Please enter a valid delivery address or area");
     }
   };
 
@@ -208,38 +252,7 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
-            {/* Pincode & Delivery Checker Bar */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-5 md:p-6 shadow-xs space-y-2">
-              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
-                Check Express Local Delivery
-              </label>
-              <form onSubmit={handlePincodeCheck} className="flex gap-2">
-                <div className="relative flex-1">
-                  <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value)}
-                    placeholder="Enter Pincode (e.g. 452001)"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
-                >
-                  Check
-                </button>
-              </form>
-              {pincodeStatus && (
-                <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 pt-1">
-                  <Clock size={13} /> {pincodeStatus}
-                </p>
-              )}
-            </div>
-
-            {/* Quantity Variant Selector Cards (Exact Match with Image 1 & 2) */}
+            {/* Quantity Variant Selector Cards */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
               <div className="flex items-center justify-between">
                 <label className="block text-sm font-bold text-slate-900">Quantity / Pack Size</label>
@@ -265,6 +278,36 @@ export default function ProductDetailPage() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Address & Delivery Checker Bar */}
+            <div className="bg-white border border-slate-200/90 rounded-3xl p-5 md:p-6 shadow-xs space-y-2">
+              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Check Express Local Delivery
+              </label>
+              <form onSubmit={handleAddressCheck} className="flex gap-2">
+                <div className="relative flex-1">
+                  <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
+                  <input
+                    type="text"
+                    value={deliveryAddress}
+                    onChange={(e) => setDeliveryAddress(e.target.value)}
+                    placeholder="Enter Delivery Address / Area (e.g. Vijay Nagar, Indore)"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Check
+                </button>
+              </form>
+              {deliveryStatus && (
+                <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 pt-1">
+                  <Clock size={13} /> {deliveryStatus}
+                </p>
+              )}
             </div>
 
             {/* Product Details, Benefits & Nutrition Accordion Cards (Matching Screenshots) */}
