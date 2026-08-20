@@ -23,8 +23,8 @@ const footerColumns = [
   {
     h: "Partner With Us",
     links: [
-      { l: "Become a Local Vendor", to: "/become-vendor" },
-      { l: "Become a Delivery Rider", to: "/become-rider" },
+      { l: "Become a Local Vendor", to: "/vendor" },
+      { l: "Become a Delivery Rider", to: "/rider" },
     ],
   },
   {

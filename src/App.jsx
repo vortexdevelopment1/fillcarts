@@ -2,8 +2,15 @@ import { useEffect } from "react";
 import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import AppKartHome from "./components/AppKartHome";
 import CategoriesPage from "./components/CategoriesPage";
-import BecomeVendorPage from "./components/BecomeVendorPage";
-import BecomeRiderPage from "./components/BecomeRiderPage";
+
+// Dedicated Rider Portal Imports (src/rider/)
+import RiderHomePage from "./rider/pages/RiderHomePage";
+import RiderAboutPage from "./rider/pages/RiderAboutPage";
+
+// Dedicated Vendor Portal Imports (src/vendor/)
+import VendorHomePage from "./vendor/pages/VendorHomePage";
+import VendorAboutPage from "./vendor/pages/VendorAboutPage";
+
 import AboutPage from "./components/AboutPage";
 import SupportPage from "./components/SupportPage";
 import CustomerLoginPage from "./components/CustomerLoginPage";
@@ -44,8 +51,19 @@ function App() {
           <Route path="/categories" element={<CategoriesPage />} />
           <Route path="/product/:id" element={<ProductDetailPage />} />
           <Route path="/features" element={<FeaturesPage />} />
-          <Route path="/become-vendor" element={<BecomeVendorPage />} />
-          <Route path="/become-rider" element={<BecomeRiderPage />} />
+
+          {/* Vendor Partner Portal Routes (src/vendor/) */}
+          <Route path="/vendor" element={<VendorHomePage />} />
+          <Route path="/become-vendor" element={<VendorHomePage />} />
+          <Route path="/vendor/about" element={<VendorAboutPage />} />
+          <Route path="/vendor-about" element={<VendorAboutPage />} />
+
+          {/* Rider Partner Portal Routes (src/rider/) */}
+          <Route path="/rider" element={<RiderHomePage />} />
+          <Route path="/become-rider" element={<RiderHomePage />} />
+          <Route path="/rider/about" element={<RiderAboutPage />} />
+          <Route path="/rider-about" element={<RiderAboutPage />} />
+
           <Route path="/about" element={<AboutPage />} />
           <Route path="/support" element={<SupportPage />} />
           <Route path="/login/customer" element={<CustomerLoginPage />} />

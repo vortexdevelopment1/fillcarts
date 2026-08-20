@@ -29,7 +29,7 @@ const ecosystemRoles = [
     bgColor: "bg-[#ECFDF3]",
     borderColor: "hover:border-emerald-300",
     ctaText: "Become a Vendor",
-    ctaLink: "/become-vendor"
+    ctaLink: "/vendor"
   },
   {
     title: "Delivery Partners",
@@ -40,7 +40,7 @@ const ecosystemRoles = [
     bgColor: "bg-amber-50",
     borderColor: "hover:border-amber-300",
     ctaText: "Become a Rider",
-    ctaLink: "/become-rider"
+    ctaLink: "/rider"
   }
 ];
 
@@ -630,7 +630,7 @@ export default function AboutPage({ statsData = null }) {
               </div>
 
               <Link
-                to="/become-vendor"
+                to="/vendor"
                 className="w-full bg-[#17231A] hover:bg-slate-800 text-white font-extrabold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
               >
                 <span>Become a Vendor</span>
@@ -656,7 +656,7 @@ export default function AboutPage({ statsData = null }) {
               </div>
 
               <Link
-                to="/become-rider"
+                to="/rider"
                 className="w-full bg-[#166534] hover:bg-[#15803D] text-white font-extrabold py-3.5 rounded-xl text-xs flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer"
               >
                 <span>Become a Rider</span>

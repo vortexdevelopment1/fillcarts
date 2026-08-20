@@ -341,9 +341,9 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             {!user && (
               <div className="ml-auto flex items-center gap-2 sm:gap-3 text-xs font-bold whitespace-nowrap">
                 <Link
-                  to="/become-vendor"
+                  to="/vendor"
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all ${
-                    isActiveRoute("/become-vendor")
+                    isActiveRoute("/vendor") || isActiveRoute("/become-vendor")
                       ? "bg-[#ECFDF3] text-[#166534] border-emerald-300 font-extrabold shadow-2xs"
                       : "text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
                   }`}
@@ -352,9 +352,9 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                   <span>Become a Vendor</span>
                 </Link>
                 <Link
-                  to="/become-rider"
+                  to="/rider"
                   className={`flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all ${
-                    isActiveRoute("/become-rider")
+                    isActiveRoute("/rider") || isActiveRoute("/become-rider")
                       ? "bg-[#ECFDF3] text-[#166534] border-emerald-300 font-extrabold shadow-2xs"
                       : "text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
                   }`}
