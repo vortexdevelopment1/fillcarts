@@ -378,16 +378,14 @@ export default function CartPage() {
                         <div
                           key={addr.id}
                           onClick={() => setSelectedAddress(addr.id)}
-                          className={`border rounded-2xl p-4 cursor-pointer relative transition-all ${
-                            isSelected
+                          className={`border rounded-2xl p-4 cursor-pointer relative transition-all ${isSelected
                               ? "border-[#16A34A] bg-[#ECFDF3]/50 ring-1 ring-[#16A34A]"
                               : "border-slate-200 hover:border-emerald-300 bg-white"
-                          }`}
+                            }`}
                         >
                           <div className="flex justify-between items-center mb-2">
-                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                              isSelected ? "bg-[#16A34A] text-white" : "bg-slate-100 text-slate-600"
-                            }`}>
+                            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${isSelected ? "bg-[#16A34A] text-white" : "bg-slate-100 text-slate-600"
+                              }`}>
                               {addr.type}
                             </span>
                             {isSelected && <Check size={16} className="text-[#16A34A]" />}
@@ -418,24 +416,21 @@ export default function CartPage() {
                       <div
                         key={pm.id}
                         onClick={() => setSelectedPayment(pm.id)}
-                        className={`border rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all ${
-                          isSelected
+                        className={`border rounded-2xl p-4 flex items-center gap-4 cursor-pointer transition-all ${isSelected
                             ? "border-[#16A34A] bg-[#ECFDF3]/50 ring-1 ring-[#16A34A]"
                             : "border-slate-200 hover:border-emerald-300 bg-white"
-                        }`}
+                          }`}
                       >
-                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                          isSelected ? "bg-[#ECFDF3] text-[#16A34A]" : "bg-slate-100 text-slate-500"
-                        }`}>
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isSelected ? "bg-[#ECFDF3] text-[#16A34A]" : "bg-slate-100 text-slate-500"
+                          }`}>
                           <pm.icon size={18} />
                         </div>
                         <div className="flex-1">
                           <div className="text-sm font-extrabold text-[#17231A]">{pm.label}</div>
                           <div className="text-xs text-slate-500 font-medium">{pm.desc}</div>
                         </div>
-                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${
-                          isSelected ? "border-[#16A34A] bg-[#16A34A] text-white" : "border-slate-300 bg-white"
-                        }`}>
+                        <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${isSelected ? "border-[#16A34A] bg-[#16A34A] text-white" : "border-slate-300 bg-white"
+                          }`}>
                           {isSelected && <Check size={12} strokeWidth={3} />}
                         </div>
                       </div>

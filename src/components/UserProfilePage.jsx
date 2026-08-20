@@ -26,7 +26,7 @@ export default function UserProfilePage() {
     const savedLocal = localStorage.getItem("fillcarts_user_profile");
     let localData = {};
     if (savedLocal) {
-      try { localData = JSON.parse(savedLocal); } catch (e) {}
+      try { localData = JSON.parse(savedLocal); } catch (e) { }
     }
 
     setProfileForm({
@@ -1070,8 +1070,8 @@ export default function UserProfilePage() {
 
                           <div className="flex items-center gap-2 self-start sm:self-auto">
                             <span className={`text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-wider ${sub.status === "Active"
-                                ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
-                                : "bg-amber-100 text-amber-800 border border-amber-200"
+                              ? "bg-emerald-100 text-emerald-800 border border-emerald-200"
+                              : "bg-amber-100 text-amber-800 border border-amber-200"
                               }`}>
                               ● {sub.rawStatus || sub.status}
                             </span>
@@ -1107,8 +1107,8 @@ export default function UserProfilePage() {
                             <button
                               onClick={() => handleToggleSubscriptionStatus(sub)}
                               className={`px-3 py-1.5 rounded-lg text-[11px] font-bold transition-colors cursor-pointer border ${sub.status === "Active"
-                                  ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
-                                  : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
+                                ? "bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100"
+                                : "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100"
                                 }`}
                             >
                               {sub.status === "Active" ? "Pause" : "Resume"}

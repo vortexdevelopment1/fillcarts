@@ -15,13 +15,13 @@ export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const cartContext = useCart() || {};
-  const { cart = [], addToCart = () => {}, removeFromCart = () => {}, user, userLocation } = cartContext;
+  const { cart = [], addToCart = () => { }, removeFromCart = () => { }, user, userLocation } = cartContext;
 
   // Find selected product dynamically by ID
   const product = useMemo(() => {
     const found = getProductById(id);
     if (found) return found;
-    
+
     // Clean fallback product if ID is missing or invalid
     const cleanedName = String(id || "Fresh Item")
       .replace(/^(deal-|cat-|prod-)/, "")
@@ -55,6 +55,190 @@ export default function ProductDetailPage() {
   const [deliveryStatus, setDeliveryStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
   const [toastMessage, setToastMessage] = useState("");
 
+  // Dynamic Reviews & Ratings State
+  const [reviewsList, setReviewsList] = useState([]);
+  const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
+  const [isAllReviewsModalOpen, setIsAllReviewsModalOpen] = useState(false);
+  const [reviewSort, setReviewSort] = useState("recent"); // "recent" | "highest" | "lowest" | "helpful"
+  const [starFilter, setStarFilter] = useState(0); // 0 = all, 1..5 = star filter
+
+  // Write Review Form State
+  const [formRating, setFormRating] = useState(5);
+  const [formHoverRating, setFormHoverRating] = useState(0);
+  const [formName, setFormName] = useState("");
+  const [formLocation, setFormLocation] = useState("");
+  const [formComment, setFormComment] = useState("");
+
+  // Load or Seed Reviews for Current Product
+  useEffect(() => {
+    if (!product?.id) return;
+    const storageKey = `fillcart_reviews_${product.id}`;
+    const stored = localStorage.getItem(storageKey);
+    if (stored) {
+      try {
+        setReviewsList(JSON.parse(stored));
+        return;
+      } catch (e) {
+        console.error("Error parsing reviews from localStorage:", e);
+      }
+    }
+
+    // Default Seed Reviews for this product if none exist
+    const seedReviews = [
+      {
+        id: `rev-seed-1-${product.id}`,
+        name: "Rahul Sharma",
+        rating: 5,
+        date: "2 days ago",
+        location: "Vijay Nagar, Indore",
+        comment: `Super fresh quality ${product.name}! Delivered in just 14 minutes by the local rider. Packaging was totally sealed and authentic.`,
+        verified: true,
+        helpfulCount: 24,
+        liked: false
+      },
+      {
+        id: `rev-seed-2-${product.id}`,
+        name: "Priya Gupta",
+        rating: 5,
+        date: "1 week ago",
+        location: "MP Nagar, Bhopal",
+        comment: `Very clean and top grade quality. Cooks fast and tastes authentic. Highly recommended for daily household cooking!`,
+        verified: true,
+        helpfulCount: 18,
+        liked: false
+      },
+      {
+        id: `rev-seed-3-${product.id}`,
+        name: "Ananya Verma",
+        rating: 4,
+        date: "2 weeks ago",
+        location: "Indiranagar, Bengaluru",
+        comment: `Good product value for money. On-time express neighborhood fulfillment. Will definitely buy again!`,
+        verified: true,
+        helpfulCount: 9,
+        liked: false
+      }
+    ];
+
+    setReviewsList(seedReviews);
+    localStorage.setItem(storageKey, JSON.stringify(seedReviews));
+  }, [product?.id]);
+
+  // Dynamic Rating Calculations
+  const totalReviewsCount = reviewsList.length;
+
+  const averageRating = useMemo(() => {
+    if (!reviewsList.length) return Number(product?.rating || 4.8).toFixed(1);
+    const sum = reviewsList.reduce((acc, r) => acc + Number(r.rating || 5), 0);
+    return (sum / reviewsList.length).toFixed(1);
+  }, [reviewsList, product?.rating]);
+
+  const ratingDistribution = useMemo(() => {
+    const counts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    reviewsList.forEach((r) => {
+      const star = Math.min(5, Math.max(1, Math.round(Number(r.rating) || 5)));
+      counts[star] = (counts[star] || 0) + 1;
+    });
+
+    const total = reviewsList.length || 1;
+    return {
+      5: { count: counts[5], percent: Math.round((counts[5] / total) * 100) },
+      4: { count: counts[4], percent: Math.round((counts[4] / total) * 100) },
+      3: { count: counts[3], percent: Math.round((counts[3] / total) * 100) },
+      2: { count: counts[2], percent: Math.round((counts[2] / total) * 100) },
+      1: { count: counts[1], percent: Math.round((counts[1] / total) * 100) },
+    };
+  }, [reviewsList]);
+
+  const recommendPercent = useMemo(() => {
+    if (!reviewsList.length) return 96;
+    const positiveCount = reviewsList.filter((r) => Number(r.rating) >= 4).length;
+    return Math.round((positiveCount / reviewsList.length) * 100);
+  }, [reviewsList]);
+
+  // Filtered & Sorted Reviews
+  const filteredSortedReviews = useMemo(() => {
+    let list = [...reviewsList];
+
+    if (starFilter > 0) {
+      list = list.filter((r) => Math.round(Number(r.rating)) === starFilter);
+    }
+
+    if (reviewSort === "recent") {
+      list.sort((a, b) => (b.id > a.id ? 1 : -1));
+    } else if (reviewSort === "highest") {
+      list.sort((a, b) => Number(b.rating) - Number(a.rating));
+    } else if (reviewSort === "lowest") {
+      list.sort((a, b) => Number(a.rating) - Number(b.rating));
+    } else if (reviewSort === "helpful") {
+      list.sort((a, b) => (b.helpfulCount || 0) - (a.helpfulCount || 0));
+    }
+
+    return list;
+  }, [reviewsList, starFilter, reviewSort]);
+
+  // Review Submission & Action Handlers
+  const handleOpenWriteReview = () => {
+    setFormName(user?.name || user?.phone || "");
+    setFormLocation(deliveryAddress || "Indore");
+    setFormRating(5);
+    setIsWriteReviewOpen(true);
+  };
+
+  const handleAddReview = (e) => {
+    e.preventDefault();
+    if (!formComment.trim()) {
+      triggerToast("Please enter a review description.");
+      return;
+    }
+
+    const reviewerName = formName.trim() || user?.name || user?.phone || "Verified Buyer";
+    const reviewerLocation = formLocation.trim() || deliveryAddress || "Indore";
+
+    const newRev = {
+      id: `rev-${Date.now()}`,
+      name: reviewerName,
+      rating: Number(formRating),
+      date: "Just now",
+      location: reviewerLocation,
+      comment: formComment.trim(),
+      verified: true,
+      helpfulCount: 0,
+      liked: false
+    };
+
+    const updated = [newRev, ...reviewsList];
+    setReviewsList(updated);
+    if (product?.id) {
+      localStorage.setItem(`fillcart_reviews_${product.id}`, JSON.stringify(updated));
+    }
+
+    setFormComment("");
+    setFormRating(5);
+    setIsWriteReviewOpen(false);
+    triggerToast("✨ Thank you! Your review has been published.");
+  };
+
+  const handleToggleHelpful = (reviewId) => {
+    const updated = reviewsList.map((r) => {
+      if (r.id === reviewId) {
+        const isLiked = !r.liked;
+        return {
+          ...r,
+          liked: isLiked,
+          helpfulCount: isLiked ? (r.helpfulCount || 0) + 1 : Math.max(0, (r.helpfulCount || 0) - 1)
+        };
+      }
+      return r;
+    });
+
+    setReviewsList(updated);
+    if (product?.id) {
+      localStorage.setItem(`fillcart_reviews_${product.id}`, JSON.stringify(updated));
+    }
+    triggerToast("Feedback recorded: Helpful!");
+  };
+
   useEffect(() => {
     if (userLocation) {
       setDeliveryAddress(
@@ -73,7 +257,7 @@ export default function ProductDetailPage() {
   const handleSubscribeAndSave = () => {
     const categoryKey = product?.categoryKey ||
       (product?.category?.toLowerCase().includes("dairy") ? "dairy" :
-       product?.category?.toLowerCase().includes("bakery") ? "bakery" : "dairy");
+        product?.category?.toLowerCase().includes("bakery") ? "bakery" : "dairy");
 
     const currentVariant = variants[selectedVariantIdx] || variants[0] || {};
     const subPrice = Math.round((currentVariant.price || product?.price || 50) * 0.9);
@@ -172,6 +356,17 @@ export default function ProductDetailPage() {
 
             {/* Main Product Hero Gallery Display Card */}
             <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm text-center relative flex flex-col items-center justify-center overflow-hidden group">
+              {/* Clickable Small Rating Box Pill Overlay */}
+              <button
+                onClick={() => setIsAllReviewsModalOpen(true)}
+                className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm border border-amber-200/90 shadow-sm hover:shadow-md hover:border-amber-400 rounded-full px-3 py-1 flex items-center gap-1.5 text-xs font-extrabold text-slate-800 transition-all cursor-pointer z-10 group/pill"
+                title="Click to view all ratings & reviews"
+              >
+                <Star size={13} className="fill-amber-400 text-amber-400 group-hover/pill:scale-110 transition-transform" />
+                <span>{averageRating}</span>
+                <span className="text-slate-400 font-normal text-[11px]">({totalReviewsCount})</span>
+                <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full font-extrabold ml-0.5">Reviews ➔</span>
+              </button>
 
               {/* Main Image View */}
               <div className="w-full h-72 md:h-96 flex items-center justify-center py-4 relative">
@@ -229,12 +424,19 @@ export default function ProductDetailPage() {
                 {product.name}
               </h1>
 
-              {/* Rating & Reviews Bar */}
+              {/* Rating & Reviews Bar - Small Box Trigger */}
               <div className="flex items-center gap-3 text-xs font-bold text-slate-600 pb-2 border-b border-slate-100">
-                <span className="flex items-center gap-1 text-amber-500 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-md">
-                  <Star size={12} fill="currentColor" /> {product.rating}
-                </span>
-                <span>{product.reviews} customer ratings</span>
+                <button
+                  onClick={() => setIsAllReviewsModalOpen(true)}
+                  className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/90 px-3 py-1 rounded-xl font-extrabold transition-all shadow-2xs cursor-pointer group"
+                >
+                  <Star size={13} fill="currentColor" className="text-amber-500 group-hover:scale-110 transition-transform" />
+                  <span>{averageRating}</span>
+                  <span className="text-slate-400 font-normal">|</span>
+                  <span className="text-slate-800 hover:text-amber-800 underline font-semibold">
+                    {totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"} ➔
+                  </span>
+                </button>
                 <span>•</span>
                 <span className="text-blue-600 font-semibold">12k+ Orders Fulfilled</span>
               </div>
@@ -398,9 +600,14 @@ export default function ProductDetailPage() {
                 <span>⚡ 15-20 min • Free Delivery on ₹199</span>
               </div>
 
-              <div className="text-xs font-semibold text-slate-500">
-                ⭐ 4.8 (2k reviews) • 12k+ Orders
-              </div>
+              <button
+                onClick={() => setIsAllReviewsModalOpen(true)}
+                className="text-xs font-bold text-slate-600 hover:text-amber-700 transition-colors flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200/80 px-3 py-1 rounded-xl w-fit mt-1"
+              >
+                <span className="text-amber-500">⭐ {averageRating}</span>
+                <span>({totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"})</span>
+                <span className="text-amber-700 font-extrabold text-[11px] underline ml-1">View All ➔</span>
+              </button>
             </div>
 
             {/* Action Buttons: Add to Cart & Download App to Buy */}
@@ -466,189 +673,6 @@ export default function ProductDetailPage() {
           </div>
 
         </div>
-
-        {/* ========================================================================= */}
-        {/* ========================================================================= */}
-        {/* CUSTOMER REVIEWS & RATINGS BREAKDOWN SECTION */}
-        {/* ========================================================================= */}
-        <section className="mt-16 pt-10 border-t border-slate-200/90 space-y-8">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200/80 text-amber-700 text-xs font-black px-3 py-1 rounded-full mb-2 shadow-2xs">
-                <Star size={13} className="fill-amber-400 text-amber-400" />
-                <span>CUSTOMER RATINGS & REVIEWS</span>
-              </div>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-                Ratings & Feedback
-              </h2>
-              <p className="text-xs text-slate-500 font-semibold mt-1">
-                Real feedback from verified buyers delivered by local Kirana stores
-              </p>
-            </div>
-
-            <button
-              onClick={() => triggerToast("Thank you! Review submission form opened.")}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-extrabold text-xs px-5 py-2.5 rounded-2xl transition-all cursor-pointer shadow-sm flex items-center gap-2 self-start sm:self-auto"
-            >
-              <Sparkles size={14} className="text-amber-400" /> Write a Review
-            </button>
-          </div>
-
-          <div className="grid lg:grid-cols-[320px_1fr] gap-8 bg-white border border-slate-200/90 p-6 md:p-8 rounded-3xl shadow-sm">
-            {/* Rating Summary Card */}
-            <div className="space-y-6 lg:border-r border-slate-100 lg:pr-8 pb-6 lg:pb-0 border-b lg:border-b-0">
-              <div className="bg-gradient-to-br from-amber-50/60 to-orange-50/40 border border-amber-100/80 rounded-2xl p-5 text-center space-y-2">
-                <div className="text-5xl font-black text-slate-900 tracking-tight">{product.rating}</div>
-                <div className="flex items-center justify-center gap-1 text-amber-400">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={20} className="fill-amber-400 text-amber-400" />
-                  ))}
-                </div>
-                <div className="text-xs font-bold text-slate-600">
-                  Based on {product.reviews || "340"} verified ratings
-                </div>
-                <div className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-[#166534] text-[11px] font-extrabold px-3 py-1 rounded-full mt-1">
-                  <CheckCircle2 size={12} className="text-[#16A34A]" />
-                  <span>96% Buyers Recommend</span>
-                </div>
-              </div>
-
-              {/* Progress Bar Distribution */}
-              <div className="space-y-2.5 text-xs font-bold text-slate-600">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 text-right shrink-0">5 ★</span>
-                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[82%]" />
-                  </div>
-                  <span className="w-8 text-slate-500 font-semibold">82%</span>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 text-right shrink-0">4 ★</span>
-                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[12%]" />
-                  </div>
-                  <span className="w-8 text-slate-500 font-semibold">12%</span>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 text-right shrink-0">3 ★</span>
-                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full w-[4%]" />
-                  </div>
-                  <span className="w-8 text-slate-500 font-semibold">4%</span>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 text-right shrink-0">2 ★</span>
-                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-slate-300 h-full rounded-full w-[1%]" />
-                  </div>
-                  <span className="w-8 text-slate-500 font-semibold">1%</span>
-                </div>
-
-                <div className="flex items-center gap-2.5">
-                  <span className="w-6 text-right shrink-0">1 ★</span>
-                  <div className="flex-1 bg-slate-100 h-2.5 rounded-full overflow-hidden">
-                    <div className="bg-slate-300 h-full rounded-full w-[1%]" />
-                  </div>
-                  <span className="w-8 text-slate-500 font-semibold">1%</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Verified Customer Reviews List */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
-                  <span>Top Verified Reviews</span>
-                  <span className="bg-slate-100 text-slate-600 text-xs px-2 py-0.5 rounded-full font-bold">2 Reviews</span>
-                </h3>
-                <span className="text-xs font-bold text-[#16A34A]">Sort by: Most Recent</span>
-              </div>
-
-              <div className="space-y-3.5">
-                {/* Review Card 1 */}
-                <div className="bg-[#FFFCF5] border border-amber-100/90 hover:border-amber-300 p-4 rounded-2xl space-y-2.5 transition-all shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-xs shadow-2xs">
-                        RS
-                      </div>
-                      <div>
-                        <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                          <span>Rahul Sharma</span>
-                          <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.2 rounded-md border border-blue-200">
-                            <CheckCircle2 size={10} className="text-blue-600" /> Verified Buyer
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-semibold mt-0.5">2 days ago · Delivered to Vijay Nagar</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
-                      <Star size={11} className="fill-amber-400 text-amber-400" />
-                      <span>5.0</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-700 font-semibold leading-relaxed">
-                    "Super fresh quality! Delivered in just 14 minutes by the local rider. Packaging was totally sealed and authentic."
-                  </p>
-
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-400 font-bold">
-                    <span>Verified Purchase</span>
-                    <button
-                      onClick={() => triggerToast("Feedback recorded: Helpful!")}
-                      className="hover:text-[#16A34A] flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <ThumbsUp size={12} /> Helpful (24)
-                    </button>
-                  </div>
-                </div>
-
-                {/* Review Card 2 */}
-                <div className="bg-[#FFFCF5] border border-amber-100/90 hover:border-amber-300 p-4 rounded-2xl space-y-2.5 transition-all shadow-2xs">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-full bg-amber-500 text-white flex items-center justify-center font-black text-xs shadow-2xs">
-                        PG
-                      </div>
-                      <div>
-                        <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
-                          <span>Priya Gupta</span>
-                          <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[10px] font-black px-2 py-0.2 rounded-md border border-blue-200">
-                            <CheckCircle2 size={10} className="text-blue-600" /> Verified Buyer
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-slate-400 font-semibold mt-0.5">1 week ago · Delivered to MP Nagar</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
-                      <Star size={11} className="fill-amber-400 text-amber-400" />
-                      <span>5.0</span>
-                    </div>
-                  </div>
-
-                  <p className="text-xs text-slate-700 font-semibold leading-relaxed">
-                    "Very clean unpolished grains. Cooks fast and tastes authentic. Highly recommended for daily household cooking!"
-                  </p>
-
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[11px] text-slate-400 font-bold">
-                    <span>Verified Purchase</span>
-                    <button
-                      onClick={() => triggerToast("Feedback recorded: Helpful!")}
-                      className="hover:text-[#16A34A] flex items-center gap-1 transition-colors cursor-pointer"
-                    >
-                      <ThumbsUp size={12} /> Helpful (18)
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* ========================================================================= */}
         {/* RELATED PRODUCTS GRID SECTION */}
@@ -748,6 +772,326 @@ export default function ProductDetailPage() {
         </section>
 
       </main>
+
+      {/* ALL RATINGS & REVIEWS POPUP MODAL */}
+      {isAllReviewsModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 md:p-7 max-w-2xl w-full max-h-[90vh] flex flex-col space-y-4 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out]">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 bg-amber-50 border border-amber-200 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+                  <Star size={20} className="fill-amber-400 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold text-slate-900 leading-tight">
+                    Ratings & Buyer Reviews
+                  </h3>
+                  <p className="text-xs text-slate-500 font-semibold truncate max-w-[240px] sm:max-w-xs">
+                    {product.name}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleOpenWriteReview}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+                >
+                  <Sparkles size={13} className="text-amber-400" /> Write Review
+                </button>
+                <button
+                  onClick={() => setIsAllReviewsModalOpen(false)}
+                  className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Modal Body: Scrollable Content */}
+            <div className="overflow-y-auto pr-1 space-y-5 flex-1 no-scrollbar">
+
+              {/* Rating Breakdown Banner inside Modal */}
+              <div className="grid sm:grid-cols-[180px_1fr] gap-4 bg-gradient-to-br from-amber-50/70 to-orange-50/40 border border-amber-100/90 p-4 rounded-2xl">
+                {/* Average Rating Score Box */}
+                <div className="text-center flex flex-col justify-center items-center border-b sm:border-b-0 sm:border-r border-amber-200/60 pb-3 sm:pb-0 sm:pr-4">
+                  <div className="text-4xl font-black text-slate-900 tracking-tight">{averageRating}</div>
+                  <div className="flex items-center justify-center gap-0.5 text-amber-400 my-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={16} className={i < Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-300"} />
+                    ))}
+                  </div>
+                  <div className="text-[11px] font-bold text-slate-600">
+                    {totalReviewsCount} Verified {totalReviewsCount === 1 ? "Buyer" : "Buyers"}
+                  </div>
+                  <div className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-full mt-1.5">
+                    <CheckCircle2 size={11} className="text-[#16A34A]" />
+                    <span>{recommendPercent}% Recommend</span>
+                  </div>
+                </div>
+
+                {/* Dynamic Rating Progress Bars */}
+                <div className="space-y-1.5 text-xs font-bold text-slate-600 justify-center flex flex-col">
+                  {[5, 4, 3, 2, 1].map((starNum) => {
+                    const item = ratingDistribution[starNum] || { count: 0, percent: 0 };
+                    return (
+                      <button
+                        key={starNum}
+                        onClick={() => setStarFilter(starFilter === starNum ? 0 : starNum)}
+                        className={`w-full flex items-center gap-2 p-1 rounded-lg transition-colors text-left cursor-pointer ${starFilter === starNum ? "bg-white border border-amber-300 shadow-2xs" : "hover:bg-white/60"}`}
+                      >
+                        <span className="w-6 text-right shrink-0">{starNum} ★</span>
+                        <div className="flex-1 bg-slate-200/80 h-2 rounded-full overflow-hidden">
+                          <div
+                            className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full transition-all duration-500"
+                            style={{ width: `${item.percent}%` }}
+                          />
+                        </div>
+                        <span className="w-8 text-slate-500 text-[11px] font-semibold">{item.percent}%</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Filter & Sort Toolbar */}
+              <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-extrabold text-slate-800">
+                    Reviews ({filteredSortedReviews.length})
+                  </span>
+                  {starFilter > 0 && (
+                    <button
+                      onClick={() => setStarFilter(0)}
+                      className="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-300 px-2 py-0.5 rounded-md hover:bg-amber-200 transition-colors cursor-pointer flex items-center gap-1"
+                    >
+                      <span>{starFilter}★ Filter</span>
+                      <X size={10} />
+                    </button>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
+                  <span className="text-slate-400 text-[11px]">Sort:</span>
+                  <select
+                    value={reviewSort}
+                    onChange={(e) => setReviewSort(e.target.value)}
+                    className="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1 outline-none focus:border-amber-500 cursor-pointer"
+                  >
+                    <option value="recent">Most Recent</option>
+                    <option value="highest">Highest Rating</option>
+                    <option value="lowest">Lowest Rating</option>
+                    <option value="helpful">Most Helpful</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Reviews List */}
+              <div className="space-y-3">
+                {filteredSortedReviews.length === 0 ? (
+                  <div className="text-center py-8 bg-slate-50 border border-dashed border-slate-200 rounded-2xl p-5 space-y-2">
+                    <Star size={28} className="mx-auto text-slate-300" />
+                    <div className="text-xs font-bold text-slate-700">No reviews found for this rating</div>
+                    <button
+                      onClick={() => setStarFilter(0)}
+                      className="text-xs font-extrabold text-amber-600 hover:underline cursor-pointer"
+                    >
+                      Clear Filters
+                    </button>
+                  </div>
+                ) : (
+                  filteredSortedReviews.map((rev) => {
+                    const initials = rev.name
+                      ? rev.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+                      : "VB";
+
+                    return (
+                      <div
+                        key={rev.id}
+                        className="bg-[#FFFCF5] border border-amber-100 p-3.5 rounded-2xl space-y-2 transition-all shadow-2xs hover:border-amber-300"
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <div className="w-7 h-7 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-[11px] shadow-2xs">
+                              {initials}
+                            </div>
+                            <div>
+                              <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                                <span>{rev.name}</span>
+                                {rev.verified && (
+                                  <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[9px] font-black px-1.5 py-0.2 rounded-md border border-blue-200">
+                                    <CheckCircle2 size={9} className="text-blue-600" /> Verified
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400 font-semibold">
+                                {rev.date} {rev.location ? `· ${rev.location}` : ""}
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
+                            <Star size={11} className="fill-amber-400 text-amber-400" />
+                            <span>{Number(rev.rating).toFixed(1)}</span>
+                          </div>
+                        </div>
+
+                        <p className="text-xs text-slate-700 font-semibold leading-relaxed">
+                          "{rev.comment}"
+                        </p>
+
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-100 text-[10px] text-slate-400 font-bold">
+                          <span>Verified Buyer Purchase</span>
+                          <button
+                            onClick={() => handleToggleHelpful(rev.id)}
+                            className={`flex items-center gap-1 transition-colors cursor-pointer ${rev.liked ? "text-[#16A34A] font-extrabold" : "hover:text-[#16A34A]"}`}
+                          >
+                            <ThumbsUp size={11} className={rev.liked ? "fill-[#16A34A]" : ""} /> Helpful ({rev.helpfulCount || 0})
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-2 border-t border-slate-100 shrink-0 flex items-center justify-between text-xs">
+              <span className="text-slate-400 font-medium">100% Genuine Local Customer Reviews</span>
+              <button
+                onClick={() => setIsAllReviewsModalOpen(false)}
+                className="bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold px-4 py-2 rounded-xl transition-colors cursor-pointer"
+              >
+                Close Box
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* WRITE A REVIEW MODAL */}
+      {isWriteReviewOpen && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-5 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out]">
+            <button
+              onClick={() => setIsWriteReviewOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+                <Star size={24} className="fill-amber-400 text-amber-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-extrabold text-slate-900">
+                  Write a Review
+                </h3>
+                <p className="text-xs text-slate-500 font-semibold">
+                  Share your feedback for {product.name}
+                </p>
+              </div>
+            </div>
+
+            <form onSubmit={handleAddReview} className="space-y-4 pt-1">
+              {/* Star Rating Picker */}
+              <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-2xl text-center space-y-2">
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                  Select Rating Score
+                </label>
+                <div className="flex items-center justify-center gap-2">
+                  {[1, 2, 3, 4, 5].map((starVal) => {
+                    const isFilled = starVal <= (formHoverRating || formRating);
+                    return (
+                      <button
+                        type="button"
+                        key={starVal}
+                        onMouseEnter={() => setFormHoverRating(starVal)}
+                        onMouseLeave={() => setFormHoverRating(0)}
+                        onClick={() => setFormRating(starVal)}
+                        className="p-1 transition-transform hover:scale-125 cursor-pointer"
+                      >
+                        <Star
+                          size={28}
+                          className={isFilled ? "fill-amber-400 text-amber-400" : "text-slate-300"}
+                        />
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-xs font-extrabold text-amber-800">
+                  {formRating === 5 && "🤩 5.0 - Excellent Quality!"}
+                  {formRating === 4 && "🙂 4.0 - Very Good Product"}
+                  {formRating === 3 && "😐 3.0 - Average Experience"}
+                  {formRating === 2 && "🙁 2.0 - Fair, could be better"}
+                  {formRating === 1 && "😡 1.0 - Poor Quality"}
+                </div>
+              </div>
+
+              {/* User Details */}
+              <div className="grid sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Your Name</label>
+                  <input
+                    type="text"
+                    value={formName}
+                    onChange={(e) => setFormName(e.target.value)}
+                    placeholder="e.g. Rahul Sharma"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Delivery Area / City</label>
+                  <input
+                    type="text"
+                    value={formLocation}
+                    onChange={(e) => setFormLocation(e.target.value)}
+                    placeholder="e.g. Vijay Nagar, Indore"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-amber-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Review Comment */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Your Detailed Review</label>
+                <textarea
+                  rows={3}
+                  value={formComment}
+                  onChange={(e) => setFormComment(e.target.value)}
+                  placeholder="How was the product freshness, packaging, and local kirana delivery?"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-semibold outline-none focus:border-amber-500"
+                  required
+                />
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsWriteReviewOpen(false)}
+                  className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+                >
+                  <Sparkles size={14} /> Submit Review
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* APP DOWNLOAD MODAL */}
       {appModalOpen && (
