@@ -1,511 +1,1044 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import Footer from "../components/Footer";
 import VendorNavbar from "../components/VendorNavbar";
+import Footer from "../components/Footer";
 import {
-  Store, User, ChevronRight, TrendingUp,
-  Users, LayoutDashboard, Wallet, CheckCircle2, Star, ClipboardList,
-  PackageCheck, Bell, Banknote, Building2, Phone, Mail, Upload, QrCode, Smartphone,
-  FileText, ShieldCheck, ArrowRight, ChevronDown, RefreshCw, AlertCircle, Clock, Lock, Sparkles, Zap
+  Store, Users, LayoutDashboard, Wallet, Bell, PackageCheck,
+  ClipboardList, CheckCircle2, ArrowRight, ChevronDown, Smartphone,
+  ShieldCheck, HelpCircle, FileText, Building2, MapPin, Check,
+  AlertCircle, ArrowLeft, Download, ShoppingBag, Truck, Layers
 } from "lucide-react";
 
-// 4 Core Discovery Benefits
-const benefits = [
+// 1. Why Partner Cards Data
+const whyPartnerCards = [
   {
     icon: Users,
-    title: "Reach More Customers",
-    desc: "Get discovered by nearby FillCarts shoppers in your neighborhood.",
-    badge: "🔥 HIGH DEMAND"
+    title: "Reach Nearby Customers",
+    desc: "Help nearby customers discover your store, catalog, and daily products online."
   },
   {
     icon: LayoutDashboard,
-    title: "Easy Store Management",
-    desc: "Manage products, inventory and orders from one simple dashboard.",
-    badge: "⭐ 1-TAP CONTROL"
+    title: "Manage Your Store",
+    desc: "Update product lists, pricing, and item availability seamlessly from the Merchant App."
   },
   {
     icon: Wallet,
-    title: "Transparent Payouts",
-    desc: "Know your commission and weekly payout schedule clearly.",
-    badge: "💰 WEEKLY SETTLEMENT"
+    title: "Track Your Earnings",
+    desc: "Clear visibility into daily sales, transparent commissions, and bank settlements."
   },
   {
-    icon: Bell,
-    title: "Real-Time Order Alerts",
-    desc: "Get instant notifications when new orders arrive at your store.",
-    badge: "⚡ INSTANT SOUND"
+    icon: Truck,
+    title: "Get Delivery Support",
+    desc: "Filcarts delivery partners handle doorstep delivery from your shop to customer homes."
   }
 ];
 
-// 4 Merchant Tools
-const merchantTools = [
-  {
-    icon: PackageCheck,
-    title: "Products & Inventory",
-    desc: "Add products, update prices, and manage stock in real-time."
-  },
-  {
-    icon: ClipboardList,
-    title: "Order Management",
-    desc: "View, accept, and track incoming customer orders effortlessly."
-  },
-  {
-    icon: Wallet,
-    title: "Earnings & Reports",
-    desc: "Monitor daily sales, commission breakdowns, and bank settlements."
-  },
-  {
-    icon: Bell,
-    title: "Instant Store Alerts",
-    desc: "Receive immediate sound and push notifications for new orders."
-  }
-];
-
-// 4-Step Onboarding Process
-const onboardingSteps = [
+// 2. How It Works 4-Step Process
+const howItWorksSteps = [
   {
     step: "01",
-    title: "Register",
-    desc: "Submit your store and owner details online in under 3 minutes."
+    title: "Register Your Store",
+    desc: "Submit your basic store, category, and owner details through our online registration form."
   },
   {
     step: "02",
     title: "Get Verified",
-    desc: "Our merchant onboarding team reviews your store information."
+    desc: "Our merchant onboarding team reviews your store information and business details."
   },
   {
     step: "03",
-    title: "Add Products",
-    desc: "List products, set your prices, and update your available inventory."
+    title: "Set Up Your Store",
+    desc: "Download the Merchant App to add your catalog, set pricing, and mark initial inventory."
   },
   {
     step: "04",
-    title: "Start Selling",
-    desc: "Accept local orders, hand over to riders, and receive payouts."
+    title: "Start Receiving Orders",
+    desc: "Accept incoming customer orders on the Merchant App and prepare them for quick delivery."
   }
 ];
 
-// FAQ Data
-const faqs = [
+// 3. Merchant Tools in App
+const merchantTools = [
   {
-    q: "What documents do I need to register?",
-    a: "Requirements may vary by store category. Generally, keep your Store Registration/GST (if applicable), Owner ID proof, and Bank Account details ready for payouts."
+    icon: PackageCheck,
+    title: "Products & Inventory",
+    desc: "Add items, edit prices, and pause out-of-stock products instantly."
+  },
+  {
+    icon: ClipboardList,
+    title: "Order Management",
+    desc: "Accept orders, view item lists, and mark order preparation status."
+  },
+  {
+    icon: Wallet,
+    title: "Earnings & Settlement",
+    desc: "Track completed orders, total sales, and periodic bank payouts."
+  },
+  {
+    icon: Bell,
+    title: "Real-Time Notifications",
+    desc: "Instant sound alerts and notifications for every new customer order."
+  }
+];
+
+// 4. Realistic Merchant FAQs
+const merchantFaqs = [
+  {
+    q: "What documents are required to join Filcarts?",
+    a: "Basic store registration requires your store name, category, address, owner details, and mobile number. GST number and PAN or business proof may be requested during document verification depending on your business type."
+  },
+  {
+    q: "How does merchant onboarding work?",
+    a: "After submitting the registration form, our merchant onboarding team reviews your information. Once verified, you receive your login credentials to set up your store on the Filcarts Merchant App."
+  },
+  {
+    q: "Is there a registration fee to join?",
+    a: "Store registration on the website is completely free. Details regarding commission structures or service charges are communicated transparently during onboarding."
   },
   {
     q: "How does commission work?",
-    a: "Commission varies by product category and is shown transparently in your vendor dashboard before you list products. There are no hidden fees."
+    a: "Filcarts operates on a transparent commission model based on product categories. You will receive a clear commission agreement prior to store activation."
   },
   {
     q: "When do I receive my payouts?",
-    a: "Payouts are settled directly to your registered bank account on a regular weekly schedule, visible inside your earnings dashboard."
+    a: "Earnings from completed orders are processed directly into your registered business bank account on a regular settlement schedule."
   },
   {
-    q: "How do riders pick up orders?",
-    a: "When a new order arrives, accept it on your Vendor Dashboard. FillCarts delivery partners automatically navigate to your store to pick up the packed order."
+    q: "Who delivers customer orders?",
+    a: "Filcarts delivery partners collect packed orders directly from your shop and deliver them to customers nearby."
   },
   {
-    q: "Can I manage prices and stock from mobile?",
-    a: "Yes! The Vendor Portal works seamlessly on smartphones, tablets, and laptops so you can update stock or temporarily pause items anytime."
+    q: "How do I add my products?",
+    a: "You can add products, set MRP, discounts, and upload catalog items easily through the Filcarts Merchant App on your smartphone."
+  },
+  {
+    q: "Can I pause products when they are out of stock?",
+    a: "Yes. The Merchant App provides a 1-tap stock toggle so you can pause items immediately when inventory runs out."
+  },
+  {
+    q: "Is the Merchant App required?",
+    a: "Yes. The website is for registering your store. The Merchant App is required for day-to-day order management, inventory updates, and receiving instant order notifications."
+  },
+  {
+    q: "How can I contact merchant support?",
+    a: "Registered merchants can access merchant support directly through the Merchant App or contact our support team via phone or email."
   }
 ];
 
 export default function VendorHomePage() {
-  const [form, setForm] = useState({
+  // Multi-step Registration Form State
+  const [currentStep, setCurrentStep] = useState(1);
+  const [formData, setFormData] = useState({
     storeName: "",
+    category: "Grocery & Kirana",
+    address: "",
+    city: "",
+    pincode: "",
     ownerName: "",
     phone: "",
     email: "",
-    category: "Grocery & Kirana Store",
-    city: "",
-    address: "",
-    gst: ""
+    gstNumber: "",
+    panNumber: ""
   });
-
-  const [submitted, setSubmitted] = useState(false);
-  const [error, setError] = useState("");
+  const [formErrors, setFormErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [openFaq, setOpenFaq] = useState(0);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [appId, setAppId] = useState("");
 
-  const handleChange = (e) => {
+  // FAQ Accordion Toggle
+  const [openFaqIndex, setOpenFaqIndex] = useState(0);
+
+  const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setForm((prev) => ({
-      ...prev,
-      [name]:
-        name === "ownerName"
-          ? value.replace(/[^a-zA-Z\s]/g, "")
-          : name === "phone"
-            ? value.replace(/\D/g, "").slice(0, 10)
-            : name === "email"
-              ? value.replace(/[^a-zA-Z0-9._%+-@]/g, "")
-              : value,
-    }));
-    setError("");
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleSubmit = (e) => {
+  // Step 1 Validation
+  const validateStep1 = () => {
+    const errors = {};
+    if (!formData.storeName.trim()) errors.storeName = "Store name is required";
+    if (!formData.address.trim()) errors.address = "Store address is required";
+    if (!formData.city.trim()) errors.city = "City is required";
+    if (!formData.pincode.trim() || !/^\d{6}$/.test(formData.pincode.trim())) {
+      errors.pincode = "Enter a valid 6-digit pincode";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Step 2 Validation
+  const validateStep2 = () => {
+    const errors = {};
+    if (!formData.ownerName.trim()) errors.ownerName = "Owner full name is required";
+    if (!formData.phone.trim() || !/^[6-9]\d{9}$/.test(formData.phone.replace(/\D/g, ""))) {
+      errors.phone = "Enter a valid 10-digit mobile number";
+    }
+    if (formData.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
+      errors.email = "Enter a valid email address";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  const handleNextStep = () => {
+    if (currentStep === 1 && validateStep1()) {
+      setCurrentStep(2);
+      window.location.hash = "register";
+    } else if (currentStep === 2 && validateStep2()) {
+      setCurrentStep(3);
+      window.location.hash = "register";
+    }
+  };
+
+  const handlePrevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep((prev) => prev - 1);
+    }
+  };
+
+  const handleSubmitRegistration = (e) => {
     e.preventDefault();
-    setError("");
-
-    if (
-      !form.storeName.trim() ||
-      !form.ownerName.trim() ||
-      !form.phone.trim() ||
-      !form.email.trim() ||
-      !form.city.trim()
-    ) {
-      setError("Please fill in all required fields.");
-      return;
+    if (currentStep === 3) {
+      setIsSubmitting(true);
+      setTimeout(() => {
+        setIsSubmitting(false);
+        const randomId = "FC-" + Math.floor(100000 + Math.random() * 900000);
+        setAppId(randomId);
+        setIsSubmitted(true);
+      }, 1000);
     }
-
-    if (form.ownerName.trim().length < 2) {
-      setError("Owner Name must contain at least 2 letters.");
-      return;
-    }
-
-    if (!/^\d{10}$/.test(form.phone.trim())) {
-      setError("Mobile Phone must be exactly 10 digits.");
-      return;
-    }
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    if (!emailRegex.test(form.email.trim())) {
-      setError("Please enter a valid email address.");
-      return;
-    }
-
-    setIsSubmitting(true);
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setSubmitted(true);
-    }, 600);
   };
 
   return (
-    <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
-      {/* Dedicated Vendor / Merchant Navbar */}
+    <div className="min-h-screen bg-[#F8FAFC] text-[#17231A] font-sans antialiased">
+      {/* 1. Redesigned Clean Merchant Navbar */}
       <VendorNavbar />
 
-      {/* 1. HERO SECTION */}
-      <section className="bg-white border-b border-slate-100 py-12 md:py-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 grid md:grid-cols-12 gap-8 md:gap-12 items-center">
-          <div className="md:col-span-7 space-y-5 text-center sm:text-left">
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3.5 py-1 rounded-full border border-emerald-200/80 mb-2">
-              <Store size={14} className="text-[#16A34A]" /> Grow With FillCarts
-            </span>
+      {/* 2. Hero Section */}
+      <section className="relative pt-12 pb-20 md:pt-16 md:pb-24 overflow-hidden bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
+            
+            {/* Left Column: Value Proposition */}
+            <div className="lg:col-span-7 space-y-5 text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[11px] sm:text-[12px] font-bold uppercase tracking-wider">
+                <Store size={14} className="text-[#16A34A]" />
+                <span>For Local Businesses</span>
+              </div>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17231A] leading-tight tracking-tight">
-              Grow your store sales. <br /><span className="text-[#16A34A]">Sell locally online.</span>
-            </h1>
+              {/* Hero Heading: Mobile 32px, Tablet 42px, Desktop 48px, weight 800, line-height 1.15 */}
+              <h1 className="text-[32px] sm:text-[42px] md:text-[48px] font-extrabold text-[#17231A] tracking-tight leading-[1.15]">
+                Grow your local business with <span className="text-[#16A34A]">Filcarts</span>
+              </h1>
 
-            <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-xl">
-              Register your local store, add your products, and reach thousands of neighborhood customers ordering daily through FillCarts.
-            </p>
+              {/* Hero Description: Mobile 15px, Tablet 16px, Desktop 17px, weight 400/500, line-height 1.6 */}
+              <p className="text-[15px] sm:text-[16px] md:text-[17px] text-[#64748B] font-normal leading-[1.6] max-w-2xl">
+                Bring your store online, reach nearby customers, and manage your business efficiently through the Filcarts Merchant App.
+              </p>
 
-            {/* CTAs */}
-            <div className="flex items-center gap-3 pt-2 flex-wrap justify-center sm:justify-start">
-              <a
-                href="#register"
-                className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-7 py-3.5 rounded-xl text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 cursor-pointer"
-              >
-                <span>Register Store Online</span>
-                <ArrowRight size={16} />
-              </a>
-              <Link
-                to="/vendor/about"
-                className="bg-[#FFFCF5] hover:bg-[#ECFDF3] text-[#166534] border border-emerald-200 font-extrabold px-6 py-3.5 rounded-xl text-xs sm:text-sm transition-all cursor-pointer"
-              >
-                About Merchant Network
-              </Link>
+              {/* CTAs: Primary 14-15px weight 600, Secondary 14-15px weight 600 */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
+                <a
+                  href="#register"
+                  className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-xs text-center flex items-center justify-center gap-2"
+                >
+                  <span>Register Your Store</span>
+                  <ArrowRight size={16} />
+                </a>
+                <a
+                  href="#how-it-works"
+                  className="border border-slate-300 hover:border-slate-400 text-slate-700 bg-white text-[14px] sm:text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-colors text-center"
+                >
+                  See How It Works
+                </a>
+              </div>
+
+              {/* Trust Subtext */}
+              <div className="pt-3 flex items-center gap-2 text-[13px] sm:text-[14px] font-medium text-[#64748B]">
+                <ShieldCheck size={18} className="text-[#16A34A]" />
+                <span>Built for local stores, retailers and neighborhood businesses.</span>
+              </div>
             </div>
+
+            {/* Right Column: Clean Filcarts Merchant App Preview */}
+            <div className="lg:col-span-5">
+              <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-[#16A34A] text-white flex items-center justify-center font-bold">
+                      <Store size={18} />
+                    </div>
+                    <div>
+                      <span className="text-[14px] font-bold text-slate-900 block leading-none">Gupta General Store</span>
+                      <span className="text-[12px] text-slate-500 font-medium">Grocery & Daily Needs</span>
+                    </div>
+                  </div>
+                  <span className="text-[11px] font-bold text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+                    Merchant App
+                  </span>
+                </div>
+
+                {/* App Feature Cards Stack */}
+                <div className="space-y-3">
+                  {/* Order notification card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
+                        <Bell size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[14px] font-bold text-slate-900 block">New Customer Order Received</span>
+                        <span className="text-[12px] font-medium text-slate-500">3 Items • Nearby Delivery</span>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#16A34A]">Ready</span>
+                  </div>
+
+                  {/* Product Inventory Card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
+                        <PackageCheck size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[14px] font-bold text-slate-900 block">Product Inventory</span>
+                        <span className="text-[12px] font-medium text-slate-500">Live catalog management</span>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-semibold text-slate-600">Updated</span>
+                  </div>
+
+                  {/* Earnings Card */}
+                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
+                        <Wallet size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[14px] font-bold text-slate-900 block">Settlements & Payouts</span>
+                        <span className="text-[12px] font-medium text-slate-500">Transparent business reports</span>
+                      </div>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#166534]">Verified</span>
+                  </div>
+                </div>
+
+                <div className="pt-1 text-center text-[12px] font-medium text-slate-500">
+                  Manage store items, pricing, and orders from the mobile app.
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Why Partner With Filcarts Section */}
+      <section id="why-filcarts" className="py-16 md:py-20 bg-[#F8FAFC] border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          {/* Section Heading Spec: Desktop 32px, Tablet 30px, Mobile 26px, weight 800, line-height 1.2 */}
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2.5">
+            <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
+              Merchant Benefits
+            </span>
+            <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#17231A] tracking-tight leading-[1.2]">
+              Everything you need to grow your store online
+            </h2>
+            {/* Section Description Spec: Desktop 16px, Tablet 15px, Mobile 14px, weight 400/500, line-height 1.6 */}
+            <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#64748B] font-normal leading-[1.6]">
+              Filcarts provides the tools and customer reach to help local retailers expand digitally.
+            </p>
           </div>
 
-          {/* Right Visual: Vendor Dashboard Preview */}
-          <div className="md:col-span-5 relative">
-            <div className="bg-white border-2 border-emerald-200 rounded-3xl p-6 shadow-lg space-y-4 text-left relative overflow-hidden">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                <div className="flex items-center gap-2.5">
-                  <div className="w-9 h-9 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold">
-                    <Store size={18} />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {whyPartnerCards.map((card, idx) => {
+              const IconComp = card.icon;
+              return (
+                <div
+                  key={idx}
+                  className="bg-white border border-slate-200 rounded-xl p-6 hover:border-emerald-300 transition-all hover:shadow-xs group space-y-3.5"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center group-hover:bg-[#16A34A] group-hover:text-white transition-colors">
+                    <IconComp size={20} />
                   </div>
-                  <div>
-                    <h3 className="font-extrabold text-xs text-[#17231A]">My Kirana Store</h3>
-                    <span className="text-[10px] text-slate-400 font-semibold">Vendor Dashboard</span>
-                  </div>
+                  {/* Card Heading Spec: Mobile 16px, Tablet 17px, Desktop 18px, weight 700 */}
+                  <h3 className="text-[16px] sm:text-[17px] md:text-[18px] font-bold text-[#17231A]">
+                    {card.title}
+                  </h3>
+                  {/* Card Description Spec: Mobile 13px, Desktop 14px, weight 400/500, line-height 1.5 */}
+                  <p className="text-[13px] sm:text-[14px] text-[#64748B] font-normal leading-[1.5]">
+                    {card.desc}
+                  </p>
                 </div>
-                <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-[#166534] border border-emerald-200 px-2.5 py-0.5 rounded-full flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" /> Live Orders
-                </span>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* 4. How It Works Section */}
+      <section id="how-it-works" className="py-16 md:py-20 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2.5">
+            <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
+              Simple Onboarding
+            </span>
+            <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#17231A] tracking-tight leading-[1.2]">
+              How Filcarts merchant onboarding works
+            </h2>
+            <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#64748B] font-normal leading-[1.6]">
+              Get your local store registered and receiving orders in four clear steps.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 relative">
+            {howItWorksSteps.map((stepItem, idx) => (
+              <div key={idx} className="bg-[#F8FAFC] border border-slate-200 rounded-xl p-6 space-y-3.5 relative">
+                <div className="text-2xl font-extrabold text-[#16A34A]">
+                  {stepItem.step}
+                </div>
+                <h3 className="text-[16px] sm:text-[17px] md:text-[18px] font-bold text-[#17231A]">
+                  {stepItem.title}
+                </h3>
+                <p className="text-[13px] sm:text-[14px] text-[#64748B] font-normal leading-[1.5]">
+                  {stepItem.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <a
+              href="#register"
+              className="inline-flex items-center gap-2 bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-3 rounded-lg transition-colors shadow-xs"
+            >
+              <span>Start Your Registration</span>
+              <ArrowRight size={16} />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Merchant App Section */}
+      <section id="merchant-app" className="py-16 md:py-20 bg-[#F8FAFC] border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            
+            <div className="lg:col-span-6 space-y-5">
+              <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
+                Merchant App
+              </span>
+              <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#17231A] tracking-tight leading-[1.2]">
+                Manage your business with the Filcarts Merchant App
+              </h2>
+              <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#64748B] font-normal leading-[1.6]">
+                Your website is for joining Filcarts. Your Merchant App is where you manage your day-to-day store operations, products, and customer orders.
+              </p>
+
+              <div className="space-y-3 pt-1">
+                {merchantTools.map((tool, idx) => {
+                  const IconC = tool.icon;
+                  return (
+                    <div key={idx} className="bg-white border border-slate-200 rounded-lg p-3.5 flex items-start gap-3 shadow-2xs">
+                      <div className="p-2 rounded-md bg-[#ECFDF3] text-[#16A34A] mt-0.5">
+                        <IconC size={18} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h4 className="text-[15px] sm:text-[16px] font-bold text-[#17231A]">{tool.title}</h4>
+                          <span className="text-[11px] font-semibold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">
+                            Available in App
+                          </span>
+                        </div>
+                        <p className="text-[13px] sm:text-[14px] text-[#64748B] font-normal leading-[1.5] mt-0.5">{tool.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Vendor Stats Grid */}
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-[#FFFCF5] p-3 rounded-2xl border border-slate-100 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400">Today's Orders</div>
-                  <div className="text-xl font-black text-[#166534]">24</div>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-3">
+                <a
+                  href="#register"
+                  className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-3 rounded-lg transition-colors text-center flex items-center justify-center gap-2"
+                >
+                  <Smartphone size={16} />
+                  <span>Get the Merchant App</span>
+                </a>
+                <a
+                  href="#register"
+                  className="border border-slate-300 hover:border-slate-400 text-slate-700 bg-white text-[14px] sm:text-[15px] font-semibold px-5 py-3 rounded-lg transition-colors text-center"
+                >
+                  Register Your Store
+                </a>
+              </div>
+            </div>
+
+            {/* App Visual Preview */}
+            <div className="lg:col-span-6 flex justify-center">
+              <div className="w-full max-w-md bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="text-[14px] font-bold text-slate-900">Filcarts Merchant App</span>
+                  <span className="text-[11px] font-bold text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded">Mobile Platform</span>
                 </div>
 
-                <div className="bg-[#FFFCF5] p-3 rounded-2xl border border-slate-100 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400">Today's Sales</div>
-                  <div className="text-xl font-black text-[#F59E0B]">₹4,850</div>
-                </div>
-
-                <div className="bg-[#FFFCF5] p-3 rounded-2xl border border-slate-100 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400">Active Products</div>
-                  <div className="text-xl font-black text-[#17231A]">120</div>
-                </div>
-
-                <div className="bg-[#FFFCF5] p-3 rounded-2xl border border-slate-100 space-y-1">
-                  <div className="text-[10px] font-bold text-slate-400">Store Rating</div>
-                  <div className="text-xl font-black text-[#F59E0B] flex items-center gap-1">
-                    <Star size={16} fill="currentColor" /> 4.8
+                <div className="space-y-3">
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1">
+                    <span className="text-[11px] font-bold text-slate-500 block uppercase">Product Catalog</span>
+                    <p className="text-[13px] sm:text-[14px] font-semibold text-slate-900">Add, edit pricing & toggle availability</p>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1">
+                    <span className="text-[11px] font-bold text-slate-500 block uppercase">Orders & Pickup</span>
+                    <p className="text-[13px] sm:text-[14px] font-semibold text-slate-900">Receive order alerts & hand off to delivery partner</p>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200 rounded-lg p-3 space-y-1">
+                    <span className="text-[11px] font-bold text-slate-500 block uppercase">Business Settlements</span>
+                    <p className="text-[13px] sm:text-[14px] font-semibold text-slate-900">Clear bank settlement reports and transaction history</p>
                   </div>
                 </div>
               </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      {/* 6. Built for Local Businesses (Trust Section) */}
+      <section className="py-16 md:py-20 bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl mx-auto text-center space-y-3">
+            <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
+              Built for Local Businesses
+            </span>
+            <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#17231A] tracking-tight leading-[1.2]">
+              Empowering neighborhood stores with digital tools
+            </h2>
+            <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#64748B] font-normal leading-[1.6]">
+              Filcarts helps local retailers digitize their product catalog, connect with shoppers nearby, and utilize reliable delivery support.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-10">
+            <div className="p-5 rounded-xl border border-slate-200 bg-[#F8FAFC] space-y-2 text-center">
+              <div className="w-8 h-8 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                <Check size={16} />
+              </div>
+              <h4 className="text-[15px] font-bold text-[#17231A]">Local Reach</h4>
+              <p className="text-[13px] text-[#64748B] font-normal">Connect with customers in your neighborhood.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-slate-200 bg-[#F8FAFC] space-y-2 text-center">
+              <div className="w-8 h-8 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                <Check size={16} />
+              </div>
+              <h4 className="text-[15px] font-bold text-[#17231A]">Digital Presence</h4>
+              <p className="text-[13px] text-[#64748B] font-normal">Display your store products online hassle-free.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-slate-200 bg-[#F8FAFC] space-y-2 text-center">
+              <div className="w-8 h-8 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                <Check size={16} />
+              </div>
+              <h4 className="text-[15px] font-bold text-[#17231A]">Order Controls</h4>
+              <p className="text-[13px] text-[#64748B] font-normal">Full control over pricing and stock availability.</p>
+            </div>
+            <div className="p-5 rounded-xl border border-slate-200 bg-[#F8FAFC] space-y-2 text-center">
+              <div className="w-8 h-8 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                <Check size={16} />
+              </div>
+              <h4 className="text-[15px] font-bold text-[#17231A]">Delivery Network</h4>
+              <p className="text-[13px] text-[#64748B] font-normal">Dedicated delivery partners for order doorstep drops.</p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* MAIN BODY CONTENT */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-16 flex-1 w-full">
-        {/* 2. WHY PARTNER WITH FILLCARTS */}
-        <section className="space-y-6 text-center sm:text-left" id="benefits">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-2">
-              <Sparkles size={13} /> Store Growth Advantages
+      {/* 7. Multi-step Merchant Registration Form Section */}
+      <section id="register" className="py-16 md:py-20 bg-[#F8FAFC] border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          
+          <div className="text-center max-w-2xl mx-auto mb-10 space-y-2.5">
+            <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
+              Store Registration
             </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
-              Why partner with FillCarts?
+            {/* Form Heading Spec: Mobile 22px, Tablet 26px, Desktop 28px, weight 800 */}
+            <h2 className="text-[22px] sm:text-[26px] md:text-[28px] font-extrabold text-[#17231A] tracking-tight">
+              Start selling with Filcarts
             </h2>
+            <p className="text-[14px] sm:text-[15px] text-[#64748B] font-normal leading-[1.6]">
+              Tell us about your store. Our team will review your details and guide you through onboarding.
+            </p>
           </div>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {benefits.map((b, i) => (
-              <div
-                key={i}
-                className="group bg-white border border-emerald-100 hover:border-[#16A34A] rounded-2xl p-6 transition-all duration-300 hover:-translate-y-1 hover:shadow-md text-left flex flex-col justify-between"
-              >
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold">
-                    <b.icon size={24} />
+          <div className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-10 shadow-xs">
+            {!isSubmitted ? (
+              <div>
+                {/* Registration Progress Steps Header */}
+                <div className="mb-8 border-b border-slate-200 pb-6">
+                  <div className="flex items-center justify-between max-w-md mx-auto relative">
+                    {/* Step 1 Pill */}
+                    <div className="flex items-center gap-2 z-10 bg-white pr-2">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-bold ${currentStep >= 1 ? "bg-[#16A34A] text-white" : "bg-slate-200 text-slate-600"}`}>
+                        1
+                      </div>
+                      <span className={`text-[13px] sm:text-[14px] font-semibold hidden sm:inline ${currentStep === 1 ? "text-slate-900" : "text-slate-500"}`}>
+                        Business
+                      </span>
+                    </div>
+
+                    {/* Step 2 Pill */}
+                    <div className="flex items-center gap-2 z-10 bg-white px-2">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-bold ${currentStep >= 2 ? "bg-[#16A34A] text-white" : "bg-slate-200 text-slate-600"}`}>
+                        2
+                      </div>
+                      <span className={`text-[13px] sm:text-[14px] font-semibold hidden sm:inline ${currentStep === 2 ? "text-slate-900" : "text-slate-500"}`}>
+                        Owner
+                      </span>
+                    </div>
+
+                    {/* Step 3 Pill */}
+                    <div className="flex items-center gap-2 z-10 bg-white pl-2">
+                      <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[13px] font-bold ${currentStep >= 3 ? "bg-[#16A34A] text-white" : "bg-slate-200 text-slate-600"}`}>
+                        3
+                      </div>
+                      <span className={`text-[13px] sm:text-[14px] font-semibold hidden sm:inline ${currentStep === 3 ? "text-slate-900" : "text-slate-500"}`}>
+                        Verification
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="text-[10px] font-black tracking-wider uppercase text-[#166534] bg-[#ECFDF3] px-2.5 py-0.5 rounded-full border border-emerald-200">
-                      {b.badge}
-                    </span>
-                    <h3 className="font-extrabold text-base text-[#17231A] mt-2">{b.title}</h3>
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">{b.desc}</p>
-                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        </section>
 
-        {/* 3. MERCHANT TOOLS */}
-        <section className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-10 shadow-xs space-y-6 text-left" id="tools">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-2">
-              <LayoutDashboard size={13} /> EASY STORE CONTROL
-            </span>
-            <h2 className="text-2xl font-extrabold text-[#17231A]">
-              Simple tools built for local store owners
-            </h2>
-          </div>
+                {/* Form Fields */}
+                <form onSubmit={handleSubmitRegistration} className="space-y-5">
+                  
+                  {/* STEP 1: BUSINESS DETAILS */}
+                  {currentStep === 1 && (
+                    <div className="space-y-5 animate-[fadeIn_0.2s_ease-out]">
+                      <h3 className="text-[18px] font-bold text-[#17231A] border-b border-slate-100 pb-2">
+                        Step 1: Business Details
+                      </h3>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {merchantTools.map((t, i) => (
-              <div key={i} className="bg-[#FFFCF5] p-5 rounded-2xl border border-slate-100 space-y-2">
-                <div className="w-9 h-9 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-bold">
-                  <t.icon size={20} />
-                </div>
-                <h4 className="font-extrabold text-sm text-[#17231A]">{t.title}</h4>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed">{t.desc}</p>
-              </div>
-            ))}
-          </div>
-        </section>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="sm:col-span-2">
+                          {/* Form Label Spec: Mobile 13px, Desktop 14px, weight 600 */}
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Store Name <span className="text-red-500">*</span>
+                          </label>
+                          {/* Form Input Spec: Mobile 14px, Desktop 15px, weight 400/500 */}
+                          <input
+                            type="text"
+                            name="storeName"
+                            value={formData.storeName}
+                            onChange={handleInputChange}
+                            placeholder="e.g. Gupta General Store"
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.storeName ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.storeName && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.storeName}</p>
+                          )}
+                        </div>
 
-        {/* 4. APPLICATION FORM */}
-        <section id="register" className="max-w-3xl mx-auto">
-          <div className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-10 shadow-lg">
-            {submitted ? (
-              <div className="space-y-6 text-center">
-                <div className="w-16 h-16 bg-[#16A34A] text-white rounded-full flex items-center justify-center mx-auto shadow-md">
-                  <CheckCircle2 size={32} />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-extrabold text-[#17231A]">Store Registration Received! 🎉</h3>
-                  <p className="text-xs text-slate-600 font-semibold max-w-md mx-auto mt-1">
-                    Welcome <strong>{form.storeName}</strong>! Our merchant onboarding manager will contact you at <strong>{form.phone}</strong> in 24 hours.
-                  </p>
-                </div>
-                <button
-                  onClick={() => setSubmitted(false)}
-                  className="text-xs font-extrabold text-[#16A34A] hover:underline"
-                >
-                  ← Submit another store registration
-                </button>
+                        <div className="sm:col-span-2">
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Business Category <span className="text-red-500">*</span>
+                          </label>
+                          <select
+                            name="category"
+                            value={formData.category}
+                            onChange={handleInputChange}
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-[14px] sm:text-[15px] font-normal text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20"
+                          >
+                            <option value="Grocery & Kirana">Grocery & Kirana</option>
+                            <option value="Fruits & Vegetables">Fruits & Vegetables</option>
+                            <option value="Dairy & Bakery">Dairy & Bakery</option>
+                            <option value="Pharmacy & Wellness">Pharmacy & Wellness</option>
+                            <option value="Home & Cleaning">Home & Cleaning</option>
+                            <option value="Electronics">Electronics</option>
+                            <option value="Fashion">Fashion</option>
+                            <option value="Other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="sm:col-span-2">
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Store Address <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="address"
+                            value={formData.address}
+                            onChange={handleInputChange}
+                            placeholder="Street address, locality, landmark"
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.address ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.address && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.address}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            City <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="city"
+                            value={formData.city}
+                            onChange={handleInputChange}
+                            placeholder="City"
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.city ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.city && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.city}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Pincode <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="pincode"
+                            value={formData.pincode}
+                            onChange={handleInputChange}
+                            placeholder="6-digit pincode"
+                            maxLength={6}
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.pincode ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.pincode && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.pincode}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={handleNextStep}
+                          className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>Continue to Owner Details</span>
+                          <ArrowRight size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 2: OWNER DETAILS */}
+                  {currentStep === 2 && (
+                    <div className="space-y-5 animate-[fadeIn_0.2s_ease-out]">
+                      <h3 className="text-[18px] font-bold text-[#17231A] border-b border-slate-100 pb-2">
+                        Step 2: Owner Details
+                      </h3>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div className="sm:col-span-2">
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Owner Full Name <span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="ownerName"
+                            value={formData.ownerName}
+                            onChange={handleInputChange}
+                            placeholder="Full name as per business records"
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.ownerName ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.ownerName && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.ownerName}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Mobile Number <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-2.5 text-[14px] text-slate-500 font-bold">+91</span>
+                            <input
+                              type="tel"
+                              name="phone"
+                              value={formData.phone}
+                              onChange={handleInputChange}
+                              placeholder="10-digit mobile number"
+                              maxLength={10}
+                              className={`w-full pl-12 pr-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.phone ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                            />
+                          </div>
+                          {formErrors.phone && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.phone}</p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            Email Address <span className="text-slate-400 font-normal">(Optional)</span>
+                          </label>
+                          <input
+                            type="email"
+                            name="email"
+                            value={formData.email}
+                            onChange={handleInputChange}
+                            placeholder="merchant@example.com"
+                            className={`w-full px-3.5 py-2.5 rounded-lg border text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20 ${formErrors.email ? "border-red-500 bg-red-50/20" : "border-slate-300"}`}
+                          />
+                          {formErrors.email && (
+                            <p className="text-[12px] text-red-500 mt-1 font-medium">{formErrors.email}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={handlePrevStep}
+                          className="border border-slate-300 text-slate-700 hover:bg-slate-50 text-[14px] font-semibold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <ArrowLeft size={15} />
+                          <span>Back</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleNextStep}
+                          className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <span>Continue to Verification</span>
+                          <ArrowRight size={15} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* STEP 3: BUSINESS VERIFICATION */}
+                  {currentStep === 3 && (
+                    <div className="space-y-5 animate-[fadeIn_0.2s_ease-out]">
+                      <h3 className="text-[18px] font-bold text-[#17231A] border-b border-slate-100 pb-2">
+                        Step 3: Business Verification Details
+                      </h3>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            GST Number <span className="text-slate-400 font-normal">(If applicable)</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="gstNumber"
+                            value={formData.gstNumber}
+                            onChange={handleInputChange}
+                            placeholder="e.g. 22AAAAA0000A1Z5"
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[13px] sm:text-[14px] font-semibold text-slate-700 mb-1.5">
+                            PAN / Business License Number <span className="text-slate-400 font-normal">(Optional)</span>
+                          </label>
+                          <input
+                            type="text"
+                            name="panNumber"
+                            value={formData.panNumber}
+                            onChange={handleInputChange}
+                            placeholder="e.g. ABCDE1234F"
+                            className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-[14px] sm:text-[15px] font-normal focus:outline-none focus:ring-2 focus:ring-[#16A34A]/20"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-50 border border-slate-200 rounded-lg p-3.5 text-[13px] sm:text-[14px] text-slate-600 space-y-1 leading-[1.5]">
+                        <span className="font-bold text-slate-800 block">Verification Note:</span>
+                        <p>
+                          Documents may be requested during verification. Your information is used only for merchant onboarding and verification.
+                        </p>
+                      </div>
+
+                      <div className="pt-4 flex items-center justify-between border-t border-slate-100">
+                        <button
+                          type="button"
+                          onClick={handlePrevStep}
+                          className="border border-slate-300 text-slate-700 hover:bg-slate-50 text-[14px] font-semibold px-4 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer"
+                        >
+                          <ArrowLeft size={15} />
+                          <span>Back</span>
+                        </button>
+                        <button
+                          type="submit"
+                          disabled={isSubmitting}
+                          className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-7 py-2.5 rounded-lg transition-colors flex items-center gap-2 cursor-pointer shadow-xs disabled:opacity-50"
+                        >
+                          {isSubmitting ? (
+                            <span>Submitting Application...</span>
+                          ) : (
+                            <>
+                              <span>Submit Registration</span>
+                              <CheckCircle2 size={16} />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                </form>
               </div>
             ) : (
-              <form onSubmit={handleSubmit} className="space-y-6 text-left">
-                <div className="border-b border-slate-100 pb-4 space-y-2">
-                  <h2 className="text-2xl font-extrabold text-[#17231A]">
-                    Register Your Store as Vendor Partner
-                  </h2>
-                  <p className="text-xs text-slate-500 font-medium">
-                    Fill in your details and start receiving local neighborhood orders.
+              /* Registration Success Screen */
+              <div className="text-center py-6 space-y-6 animate-[fadeIn_0.3s_ease-out]">
+                <div className="w-12 h-12 rounded-full bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                  <CheckCircle2 size={28} />
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-[22px] sm:text-[26px] md:text-[28px] font-extrabold text-[#17231A]">
+                    Your registration has been submitted
+                  </h3>
+                  <p className="text-[14px] sm:text-[15px] text-[#64748B] max-w-lg mx-auto leading-[1.6]">
+                    Thank you for choosing Filcarts. Our merchant onboarding team will review your details and contact you regarding the next steps.
                   </p>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">Store Name *</label>
-                    <input
-                      required
-                      name="storeName"
-                      value={form.storeName}
-                      onChange={handleChange}
-                      placeholder="e.g. Gupta Kirana Store"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">Owner Full Name *</label>
-                    <input
-                      required
-                      name="ownerName"
-                      value={form.ownerName}
-                      onChange={handleChange}
-                      placeholder="e.g. Rajesh Gupta"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors"
-                    />
-                  </div>
+                <div className="bg-[#F8FAFC] border border-slate-200 rounded-xl p-4 inline-block text-center">
+                  <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Application Reference ID</span>
+                  <span className="text-[18px] font-extrabold text-[#166534] tracking-wider">{appId}</span>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">Mobile Phone (10 Digits) *</label>
-                    <input
-                      required
-                      type="tel"
-                      maxLength={10}
-                      name="phone"
-                      value={form.phone}
-                      onChange={handleChange}
-                      placeholder="9876543210"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">Email Address *</label>
-                    <input
-                      required
-                      type="email"
-                      name="email"
-                      value={form.email}
-                      onChange={handleChange}
-                      placeholder="store@example.com"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors"
-                    />
-                  </div>
+                {/* What Happens Next Card */}
+                <div className="bg-white border border-slate-200 rounded-xl p-5 text-left max-w-md mx-auto space-y-3">
+                  <h4 className="text-[13px] font-bold text-slate-900 uppercase tracking-wider">What Happens Next?</h4>
+                  <ol className="space-y-2 text-[13px] sm:text-[14px] text-slate-600 font-normal">
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-[#16A34A]">1.</span>
+                      <span>Details reviewed by Filcarts onboarding team.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-[#16A34A]">2.</span>
+                      <span>Verification call or document validation.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-[#16A34A]">3.</span>
+                      <span>Store catalog set up via Merchant App.</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold text-[#16A34A]">4.</span>
+                      <span>Start selling to nearby customers online.</span>
+                    </li>
+                  </ol>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">City / Area *</label>
-                    <input
-                      required
-                      name="city"
-                      value={form.city}
-                      onChange={handleChange}
-                      placeholder="e.g. Gurgaon / Delhi"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-extrabold text-[#17231A] mb-1">Store Category *</label>
-                    <select
-                      name="category"
-                      value={form.category}
-                      onChange={handleChange}
-                      className="w-full bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none transition-colors cursor-pointer"
-                    >
-                      <option>Grocery & Kirana Store</option>
-                      <option>Fruits & Vegetables</option>
-                      <option>Dairy & Bakery</option>
-                      <option>Pharmacy & Wellness</option>
-                      <option>Home & Cleaning Essentials</option>
-                    </select>
-                  </div>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                  <a
+                    href="#merchant-app"
+                    className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-2.5 rounded-lg transition-colors flex items-center gap-2"
+                  >
+                    <Smartphone size={16} />
+                    <span>Get the Filcarts Merchant App</span>
+                  </a>
+                  <button
+                    onClick={() => {
+                      setIsSubmitted(false);
+                      setCurrentStep(1);
+                      setFormData({
+                        storeName: "",
+                        category: "Grocery & Kirana",
+                        address: "",
+                        city: "",
+                        pincode: "",
+                        ownerName: "",
+                        phone: "",
+                        email: "",
+                        gstNumber: "",
+                        panNumber: ""
+                      });
+                    }}
+                    className="border border-slate-300 text-slate-700 hover:bg-slate-50 text-[14px] font-semibold px-5 py-2.5 rounded-lg transition-colors"
+                  >
+                    Register Another Store
+                  </button>
                 </div>
-
-                {error && (
-                  <div className="bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold p-3.5 rounded-xl flex items-center gap-2">
-                    <AlertCircle size={16} />
-                    <span>{error}</span>
-                  </div>
-                )}
-
-                <button
-                  type="submit"
-                  disabled={isSubmitting}
-                  className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-50 text-white font-extrabold py-3.5 rounded-xl text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <RefreshCw size={16} className="animate-spin" /> Registering Store...
-                    </>
-                  ) : (
-                    <>
-                      <span>Submit Store Registration</span>
-                      <ArrowRight size={16} />
-                    </>
-                  )}
-                </button>
-              </form>
+              </div>
             )}
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* 5. FAQ SECTION */}
-        <section className="max-w-3xl mx-auto space-y-6 text-center sm:text-left" id="faqs">
-          <div>
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#16A34A] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-2">
-              <Sparkles size={13} /> Merchant Support
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+      {/* 8. Merchant FAQ Section */}
+      <section id="faqs" className="py-16 md:py-20 bg-white border-b border-slate-200">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-2xl mx-auto mb-12 space-y-2.5">
+            <span className="text-[11px] sm:text-[12px] font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded border border-emerald-200 inline-block">
               Frequently Asked Questions
+            </span>
+            <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#17231A] tracking-tight leading-[1.2]">
+              Merchant FAQs
             </h2>
+            <p className="text-[14px] sm:text-[15px] md:text-[16px] text-[#64748B] font-normal leading-[1.6]">
+              Common questions about joining and selling on Filcarts.
+            </p>
           </div>
 
-          <div className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs space-y-3 text-left">
-            {faqs.map((f, i) => {
-              const isOpen = openFaq === i;
+          <div className="space-y-3">
+            {merchantFaqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
               return (
-                <div key={i} className="border-b border-slate-100 last:border-b-0 pb-3 pt-1">
+                <div
+                  key={idx}
+                  className="border border-slate-200 rounded-xl overflow-hidden bg-[#F8FAFC] transition-colors"
+                >
+                  {/* FAQ Question Spec: Mobile 14px, Desktop 16px, weight 600/700 */}
                   <button
-                    onClick={() => setOpenFaq(isOpen ? null : i)}
-                    className="w-full flex items-center justify-between font-extrabold text-xs sm:text-sm text-[#17231A] hover:text-[#16A34A] transition-colors py-1 cursor-pointer text-left"
+                    onClick={() => setOpenFaqIndex(isOpen ? -1 : idx)}
+                    className="w-full px-5 py-4 text-left font-semibold text-[14px] sm:text-[16px] text-[#17231A] flex items-center justify-between gap-4 cursor-pointer hover:text-[#16A34A]"
                   >
-                    <span>{f.q}</span>
-                    <ChevronDown size={16} className={`transition-transform duration-200 shrink-0 ${isOpen ? "rotate-180 text-[#16A34A]" : "text-slate-400"}`} />
+                    <span>{faq.q}</span>
+                    <ChevronDown
+                      size={18}
+                      className={`text-slate-400 shrink-0 transition-transform ${isOpen ? "rotate-180 text-[#16A34A]" : ""}`}
+                    />
                   </button>
+                  {/* FAQ Answer Spec: Mobile 13px, Desktop 14px, weight 400/500, line-height 1.6 */}
                   {isOpen && (
-                    <p className="text-xs text-slate-500 font-medium leading-relaxed mt-2 pt-1 border-t border-slate-50">
-                      {f.a}
-                    </p>
+                    <div className="px-5 pb-4 text-[13px] sm:text-[14px] text-[#64748B] font-normal leading-[1.6] border-t border-slate-200/60 pt-3 bg-white">
+                      {faq.a}
+                    </div>
                   )}
                 </div>
               );
             })}
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
 
+      {/* 9. Final CTA Section */}
+      <section className="py-16 md:py-20 bg-[#ECFDF3] border-b border-emerald-200">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-5">
+          <h2 className="text-[26px] sm:text-[30px] md:text-[32px] font-extrabold text-[#166534] tracking-tight leading-[1.2]">
+            Ready to take your store online?
+          </h2>
+          <p className="text-[15px] sm:text-[16px] text-[#17231A] max-w-xl mx-auto font-normal leading-[1.6]">
+            Join Filcarts and start reaching customers in your neighborhood.
+          </p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 pt-2">
+            <a
+              href="#register"
+              className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-7 py-3.5 rounded-lg transition-colors shadow-xs flex items-center gap-2"
+            >
+              <span>Register Your Store</span>
+              <ArrowRight size={16} />
+            </a>
+            <a
+              href="#how-it-works"
+              className="border border-emerald-300 hover:border-emerald-400 text-[#166534] bg-white text-[14px] sm:text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-colors"
+            >
+              Learn How It Works
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 10. Clean B2B Footer */}
       <Footer />
     </div>
   );

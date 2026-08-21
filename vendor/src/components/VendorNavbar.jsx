@@ -1,82 +1,90 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Store, Menu, X, ArrowRight, ShoppingBag } from "lucide-react";
+import { Store, Menu, X, ArrowRight, ExternalLink } from "lucide-react";
 
 export default function VendorNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const navLinks = [
-    { name: "Vendor Home", path: "/" },
-    { name: "About Merchant Network", path: "/about" },
-    { name: "Why Partner", path: "/#benefits" },
-    { name: "Merchant Tools", path: "/#tools" },
-    { name: "Store FAQs", path: "/#faqs" },
+    { name: "Home", path: "/" },
+    { name: "Why Filcarts", path: "/#why-filcarts" },
+    { name: "How It Works", path: "/#how-it-works" },
+    { name: "Merchant App", path: "/#merchant-app" },
+    { name: "FAQs", path: "/#faqs" },
   ];
 
   return (
-    <header className="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
+    <header className="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50 shadow-xs">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-18">
           
-          {/* Vendor / Merchant Brand Logo */}
+          {/* Filcarts Merchant Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-2xl bg-amber-500 text-slate-950 flex items-center justify-center font-black shadow-md group-hover:scale-105 transition-transform">
-              <Store size={22} />
+            <div className="w-9 h-9 rounded-xl bg-[#16A34A] text-white flex items-center justify-center font-extrabold shadow-xs group-hover:scale-105 transition-transform">
+              <Store size={20} />
             </div>
-            <div>
-              <div className="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                <span>FillCarts</span>
-                <span className="text-amber-400 text-xs uppercase tracking-widest bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded-full">
-                  Merchant Partner
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">
-                Store & Retail Website
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[20px] sm:text-[22px] font-extrabold tracking-tight text-[#17231A]">
+                Filcarts
+              </span>
+              <span className="text-[11px] font-bold text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
+                Merchant
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-300">
+          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-semibold text-slate-600">
             {navLinks.map((link, idx) => {
-              const isActive = location.pathname === link.path;
+              const isActive = location.pathname === link.path || (link.path.startsWith("/#") && location.hash === link.path.replace("/", ""));
               return (
-                <Link
+                <a
                   key={idx}
-                  to={link.path}
-                  className={`transition-colors hover:text-white ${isActive ? "text-amber-400 font-extrabold" : ""}`}
+                  href={link.path}
+                  className={`transition-colors hover:text-[#16A34A] ${isActive ? "text-[#16A34A] font-bold" : ""}`}
                 >
                   {link.name}
-                </Link>
+                </a>
               );
             })}
           </nav>
 
           {/* Right Action CTAs */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Link back to main shopping site */}
+            {/* Customer Website Link */}
             <a
               href="http://localhost:5173"
-              className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl hover:bg-slate-900 transition-colors flex items-center gap-1.5 border border-slate-800"
+              className="text-[13px] sm:text-[14px] font-medium text-slate-500 hover:text-slate-900 px-2.5 py-1.5 rounded-lg transition-colors flex items-center gap-1"
+              title="Visit Customer Shopping Site"
             >
-              <ShoppingBag size={14} className="text-amber-400" />
-              <span>Customer Store</span>
+              <span>Customer Website</span>
+              <ExternalLink size={13} className="text-slate-400" />
             </a>
 
+            {/* Merchant Login */}
             <a
-              href="/#register"
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5"
+              href="#login"
+              className="text-[14px] font-semibold text-slate-700 hover:text-[#16A34A] px-3 py-2 rounded-lg transition-colors"
             >
-              <span>Register Store</span>
-              <ArrowRight size={14} />
+              Merchant Login
+            </a>
+
+            {/* Register Your Store Primary CTA */}
+            <a
+              href="#register"
+              className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-4.5 py-2.5 rounded-lg transition-colors shadow-xs flex items-center gap-1.5"
+            >
+              <span>Register Your Store</span>
+              <ArrowRight size={15} />
             </a>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-300 hover:text-white cursor-pointer"
+            className="lg:hidden p-2 text-slate-600 hover:text-slate-900 cursor-pointer"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -85,35 +93,43 @@ export default function VendorNavbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 animate-[slideDown_0.2s_ease-out]">
-          <div className="space-y-2">
+        <div className="lg:hidden bg-white border-b border-slate-200 px-4 pt-3 pb-6 space-y-3 shadow-md animate-[slideDown_0.2s_ease-out]">
+          <div className="space-y-1">
             {navLinks.map((link, idx) => (
-              <Link
+              <a
                 key={idx}
-                to={link.path}
+                href={link.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2.5 rounded-xl transition-colors"
+                className="block text-[14px] font-semibold text-slate-700 hover:text-[#16A34A] hover:bg-slate-50 px-3 py-2.5 rounded-lg transition-colors"
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </div>
 
-          <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+            <a
+              href="#login"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-[14px] font-semibold text-slate-700 bg-slate-100 px-4 py-2.5 rounded-lg text-center"
+            >
+              Merchant Login
+            </a>
+            <a
+              href="#register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="bg-[#16A34A] text-white text-[14px] font-semibold px-4 py-2.5 rounded-lg text-center shadow-xs flex items-center justify-center gap-1.5"
+            >
+              <span>Register Your Store</span>
+              <ArrowRight size={15} />
+            </a>
             <a
               href="http://localhost:5173"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-xs font-bold text-slate-300 bg-slate-800 px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5"
+              className="text-[13px] font-medium text-slate-500 text-center pt-1 hover:underline flex items-center justify-center gap-1"
             >
-              <ShoppingBag size={14} className="text-amber-400" /> Customer Store
-            </a>
-            <a
-              href="/#register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="bg-amber-500 text-slate-950 text-xs font-extrabold px-4 py-2.5 rounded-xl text-center shadow-md flex items-center justify-center gap-1.5"
-            >
-              <span>Register Store</span>
-              <ArrowRight size={14} />
+              <span>Visit Customer Website</span>
+              <ExternalLink size={12} />
             </a>
           </div>
         </div>

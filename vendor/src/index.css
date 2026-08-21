@@ -15,33 +15,34 @@
   --primary-green: #16A34A;
   --dark-green: #166534;
   --soft-green: #ECFDF3;
-  --warm-orange: #F59E0B;
-  --cream-bg: #FFFCF5;
+  --neutral-bg: #F8FAFC;
   --dark-text: #17231A;
+  --text-secondary: #64748B;
+  --border-color: #E2E8F0;
+  --accent-amber: #F59E0B;
 }
 
 body {
-  background-color: #FFFCF5;
+  background-color: #F8FAFC;
   color: #17231A;
-  font-family: 'Manrope', 'Inter', sans-serif;
+  font-family: 'Manrope', 'Inter', system-ui, -apple-system, sans-serif;
   overflow-x: hidden;
 }
 
 /* Glassmorphism utilities */
 .glass-nav {
-  background: rgba(255, 255, 255, 0.94);
+  background: rgba(255, 255, 255, 0.96);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(22, 163, 74, 0.08);
+  border: 1px solid #E2E8F0;
 }
 
-/* Custom scrollbar for horizontal categories */
 .smooth-scroll {
   scroll-behavior: smooth;
 }
