@@ -7,7 +7,6 @@ const footerColumns = [
     h: "For Merchants",
     links: [
       { l: "Become a Merchant", to: "#register" },
-      { l: "Merchant Login", to: "#login" },
       { l: "Merchant App", to: "#merchant-app" },
       { l: "How It Works", to: "#how-it-works" },
       { l: "Merchant FAQs", to: "#faqs" },

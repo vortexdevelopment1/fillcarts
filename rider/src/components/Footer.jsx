@@ -1,76 +1,100 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { Bike, ExternalLink } from "lucide-react";
 
 const footerColumns = [
   {
-    h: "Shopping",
+    h: "For Delivery Partners",
     links: [
-      { l: "Browse Categories", to: "/categories" },
-      { l: "Today's Offers", to: "/#offers" },
-      { l: "Daily Subscriptions ", to: "/subscriptions" },
-      { l: "Platform Features", to: "/features" },
+      { l: "Apply as Rider", to: "#register" },
+      { l: "Earnings & Perks", to: "#benefits" },
+      { l: "Rider Requirements", to: "#requirements" },
+      { l: "Rider FAQs", to: "#faqs" },
     ],
   },
   {
     h: "Company",
     links: [
-      { l: "About FillCarts", to: "/about" },
-      { l: "Careers", to: "/careers" },
-      { l: "Blog & News", to: "/blog" },
-      { l: "Customer Support", to: "/support" },
+      { l: "About Rider Partners", to: "/about" },
+      { l: "Contact Us", to: "#support" },
+      { l: "Careers", to: "#careers" },
     ],
   },
   {
-    h: "Partner With Us",
+    h: "Support",
     links: [
-      { l: "Become a Local Vendor", to: "/vendor" },
-      { l: "Become a Delivery Rider", to: "/rider" },
+      { l: "Rider Helpline", to: "#support" },
+      { l: "Medical Insurance", to: "#benefits" },
+      { l: "Safety Guidelines", to: "#safety" },
+      { l: "FAQs", to: "#faqs" },
     ],
   },
   {
-    h: "Legal & Policies",
+    h: "Legal",
     links: [
       { l: "Terms & Conditions", to: "/terms" },
       { l: "Privacy Policy", to: "/privacy" },
-      { l: "Help & FAQ", to: "/support" },
-      { l: "Refund & Cancellations", to: "/terms#refunds-cancellations" },
+      { l: "Rider Partner Terms", to: "/terms#rider" },
     ],
   },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-[#17231A] text-slate-200 pt-16 pb-8 border-t border-emerald-900/40">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
-          {/* Brand info column */}
-          <div className="col-span-2 md:col-span-1">
-            <Link to="/" className="text-2xl font-black mb-3 block" style={{ fontFamily: "'Manrope', sans-serif" }}>
-              <span className="text-white">Fill</span>
-              <span className="text-[#16A34A]">Carts</span>
+    <footer className="bg-slate-900 text-slate-300 pt-16 pb-10 border-t border-slate-800">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-14">
+          {/* Brand Column */}
+          <div className="col-span-2 md:col-span-1 pr-4 space-y-3">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-8 h-8 rounded-lg bg-[#16A34A] text-white flex items-center justify-center font-bold shadow-xs">
+                <Bike size={18} />
+              </div>
+              <div className="flex items-baseline gap-1.5">
+                <span className="text-xl font-extrabold tracking-tight text-white">
+                  FillCarts
+                </span>
+                <span className="text-[10px] font-bold text-emerald-400 bg-emerald-950 px-1.5 py-0.5 rounded border border-emerald-800 uppercase tracking-wider">
+                  Rider
+                </span>
+              </div>
             </Link>
-            <p className="text-xs text-slate-400 leading-relaxed mb-4 max-w-[220px]">
-              Local vendor marketplace & fast delivery. Get fresh groceries, bakery, dairy and everyday essentials delivered from nearby stores.
+            <p className="text-xs text-slate-400 leading-relaxed font-normal">
+              Empowering individual delivery partners with flexible earnings and 100% schedule control.
             </p>
-            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
-              <span className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
-              <span>Delivering in 20+ Cities</span>
-            </div>
+            <a
+              href="http://localhost:5173"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 font-semibold transition-colors"
+            >
+              <span>Visit Customer Store</span>
+              <ExternalLink size={12} />
+            </a>
           </div>
 
-          {/* Links columns */}
+          {/* Links Columns */}
           {footerColumns.map((col) => (
             <div key={col.h}>
-              <h4 className="text-xs font-extrabold mb-4 text-white uppercase tracking-wider">{col.h}</h4>
+              <h4 className="text-xs font-bold mb-4 text-white uppercase tracking-wider">
+                {col.h}
+              </h4>
               <ul className="space-y-2.5">
                 {col.links.map((item) => (
                   <li key={item.l}>
-                    <Link
-                      to={item.to}
-                      className="text-xs text-slate-300 hover:text-[#16A34A] transition-colors font-medium block"
-                    >
-                      {item.l}
-                    </Link>
+                    {item.to.startsWith("#") ? (
+                      <a
+                        href={item.to}
+                        className="text-xs text-slate-400 hover:text-white transition-colors block"
+                      >
+                        {item.l}
+                      </a>
+                    ) : (
+                      <Link
+                        to={item.to}
+                        className="text-xs text-slate-400 hover:text-white transition-colors block"
+                      >
+                        {item.l}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -78,17 +102,16 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Bottom bar */}
-        <div className="border-t border-emerald-950 pt-6 text-xs text-slate-400 flex flex-col md:flex-row justify-between items-center gap-4">
-          <div>© {new Date().getFullYear()} FillCarts Technologies Pvt. Ltd. All rights reserved.</div>
-          <div className="flex items-center gap-6">
-            <Link to="/terms" className="hover:text-emerald-400 transition-colors">Terms of Service</Link>
-            <Link to="/privacy" className="hover:text-emerald-400 transition-colors">Privacy Policy</Link>
-            <Link to="/support" className="hover:text-emerald-400 transition-colors">Support Center</Link>
+        {/* Bottom Bar */}
+        <div className="border-t border-slate-800 pt-8 text-xs text-slate-400 font-normal flex flex-col md:flex-row justify-between items-center gap-4">
+          <div>© {new Date().getFullYear()} FillCarts. All rights reserved.</div>
+          <div className="flex items-center gap-6 text-slate-400">
+            <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link to="/terms#rider" className="hover:text-white transition-colors">Rider Agreement</Link>
           </div>
         </div>
       </div>
     </footer>
   );
 }
-

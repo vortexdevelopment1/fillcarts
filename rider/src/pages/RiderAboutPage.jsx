@@ -18,7 +18,7 @@ export default function RiderAboutPage() {
         <div className="absolute inset-0 z-0 opacity-25">
           <img
             src="/rider-partner-hero.jpg"
-            alt="Rider Fleet Background"
+            alt="Delivery Partner Background"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
@@ -28,7 +28,7 @@ export default function RiderAboutPage() {
           <div className="max-w-3xl space-y-5">
             <div className="inline-flex items-center gap-2 bg-[#16A34A] text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm">
               <Sparkles size={14} />
-              <span>ABOUT FILLCARTS RIDER FLEET</span>
+              <span>ABOUT FILLCARTS DELIVERY PARTNERS</span>
             </div>
 
             <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight">
@@ -37,7 +37,7 @@ export default function RiderAboutPage() {
             </h1>
 
             <p className="text-sm sm:text-lg text-slate-300 font-medium leading-relaxed">
-              FillCarts Rider Fleet is dedicated to creating flexible, reliable, and rewarding delivery opportunities for two-wheeler, EV scooter, and bicycle partners delivering neighborhood groceries.
+              FillCarts Delivery Partner Network is dedicated to creating flexible, reliable, and rewarding delivery opportunities for two-wheeler, EV scooter, and bicycle partners delivering neighborhood groceries.
             </p>
 
             <div className="pt-2 flex items-center gap-4 flex-wrap">
@@ -45,7 +45,7 @@ export default function RiderAboutPage() {
                 href="/rider#register"
                 className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-7 py-3.5 rounded-xl text-xs sm:text-sm transition-all shadow-md flex items-center gap-2"
               >
-                <span>Join Delivery Fleet</span>
+                <span>Join as Delivery Partner</span>
                 <ArrowRight size={16} />
               </a>
               <Link
@@ -59,7 +59,7 @@ export default function RiderAboutPage() {
         </div>
       </section>
 
-      {/* Fleet Stats Banner */}
+      {/* Rider Partner Stats Banner */}
       <div className="bg-white border-y border-slate-200/90 py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
@@ -118,7 +118,7 @@ export default function RiderAboutPage() {
 
           <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
             <h3 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">
-              Why 50,000+ Partners Choose FillCarts Fleet
+              Why 50,000+ Partners Choose FillCarts
             </h3>
 
             <div className="grid grid-cols-2 gap-4 text-xs font-bold">
@@ -177,7 +177,7 @@ export default function RiderAboutPage() {
                 name: "Ramesh Sharma",
                 city: "Delhi NCR",
                 vehicle: "Two-Wheeler",
-                story: "FillCarts gives direct weekly deposits and free medical cover. The fleet support team responds immediately if I ever need help.",
+                story: "FillCarts gives direct weekly deposits and free medical cover. The rider support team responds immediately if I ever need help.",
                 earnings: "₹34,000 / month"
               }
             ].map((story, i) => (

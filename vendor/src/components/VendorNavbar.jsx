@@ -62,14 +62,6 @@ export default function VendorNavbar() {
               <ExternalLink size={13} className="text-slate-400" />
             </a>
 
-            {/* Merchant Login */}
-            <a
-              href="#login"
-              className="text-[14px] font-semibold text-slate-700 hover:text-[#16A34A] px-3 py-2 rounded-lg transition-colors"
-            >
-              Merchant Login
-            </a>
-
             {/* Register Your Store Primary CTA */}
             <a
               href="#register"
@@ -108,13 +100,6 @@ export default function VendorNavbar() {
           </div>
 
           <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            <a
-              href="#login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-[14px] font-semibold text-slate-700 bg-slate-100 px-4 py-2.5 rounded-lg text-center"
-            >
-              Merchant Login
-            </a>
             <a
               href="#register"
               onClick={() => setMobileMenuOpen(false)}

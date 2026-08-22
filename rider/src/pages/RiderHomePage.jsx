@@ -71,7 +71,7 @@ const onboardingSteps = [
   {
     step: "02",
     title: "Document Verification",
-    desc: "Our fleet team verifies your Aadhaar, DL & vehicle details online."
+    desc: "Our onboarding team verifies your Aadhaar, DL & vehicle details online."
   },
   {
     step: "03",
@@ -101,7 +101,7 @@ const faqs = [
   },
   {
     q: "How does verification work?",
-    a: "After submitting your online application, our fleet onboarding team reviews your details and guides you through document verification in 24 hours."
+    a: "After submitting your online application, our rider onboarding team reviews your details and guides you through document verification in 24 hours."
   },
   {
     q: "Can I choose my working hours?",
@@ -263,7 +263,7 @@ export default function RiderHomePage() {
                     </div>
 
                     <p className="text-[10px] text-slate-400 font-semibold">
-                      Our fleet onboarding manager will call you at <strong>{form.phone}</strong> within 24 hours.
+                      Our rider onboarding manager will call you at <strong>{form.phone}</strong> within 24 hours.
                     </p>
 
                     <button
@@ -374,7 +374,7 @@ export default function RiderHomePage() {
                     </button>
 
                     <p className="text-[9px] text-slate-400 font-semibold text-center pt-0.5">
-                      By registering, you agree to receive fleet onboarding updates on WhatsApp & SMS.
+                      By registering, you agree to receive rider onboarding updates on WhatsApp & SMS.
                     </p>
                   </form>
                 )}
@@ -489,7 +489,7 @@ export default function RiderHomePage() {
                 <Sparkles size={13} /> Rider Partner Advantages
               </span>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-                Why join FillCarts Rider Fleet?
+                Why join as a FillCarts Delivery Partner?
               </h2>
             </div>
           </div>

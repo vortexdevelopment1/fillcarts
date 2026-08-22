@@ -8,7 +8,7 @@ export default function RiderNavbar() {
 
   const navLinks = [
     { name: "Rider Home", path: "/" },
-    { name: "About Fleet", path: "/about" },
+    { name: "About Partners", path: "/about" },
     { name: "Rider Benefits", path: "/#benefits" },
     { name: "Requirements", path: "/#requirements" },
     { name: "FAQs", path: "/#faqs" },
