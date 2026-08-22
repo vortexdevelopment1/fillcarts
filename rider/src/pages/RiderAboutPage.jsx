@@ -3,225 +3,264 @@ import { Link } from "react-router-dom";
 import RiderNavbar from "../components/RiderNavbar";
 import Footer from "../components/Footer";
 import {
-  Bike, ShieldCheck, Wallet, Clock, Navigation, Award, Users, MapPin,
-  CheckCircle2, HeartPulse, Sparkles, ArrowRight, Zap, Star, PhoneCall
+  Bike, Store, User, ArrowRight, ShieldCheck, Clock, Wallet, Headphones, CheckCircle2
 } from "lucide-react";
 
 export default function RiderAboutPage() {
   return (
-    <div className="bg-[#F8FAF7] min-h-screen text-[#17231A] flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
-      {/* Dedicated Rider Navbar */}
+    <div className="min-h-screen flex flex-col bg-[#FAFAF9] text-[#18181B] font-['Manrope',sans-serif]">
+      {/* Navbar */}
       <RiderNavbar />
 
-      {/* Hero Banner Section */}
-      <section className="relative bg-slate-950 text-white py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 z-0 opacity-25">
-          <img
-            src="/rider-partner-hero.jpg"
-            alt="Delivery Partner Background"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-slate-950 via-slate-950/80 to-transparent" />
-        </div>
+      <main className="flex-1">
+        {/* About Hero Section */}
+        <section className="bg-[#18181B] text-white py-16 md:py-24 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#FFF7ED]/10 border border-[#F97316]/30">
+                <Bike size={14} className="text-[#F97316]" />
+                <span className="text-[11px] md:text-[12px] font-bold text-[#F97316] uppercase tracking-wider">
+                  ABOUT FILCARTS DELIVERIES
+                </span>
+              </div>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-left">
-          <div className="max-w-3xl space-y-5">
-            <div className="inline-flex items-center gap-2 bg-[#16A34A] text-white text-xs font-black px-4 py-1.5 rounded-full shadow-sm">
-              <Sparkles size={14} />
-              <span>ABOUT FILLCARTS DELIVERY PARTNERS</span>
+              {/* Heading Spec: Desktop 32-48px, Weight 800 */}
+              <h1 className="text-[32px] sm:text-[40px] md:text-[48px] font-extrabold text-white tracking-tight leading-[1.15]">
+                Building better local deliveries with our rider partners
+              </h1>
+
+              {/* Supporting Text */}
+              <p className="text-[15px] md:text-[17px] text-[#A1A1AA] font-medium leading-[1.6]">
+                Filcarts connects local stores, customers and delivery partners to make neighborhood commerce more convenient.
+              </p>
+
+              <div className="pt-2">
+                <a
+                  href="/#register"
+                  className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[15px] font-semibold px-6 py-3.5 rounded-xl transition-colors shadow-xs inline-flex items-center gap-2"
+                >
+                  <span>Become a Delivery Partner</span>
+                  <ArrowRight size={17} />
+                </a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 1: Our Mission */}
+        <section className="py-16 md:py-20 bg-white border-b border-[#E4E4E7]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl space-y-4">
+              <span className="text-[11px] md:text-[12px] font-bold text-[#F97316] uppercase tracking-wider bg-[#FFF7ED] px-3 py-1 rounded-md border border-[#F97316]/30 inline-block">
+                OUR MISSION
+              </span>
+              <h2 className="text-[26px] md:text-[32px] font-bold text-[#18181B] tracking-tight">
+                Connecting neighborhood commerce efficiently
+              </h2>
+              <p className="text-[14px] md:text-[16px] text-[#52525B] font-normal leading-[1.7]">
+                Filcarts is building a local commerce network where nearby stores can serve customers efficiently. By enabling fast, reliable doorstep fulfillment, we support local businesses while creating flexible earning opportunities for delivery partners in their own communities.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 2: Our Rider Philosophy */}
+        <section className="py-16 md:py-20 bg-[#FAFAF9] border-b border-[#E4E4E7]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <span className="text-[11px] md:text-[12px] font-bold text-[#F97316] uppercase tracking-wider bg-[#FFF7ED] px-3 py-1 rounded-md border border-[#F97316]/30 inline-block">
+                CORE VALUES
+              </span>
+              <h2 className="text-[26px] md:text-[32px] font-bold text-[#18181B] tracking-tight">
+                Our Rider Philosophy
+              </h2>
+              <p className="text-[14px] md:text-[16px] text-[#52525B] font-normal leading-[1.6]">
+                Three core principles guide how we work with delivery partners.
+              </p>
             </div>
 
-            <h1 className="text-3xl sm:text-5xl font-black text-white leading-tight tracking-tight">
-              Empowering 50,000+ Local <br />
-              <span className="text-[#22C55E]">Delivery Partners</span> Across India
-            </h1>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto">
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-6 space-y-3">
+                <div className="w-11 h-11 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center border border-[#F97316]/20">
+                  <ShieldCheck size={22} />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#18181B]">Respect</h3>
+                <p className="text-[14px] text-[#52525B] leading-[1.6]">
+                  Treating delivery partners with dignity as essential members of neighborhood commerce.
+                </p>
+              </div>
 
-            <p className="text-sm sm:text-lg text-slate-300 font-medium leading-relaxed">
-              FillCarts Delivery Partner Network is dedicated to creating flexible, reliable, and rewarding delivery opportunities for two-wheeler, EV scooter, and bicycle partners delivering neighborhood groceries.
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-6 space-y-3">
+                <div className="w-11 h-11 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center border border-[#F97316]/20">
+                  <Wallet size={22} />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#18181B]">Transparency</h3>
+                <p className="text-[14px] text-[#52525B] leading-[1.6]">
+                  Clear trip calculations, earnings visibility, and straightforward platform policies.
+                </p>
+              </div>
+
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-6 space-y-3">
+                <div className="w-11 h-11 rounded-xl bg-[#FFF7ED] text-[#F97316] flex items-center justify-center border border-[#F97316]/20">
+                  <Clock size={22} />
+                </div>
+                <h3 className="text-[18px] font-semibold text-[#18181B]">Flexibility</h3>
+                <p className="text-[14px] text-[#52525B] leading-[1.6]">
+                  Giving riders control over when and where they choose to deliver based on availability.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 3: How Riders Fit Into Filcarts (Ecosystem Diagram) */}
+        <section className="py-16 md:py-20 bg-white border-b border-[#E4E4E7]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-2xl mx-auto mb-12 space-y-2">
+              <span className="text-[11px] md:text-[12px] font-bold text-[#F97316] uppercase tracking-wider bg-[#FFF7ED] px-3 py-1 rounded-md border border-[#F97316]/30 inline-block">
+                LOCAL ECOSYSTEM
+              </span>
+              <h2 className="text-[26px] md:text-[32px] font-bold text-[#18181B] tracking-tight">
+                How riders fit into Filcarts
+              </h2>
+              <p className="text-[14px] md:text-[16px] text-[#52525B] font-normal leading-[1.6]">
+                Riders form the vital link between local neighborhood merchants and customers.
+              </p>
+            </div>
+
+            {/* Ecosystem Flow Diagram */}
+            <div className="max-w-5xl mx-auto bg-[#FAFAF9] border border-[#E4E4E7] rounded-2xl p-6 md:p-10 shadow-xs">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-center">
+                
+                {/* Node 1 */}
+                <div className="bg-white border border-[#E4E4E7] rounded-xl p-4 w-full md:w-auto flex-1 space-y-1">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] text-[#F97316] flex items-center justify-center mx-auto mb-2">
+                    <Store size={20} />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-[#18181B]">Local Store</h4>
+                  <p className="text-[12px] text-[#52525B]">Prepares items</p>
+                </div>
+
+                <ArrowRight size={20} className="text-[#F97316] shrink-0 rotate-90 md:rotate-0" />
+
+                {/* Node 2 */}
+                <div className="bg-white border border-[#E4E4E7] rounded-xl p-4 w-full md:w-auto flex-1 space-y-1">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] text-[#F97316] flex items-center justify-center mx-auto mb-2">
+                    <CheckCircle2 size={20} />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-[#18181B]">Customer Order</h4>
+                  <p className="text-[12px] text-[#52525B]">Placed online</p>
+                </div>
+
+                <ArrowRight size={20} className="text-[#F97316] shrink-0 rotate-90 md:rotate-0" />
+
+                {/* Node 3 */}
+                <div className="bg-white border border-[#E4E4E7] rounded-xl p-4 w-full md:w-auto flex-1 space-y-1">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] text-[#F97316] flex items-center justify-center mx-auto mb-2">
+                    <Bike size={20} />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-[#18181B]">Filcarts Platform</h4>
+                  <p className="text-[12px] text-[#52525B]">Assigns task</p>
+                </div>
+
+                <ArrowRight size={20} className="text-[#F97316] shrink-0 rotate-90 md:rotate-0" />
+
+                {/* Node 4 */}
+                <div className="bg-[#FFF7ED] border border-[#F97316]/30 rounded-xl p-4 w-full md:w-auto flex-1 space-y-1">
+                  <div className="w-10 h-10 rounded-lg bg-[#F97316] text-white flex items-center justify-center mx-auto mb-2">
+                    <Bike size={20} />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-[#18181B]">Rider Partner</h4>
+                  <p className="text-[12px] text-[#F97316] font-semibold">Delivers task</p>
+                </div>
+
+                <ArrowRight size={20} className="text-[#F97316] shrink-0 rotate-90 md:rotate-0" />
+
+                {/* Node 5 */}
+                <div className="bg-white border border-[#E4E4E7] rounded-xl p-4 w-full md:w-auto flex-1 space-y-1">
+                  <div className="w-10 h-10 rounded-lg bg-[#FFF7ED] text-[#F97316] flex items-center justify-center mx-auto mb-2">
+                    <User size={20} />
+                  </div>
+                  <h4 className="text-[15px] font-bold text-[#18181B]">Customer</h4>
+                  <p className="text-[12px] text-[#52525B]">Receives order</p>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 4: What Riders Can Expect */}
+        <section className="py-16 md:py-20 bg-[#FAFAF9] border-b border-[#E4E4E7]">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto text-center mb-10 space-y-2">
+              <span className="text-[11px] md:text-[12px] font-bold text-[#F97316] uppercase tracking-wider bg-[#FFF7ED] px-3 py-1 rounded-md border border-[#F97316]/30 inline-block">
+                EXPECTATIONS
+              </span>
+              <h2 className="text-[26px] md:text-[32px] font-bold text-[#18181B] tracking-tight">
+                What riders can expect
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-4xl mx-auto">
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-5 flex items-start gap-3.5">
+                <CheckCircle2 size={20} className="text-[#F97316] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#18181B]">Flexible Hours</h4>
+                  <p className="text-[14px] text-[#52525B]">Choose delivery slots according to your convenience.</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-5 flex items-start gap-3.5">
+                <CheckCircle2 size={20} className="text-[#F97316] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#18181B]">Transparent Trip Earnings</h4>
+                  <p className="text-[14px] text-[#52525B]">See earnings breakdown per trip live in the Rider App.</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-5 flex items-start gap-3.5">
+                <CheckCircle2 size={20} className="text-[#F97316] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#18181B]">Dedicated Rider Support</h4>
+                  <p className="text-[14px] text-[#52525B]">Assistance available for trip or order questions.</p>
+                </div>
+              </div>
+
+              <div className="bg-white border border-[#E4E4E7] rounded-2xl p-5 flex items-start gap-3.5">
+                <CheckCircle2 size={20} className="text-[#F97316] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="text-[16px] font-semibold text-[#18181B]">Local Area Focus</h4>
+                  <p className="text-[14px] text-[#52525B]">Deliver within neighborhood radius close to home.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Section 5: Join Us CTA */}
+        <section className="py-16 md:py-20 bg-[#18181B] text-white text-center">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
+            <h2 className="text-[26px] md:text-[32px] font-extrabold text-white tracking-tight">
+              Ready to become a Filcarts Delivery Partner?
+            </h2>
+            <p className="text-[14px] md:text-[16px] text-[#A1A1AA] max-w-xl mx-auto font-normal">
+              Register today and take the first step toward delivering on your own terms.
             </p>
-
-            <div className="pt-2 flex items-center gap-4 flex-wrap">
+            <div className="pt-2">
               <a
-                href="/rider#register"
-                className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-7 py-3.5 rounded-xl text-xs sm:text-sm transition-all shadow-md flex items-center gap-2"
+                href="/#register"
+                className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[15px] font-semibold px-7 py-3.5 rounded-xl transition-colors shadow-xs inline-flex items-center gap-2"
               >
-                <span>Join as Delivery Partner</span>
-                <ArrowRight size={16} />
+                <span>Become a Delivery Partner</span>
+                <ArrowRight size={17} />
               </a>
-              <Link
-                to="/rider"
-                className="bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 font-extrabold px-6 py-3.5 rounded-xl text-xs sm:text-sm transition-all"
-              >
-                View Earnings & Shifts
-              </Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Rider Partner Stats Banner */}
-      <div className="bg-white border-y border-slate-200/90 py-8">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <div className="text-3xl md:text-4xl font-black text-[#16A34A]">50,000+</div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Delivery Partners</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl md:text-4xl font-black text-amber-500">100+</div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Cities Operating</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl md:text-4xl font-black text-slate-900">₹120 Cr+</div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Rider Earnings Paid</div>
-            </div>
-            <div className="space-y-1">
-              <div className="text-3xl md:text-4xl font-black text-emerald-600">99.4%</div>
-              <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">On-Time Deliveries</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content Body */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 space-y-20 flex-1 w-full text-left">
-        
-        {/* Our Mission & Values */}
-        <section className="grid lg:grid-cols-12 gap-12 items-center">
-          <div className="lg:col-span-6 space-y-5">
-            <span className="text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3.5 py-1 rounded-full border border-emerald-200">
-              OUR MISSION & PURPOSE
-            </span>
-            <h2 className="text-3xl font-extrabold text-slate-900">
-              Transforming hyperlocal delivery with dignity & flexibility
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-600 font-medium leading-relaxed">
-              At FillCarts, we believe delivery partners are the backbone of our neighborhood ecosystem. We aim to empower riders with transparent payouts, 100% schedule flexibility, comprehensive insurance cover, and smart app technology.
-            </p>
-
-            <div className="space-y-3 pt-2">
-              {[
-                { title: "Fair & Transparent Earnings", desc: "No hidden deductions. Live trip breakdown, tips & weekly direct bank deposits." },
-                { title: "Safety & Medical Security", desc: "Free health and accidental insurance up to ₹5 Lakh for active riders." },
-                { title: "Hyperlocal Efficiency", desc: "Deliver orders within a 3km radius from local Kirana stores near your home." }
-              ].map((item, idx) => (
-                <div key={idx} className="flex gap-3 bg-white p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
-                  <CheckCircle2 size={20} className="text-[#16A34A] shrink-0 mt-0.5" />
-                  <div>
-                    <h4 className="font-extrabold text-xs text-slate-900">{item.title}</h4>
-                    <p className="text-[11px] text-slate-500 font-medium mt-0.5">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm space-y-6">
-            <h3 className="text-xl font-extrabold text-slate-900 border-b border-slate-100 pb-3">
-              Why 50,000+ Partners Choose FillCarts
-            </h3>
-
-            <div className="grid grid-cols-2 gap-4 text-xs font-bold">
-              <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-1">
-                <Clock size={20} className="text-[#16A34A]" />
-                <div className="text-slate-900 font-extrabold">Flexible Slots</div>
-                <div className="text-[10px] text-slate-500 font-medium">Work 4, 8 or 12 hrs/day</div>
-              </div>
-              <div className="bg-amber-50 border border-amber-200 p-4 rounded-2xl space-y-1">
-                <Wallet size={20} className="text-amber-600" />
-                <div className="text-slate-900 font-extrabold">Weekly Payouts</div>
-                <div className="text-[10px] text-slate-500 font-medium">Deposited every Tuesday</div>
-              </div>
-              <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl space-y-1">
-                <ShieldCheck size={20} className="text-blue-600" />
-                <div className="text-slate-900 font-extrabold">₹5 Lakh Cover</div>
-                <div className="text-[10px] text-slate-500 font-medium">Free medical insurance</div>
-              </div>
-              <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl space-y-1">
-                <PhoneCall size={20} className="text-slate-700" />
-                <div className="text-slate-900 font-extrabold">24/7 Helpline</div>
-                <div className="text-[10px] text-slate-500 font-medium">On-duty rider support</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Rider Testimonials / Success Stories */}
-        <section className="space-y-6">
-          <div>
-            <span className="text-xs font-black uppercase tracking-widest text-amber-600 bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
-              ⭐ RIDER STORIES
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">
-              Hear from our active Delivery Partners
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                name: "Sumit Roy",
-                city: "Gurgaon",
-                vehicle: "EV Scooter",
-                story: "I deliver 8 hours daily near my area. Weekly payouts are on time, and the rider app navigation makes deliveries smooth!",
-                earnings: "₹28,500 / month"
-              },
-              {
-                name: "Vikram Singh",
-                city: "Indore",
-                vehicle: "Motorbike",
-                story: "The flexibility is what I love most. I manage my college in the morning and deliver during peak lunch and dinner hours.",
-                earnings: "₹19,200 / month (Part-Time)"
-              },
-              {
-                name: "Ramesh Sharma",
-                city: "Delhi NCR",
-                vehicle: "Two-Wheeler",
-                story: "FillCarts gives direct weekly deposits and free medical cover. The rider support team responds immediately if I ever need help.",
-                earnings: "₹34,000 / month"
-              }
-            ].map((story, i) => (
-              <div key={i} className="bg-white border border-slate-200/90 rounded-3xl p-6 space-y-4 shadow-xs">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-10 h-10 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-sm">
-                      {story.name[0]}
-                    </div>
-                    <div>
-                      <div className="font-extrabold text-xs text-slate-900">{story.name}</div>
-                      <div className="text-[10px] text-slate-400 font-semibold">{story.city} · {story.vehicle}</div>
-                    </div>
-                  </div>
-                  <span className="bg-emerald-50 text-[#166534] border border-emerald-200 text-[10px] font-black px-2.5 py-0.5 rounded-full">
-                    {story.earnings}
-                  </span>
-                </div>
-                <p className="text-xs text-slate-600 font-medium italic">"{story.story}"</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* Join CTA Banner */}
-        <section className="bg-gradient-to-br from-slate-900 to-slate-950 text-white rounded-3xl p-8 md:p-12 text-center space-y-6 shadow-xl border border-slate-800">
-          <h2 className="text-2xl sm:text-4xl font-black">
-            Ready to start delivering with FillCarts?
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-300 font-semibold max-w-xl mx-auto">
-            Apply online in 2 minutes, get your documents verified, download the Rider Partner App and start earning weekly.
-          </p>
-          <div>
-            <a
-              href="/rider#register"
-              className="inline-flex items-center gap-2 bg-[#16A34A] hover:bg-[#15803D] text-white text-xs sm:text-sm font-extrabold px-8 py-4 rounded-2xl transition-all shadow-md"
-            >
-              <span>Register as Delivery Partner Now</span>
-              <ArrowRight size={16} />
-            </a>
           </div>
         </section>
       </main>
 
+      {/* Footer */}
       <Footer />
     </div>
   );

@@ -1,75 +1,75 @@
 import React, { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bike, Menu, X, ArrowRight, ShoppingBag } from "lucide-react";
+import { Bike, Menu, X, ArrowRight, ExternalLink } from "lucide-react";
 
 export default function RiderNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
 
   const navLinks = [
-    { name: "Rider Home", path: "/" },
-    { name: "About Partners", path: "/about" },
-    { name: "Rider Benefits", path: "/#benefits" },
-    { name: "Requirements", path: "/#requirements" },
+    { name: "Home", path: "/" },
+    { name: "Why Join", path: "/#why-join" },
+    { name: "How It Works", path: "/#how-it-works" },
     { name: "FAQs", path: "/#faqs" },
   ];
 
   return (
-    <header className="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-50 shadow-md">
+    <header className="bg-[#18181B] text-white border-b border-[#27272A] sticky top-0 z-50 shadow-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 md:h-20">
+        <div className="flex items-center justify-between h-16 md:h-18">
           
-          {/* Rider Brand Logo */}
+          {/* Filcarts Delivery Partner Logo */}
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-2xl bg-[#16A34A] text-white flex items-center justify-center font-black shadow-md group-hover:scale-105 transition-transform">
-              <Bike size={22} />
+            <div className="w-9 h-9 rounded-xl bg-[#F97316] text-white flex items-center justify-center font-extrabold shadow-xs group-hover:scale-105 transition-transform">
+              <Bike size={20} />
             </div>
-            <div>
-              <div className="text-lg md:text-xl font-black tracking-tight text-white flex items-center gap-1.5">
-                <span>FillCarts</span>
-                <span className="text-[#22C55E] text-xs uppercase tracking-widest bg-emerald-500/20 border border-emerald-500/30 px-2 py-0.5 rounded-full">
-                  Rider Partner
-                </span>
-              </div>
-              <span className="text-[10px] text-slate-400 font-semibold block -mt-0.5">
-                Delivery Partner Website
+            <div className="flex items-baseline gap-1.5">
+              <span className="text-[20px] sm:text-[22px] font-extrabold tracking-tight text-white">
+                Filcarts
+              </span>
+              <span className="text-[11px] font-bold text-[#F97316] bg-[#FFF7ED]/10 border border-[#F97316]/30 px-2 py-0.5 rounded uppercase tracking-wider">
+                Delivery Partner
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 text-xs font-bold text-slate-300">
+          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-semibold text-[#D4D4D8]">
             {navLinks.map((link, idx) => {
-              const isActive = location.pathname === link.path;
+              const isActive =
+                (location.pathname === "/" && link.path === "/") ||
+                (link.path.startsWith("/#") && location.hash === link.path.replace("/", ""));
               return (
-                <Link
+                <a
                   key={idx}
-                  to={link.path}
-                  className={`transition-colors hover:text-white ${isActive ? "text-[#22C55E] font-extrabold" : ""}`}
+                  href={link.path}
+                  className={`transition-colors hover:text-[#F97316] ${
+                    isActive ? "text-[#F97316] font-bold" : ""
+                  }`}
                 >
                   {link.name}
-                </Link>
+                </a>
               );
             })}
           </nav>
 
           {/* Right Action CTAs */}
           <div className="hidden sm:flex items-center gap-3">
-            {/* Link back to main shopping site */}
+            {/* Rider Login Secondary Button */}
             <a
-              href="http://localhost:5173"
-              className="text-xs font-bold text-slate-300 hover:text-white px-3 py-2 rounded-xl hover:bg-slate-900 transition-colors flex items-center gap-1.5 border border-slate-800"
+              href="#register"
+              className="text-[14px] font-semibold text-[#FAFAF9] hover:text-[#F97316] px-3.5 py-2 border border-[#3F3F46] hover:border-[#F97316]/50 rounded-xl transition-colors"
             >
-              <ShoppingBag size={14} className="text-emerald-400" />
-              <span>Customer Store</span>
+              Rider Login
             </a>
 
+            {/* Become a Rider Primary CTA */}
             <a
-              href="/#register"
-              className="bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-extrabold px-5 py-2.5 rounded-xl transition-all shadow-md flex items-center gap-1.5"
+              href="#register"
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[15px] font-semibold px-4.5 py-2.5 rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
             >
-              <span>Apply as Rider</span>
-              <ArrowRight size={14} />
+              <span>Become a Rider</span>
+              <ArrowRight size={15} />
             </a>
           </div>
 
@@ -77,6 +77,7 @@ export default function RiderNavbar() {
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="lg:hidden p-2 text-slate-300 hover:text-white cursor-pointer"
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -85,35 +86,43 @@ export default function RiderNavbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-slate-900 border-b border-slate-800 px-4 pt-3 pb-6 space-y-3 animate-[slideDown_0.2s_ease-out]">
-          <div className="space-y-2">
+        <div className="lg:hidden bg-[#18181B] border-b border-[#27272A] px-4 pt-3 pb-6 space-y-3 shadow-lg animate-[slideDown_0.2s_ease-out]">
+          <div className="space-y-1">
             {navLinks.map((link, idx) => (
-              <Link
+              <a
                 key={idx}
-                to={link.path}
+                href={link.path}
                 onClick={() => setMobileMenuOpen(false)}
-                className="block text-xs font-bold text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2.5 rounded-xl transition-colors"
+                className="block text-[14px] font-semibold text-[#D4D4D8] hover:text-[#F97316] hover:bg-[#27272A] px-3 py-2.5 rounded-lg transition-colors"
               >
                 {link.name}
-              </Link>
+              </a>
             ))}
           </div>
 
-          <div className="pt-2 border-t border-slate-800 flex flex-col gap-2">
+          <div className="pt-3 border-t border-[#27272A] flex flex-col gap-2.5">
+            <a
+              href="#register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="text-[14px] font-semibold text-[#FAFAF9] bg-[#27272A] px-4 py-2.5 rounded-xl text-center"
+            >
+              Rider Login
+            </a>
+            <a
+              href="#register"
+              onClick={() => setMobileMenuOpen(false)}
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[14px] font-semibold px-4 py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5"
+            >
+              <span>Become a Rider</span>
+              <ArrowRight size={15} />
+            </a>
             <a
               href="http://localhost:5173"
               onClick={() => setMobileMenuOpen(false)}
-              className="text-xs font-bold text-slate-300 bg-slate-800 px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5"
+              className="text-[13px] font-medium text-slate-400 text-center pt-1 hover:underline flex items-center justify-center gap-1"
             >
-              <ShoppingBag size={14} className="text-emerald-400" /> Customer Store
-            </a>
-            <a
-              href="/#register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="bg-[#16A34A] text-white text-xs font-extrabold px-4 py-2.5 rounded-xl text-center shadow-md flex items-center justify-center gap-1.5"
-            >
-              <span>Apply as Rider</span>
-              <ArrowRight size={14} />
+              <span>Visit Filcarts</span>
+              <ExternalLink size={12} />
             </a>
           </div>
         </div>
