@@ -23,8 +23,8 @@ const footerColumns = [
   {
     h: "Partner With Us",
     links: [
-      { l: "Become a Local Vendor", to: "/vendor" },
-      { l: "Become a Delivery Rider", to: "/rider" },
+      { l: "Become a Local Vendor", href: "http://localhost:5174" },
+      { l: "Become a Delivery Rider", href: "http://localhost:5175" },
     ],
   },
   {
@@ -65,12 +65,21 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {col.links.map((item) => (
                   <li key={item.l}>
-                    <Link
-                      to={item.to}
-                      className="text-xs text-slate-300 hover:text-[#16A34A] transition-colors font-medium block"
-                    >
-                      {item.l}
-                    </Link>
+                    {item.href ? (
+                      <a
+                        href={item.href}
+                        className="text-xs text-slate-300 hover:text-[#16A34A] transition-colors font-medium block"
+                      >
+                        {item.l}
+                      </a>
+                    ) : (
+                      <Link
+                        to={item.to}
+                        className="text-xs text-slate-300 hover:text-[#16A34A] transition-colors font-medium block"
+                      >
+                        {item.l}
+                      </Link>
+                    )}
                   </li>
                 ))}
               </ul>
