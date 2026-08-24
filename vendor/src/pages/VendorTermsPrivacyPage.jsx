@@ -39,11 +39,10 @@ export default function VendorTermsPrivacyPage() {
         <div className="flex items-center gap-3 border-b border-slate-200 pb-4 mb-8">
           <button
             onClick={() => setActiveTab("terms")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${
-              activeTab === "terms"
-                ? "bg-[#16A34A] text-white shadow-xs"
-                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${activeTab === "terms"
+              ? "bg-[#16A34A] text-white shadow-xs"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
           >
             <FileText size={16} />
             <span>Terms & Conditions</span>
@@ -51,11 +50,10 @@ export default function VendorTermsPrivacyPage() {
 
           <button
             onClick={() => setActiveTab("privacy")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${
-              activeTab === "privacy"
-                ? "bg-[#16A34A] text-white shadow-xs"
-                : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-            }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${activeTab === "privacy"
+              ? "bg-[#16A34A] text-white shadow-xs"
+              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
           >
             <ShieldCheck size={16} />
             <span>Privacy Policy</span>
