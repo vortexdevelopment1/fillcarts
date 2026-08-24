@@ -17,8 +17,8 @@ const footerColumns = [
     h: "Company",
     links: [
       { l: "About Filcarts", to: "/about" },
-      { l: "Contact", to: "#register" },
-      { l: "Support", to: "#safety" },
+      { l: "Contact", to: "/support" },
+      { l: "Rider Support", to: "/support" },
     ],
   },
   {

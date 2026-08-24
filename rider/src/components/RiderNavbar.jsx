@@ -10,6 +10,7 @@ export default function RiderNavbar() {
     { name: "Home", path: "/" },
     { name: "Why Join", path: "/#why-join" },
     { name: "How It Works", path: "/#how-it-works" },
+    { name: "Support", path: "/support" },
     { name: "FAQs", path: "/#faqs" },
   ];
 
@@ -38,8 +39,9 @@ export default function RiderNavbar() {
             {navLinks.map((link, idx) => {
               const isActive =
                 (location.pathname === "/" && link.path === "/") ||
+                (location.pathname === link.path) ||
                 (link.path.startsWith("/#") && location.hash === link.path.replace("/", ""));
-              return (
+              return link.path.startsWith("/#") ? (
                 <a
                   key={idx}
                   href={link.path}
@@ -49,6 +51,16 @@ export default function RiderNavbar() {
                 >
                   {link.name}
                 </a>
+              ) : (
+                <Link
+                  key={idx}
+                  to={link.path}
+                  className={`transition-colors hover:text-[#F97316] ${
+                    isActive ? "text-[#F97316] font-bold" : ""
+                  }`}
+                >
+                  {link.name}
+                </Link>
               );
             })}
           </nav>

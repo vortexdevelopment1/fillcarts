@@ -4,6 +4,7 @@ import RiderHomePage from "./pages/RiderHomePage";
 import RiderAboutPage from "./pages/RiderAboutPage";
 import RiderTermsPage from "./pages/RiderTermsPage";
 import RiderPrivacyPage from "./pages/RiderPrivacyPage";
+import RiderSupportPage from "./pages/RiderSupportPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -30,6 +31,9 @@ export default function App() {
         <Route path="/rider/terms" element={<RiderTermsPage />} />
         <Route path="/privacy" element={<RiderPrivacyPage />} />
         <Route path="/rider/privacy" element={<RiderPrivacyPage />} />
+        <Route path="/support" element={<RiderSupportPage />} />
+        <Route path="/rider/support" element={<RiderSupportPage />} />
+        <Route path="/rider-support" element={<RiderSupportPage />} />
 
         {/* Fallback wildcard to prevent 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />
