@@ -11,6 +11,7 @@ export default function VendorNavbar() {
     { name: "Why Filcarts", path: "/#why-filcarts" },
     { name: "How It Works", path: "/#how-it-works" },
     { name: "Merchant App", path: "/#merchant-app" },
+    { name: "Support", path: "/support" },
     { name: "FAQs", path: "/#faqs" },
   ];
 

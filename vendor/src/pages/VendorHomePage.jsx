@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import VendorNavbar from "../components/VendorNavbar";
 import Footer from "../components/Footer";
+import vendorImg from "../assets/vendor.png";
 import {
   Store, Users, LayoutDashboard, Wallet, Bell, PackageCheck,
   ClipboardList, CheckCircle2, ArrowRight, ChevronDown, Smartphone,
@@ -217,120 +218,26 @@ export default function VendorHomePage() {
       <VendorNavbar />
 
       {/* 2. Hero Section */}
-      <section className="relative pt-12 pb-20 md:pt-16 md:pb-24 overflow-hidden bg-white border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
-            
-            {/* Left Column: Value Proposition */}
-            <div className="lg:col-span-7 space-y-5 text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[11px] sm:text-[12px] font-bold uppercase tracking-wider">
-                <Store size={14} className="text-[#16A34A]" />
-                <span>For Local Businesses</span>
-              </div>
+      <section className="relative pt-6 pb-10 md:pt-8 md:pb-12 overflow-hidden bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
+          {/* Pure Hero Section Image */}
+          <div className="w-full overflow-hidden rounded-2xl shadow-md border border-slate-100">
+            <img
+              src={vendorImg}
+              alt="Fillcart Merchant Banner"
+              className="w-full h-auto object-cover rounded-2xl"
+            />
+          </div>
 
-              {/* Hero Heading: Mobile 32px, Tablet 42px, Desktop 48px, weight 800, line-height 1.15 */}
-              <h1 className="text-[32px] sm:text-[42px] md:text-[48px] font-extrabold text-[#17231A] tracking-tight leading-[1.15]">
-                Grow your local business with <span className="text-[#16A34A]">Filcarts</span>
-              </h1>
-
-              {/* Hero Description: Mobile 15px, Tablet 16px, Desktop 17px, weight 400/500, line-height 1.6 */}
-              <p className="text-[15px] sm:text-[16px] md:text-[17px] text-[#64748B] font-normal leading-[1.6] max-w-2xl">
-                Bring your store online, reach nearby customers, and manage your business efficiently through the Filcarts Merchant App.
-              </p>
-
-              {/* CTAs: Primary 14-15px weight 600, Secondary 14-15px weight 600 */}
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
-                <a
-                  href="#register"
-                  className="bg-[#16A34A] hover:bg-[#166534] text-white text-[14px] sm:text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-colors shadow-xs text-center flex items-center justify-center gap-2"
-                >
-                  <span>Register Your Store</span>
-                  <ArrowRight size={16} />
-                </a>
-                <a
-                  href="#how-it-works"
-                  className="border border-slate-300 hover:border-slate-400 text-slate-700 bg-white text-[14px] sm:text-[15px] font-semibold px-6 py-3.5 rounded-lg transition-colors text-center"
-                >
-                  See How It Works
-                </a>
-              </div>
-
-              {/* Trust Subtext */}
-              <div className="pt-3 flex items-center gap-2 text-[13px] sm:text-[14px] font-medium text-[#64748B]">
-                <ShieldCheck size={18} className="text-[#16A34A]" />
-                <span>Built for local stores, retailers and neighborhood businesses.</span>
-              </div>
-            </div>
-
-            {/* Right Column: Clean Filcarts Merchant App Preview */}
-            <div className="lg:col-span-5">
-              <div className="bg-[#F8FAFC] border border-slate-200 rounded-2xl p-6 shadow-sm space-y-5">
-                <div className="flex items-center justify-between border-b border-slate-200 pb-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-lg bg-[#16A34A] text-white flex items-center justify-center font-bold">
-                      <Store size={18} />
-                    </div>
-                    <div>
-                      <span className="text-[14px] font-bold text-slate-900 block leading-none">Gupta General Store</span>
-                      <span className="text-[12px] text-slate-500 font-medium">Grocery & Daily Needs</span>
-                    </div>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200 uppercase tracking-wider">
-                    Merchant App
-                  </span>
-                </div>
-
-                {/* App Feature Cards Stack */}
-                <div className="space-y-3">
-                  {/* Order notification card */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
-                        <Bell size={16} />
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-bold text-slate-900 block">New Customer Order Received</span>
-                        <span className="text-[12px] font-medium text-slate-500">3 Items • Nearby Delivery</span>
-                      </div>
-                    </div>
-                    <span className="text-[13px] font-bold text-[#16A34A]">Ready</span>
-                  </div>
-
-                  {/* Product Inventory Card */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
-                        <PackageCheck size={16} />
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-bold text-slate-900 block">Product Inventory</span>
-                        <span className="text-[12px] font-medium text-slate-500">Live catalog management</span>
-                      </div>
-                    </div>
-                    <span className="text-[13px] font-semibold text-slate-600">Updated</span>
-                  </div>
-
-                  {/* Earnings Card */}
-                  <div className="bg-white border border-slate-200 rounded-xl p-3.5 flex items-center justify-between shadow-2xs">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-50 text-[#16A34A] flex items-center justify-center">
-                        <Wallet size={16} />
-                      </div>
-                      <div>
-                        <span className="text-[14px] font-bold text-slate-900 block">Settlements & Payouts</span>
-                        <span className="text-[12px] font-medium text-slate-500">Transparent business reports</span>
-                      </div>
-                    </div>
-                    <span className="text-[13px] font-bold text-[#166534]">Verified</span>
-                  </div>
-                </div>
-
-                <div className="pt-1 text-center text-[12px] font-medium text-slate-500">
-                  Manage store items, pricing, and orders from the mobile app.
-                </div>
-              </div>
-            </div>
-
+          {/* Registration Button Underneath */}
+          <div className="mt-6 text-center">
+            <a
+              href="#register"
+              className="inline-flex items-center gap-2 bg-[#16A34A] hover:bg-[#166534] text-white text-[13px] sm:text-[14px] font-semibold px-5 py-2.5 rounded-lg transition-colors shadow-sm text-center"
+            >
+              <span>Register Your Store</span>
+              <ArrowRight size={15} />
+            </a>
           </div>
         </div>
       </section>

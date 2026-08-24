@@ -16,17 +16,17 @@ const footerColumns = [
     h: "Company",
     links: [
       { l: "About Filcarts", to: "/about" },
-      { l: "Contact Us", to: "#support" },
+      { l: "Contact Us", to: "/support" },
       { l: "Careers", to: "#careers" },
     ],
   },
   {
     h: "Support",
     links: [
-      { l: "Help Center", to: "#support" },
-      { l: "Merchant Support", to: "#support" },
-      { l: "Report an Issue", to: "#support" },
-      { l: "FAQs", to: "#faqs" },
+      { l: "Help Center", to: "/support" },
+      { l: "Merchant Support", to: "/support" },
+      { l: "Report an Issue", to: "/support" },
+      { l: "FAQs", to: "/#faqs" },
     ],
   },
   {
