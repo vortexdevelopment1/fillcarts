@@ -9,21 +9,19 @@ import {
   LifeBuoy, Send, ShieldCheck, Zap
 } from "lucide-react";
 
-// 7 Help Categories
+// 5 Help Categories for Customer App
 const helpCategories = [
   { key: "orders", icon: Package, title: "Orders", desc: "Placing, tracking & cancelling orders" },
   { key: "payments", icon: CreditCard, title: "Payments & Refunds", desc: "UPI, cards, wallet & refund status" },
   { key: "returns", icon: RotateCcw, title: "Returns", desc: "Return & replacement process" },
   { key: "delivery", icon: Truck, title: "Delivery", desc: "Delivery SLA, slots & rider tracking" },
   { key: "account", icon: UserCog, title: "Account", desc: "Login, addresses & profile settings" },
-  { key: "vendor", icon: Store, title: "Vendor Support", desc: "For registered store partners" },
-  { key: "rider", icon: Bike, title: "Rider Support", desc: "For delivery partners" },
 ];
 
-// 3 to 5 Most Common Questions Per Category (Accordion Format)
+// Most Common Questions Per Category (Accordion Format)
 const faqsByCategory = {
   orders: [
-    { q: "How do I track my active order in real time?", a: "Go to 'My Orders' in your profile or click 'Track Order' in Quick Actions. You will see live rider movement on an interactive map with updated delivery ETA." },
+    { q: "How do I track my active order in real time?", a: "Go to 'My Orders' in your profile or click 'Track Order'. You will see live rider movement on an interactive map with updated delivery ETA." },
     { q: "Can I cancel an order after placing it?", a: "Yes, you can cancel an order free of cost before the local store accepts it. Once accepted, cancellation fees equal to the order amount may apply." },
     { q: "What should I do if my order is delayed?", a: "Delays can occur during heavy rainfall or peak traffic hours. Check your live order map for updated ETA or tap 'Delivery Delay' to speak with support." },
     { q: "Can I change my delivery address after placing an order?", a: "Address changes are allowed within 2 minutes of checkout if the rider has not been assigned. Contact live chat support immediately for address updates." }
@@ -31,42 +29,29 @@ const faqsByCategory = {
   payments: [
     { q: "What payment methods are accepted on FillCarts?", a: "We accept UPI (GPay, PhonePe, Paytm), Debit/Credit Cards, Net Banking, FillCarts Wallet, and Cash on Delivery (COD)." },
     { q: "How long does a refund take to process?", a: "Refunds for cancelled or returned orders are initiated instantly and credited to your original payment method within 3 to 5 business days." },
-    { q: "What should I do if my payment failed but money was deducted?", a: "Bank deductions for failed transactions are auto-refunded by your bank within 24 to 48 hours. You can also check 'Refund Status' in Quick Actions." },
+    { q: "What should I do if my payment failed but money was deducted?", a: "Bank deductions for failed transactions are auto-refunded by your bank within 24 to 48 hours. You can also check refund status with live chat support." },
     { q: "Are my card and UPI details secure?", a: "Yes, 100%. All transactions are encrypted via PCI-DSS compliant payment gateways. FillCarts never stores your full card credentials." }
   ],
   returns: [
     { q: "How do I request a return or replacement?", a: "Navigate to 'My Orders', select the delivered order, click 'Return/Replacement', select the reason, and attach a photo if damaged. Pickup is arranged within 24 hours." },
     { q: "Which items are eligible for return?", a: "Packaged grocery, household goods, and personal care items are returnable within 3 days. Perishables (fresh milk, bread, vegetables) can be reported for instant refund if spoiled on delivery." },
-    { q: "What if I received a wrong or damaged item?", a: "Tap 'Wrong/Damaged Item' in the Order Help section, upload a quick photo, and our support team will issue an instant replacement or store refund." },
+    { q: "What if I received a wrong or damaged item?", a: "Tap 'Wrong/Damaged Item' in the order section, upload a quick photo, and our support team will issue an instant replacement or store refund." },
     { q: "How does pickup for returned items work?", a: "A local delivery partner will visit your address to verify and collect the returned item. Ensure original packaging and tags are intact." }
   ],
   delivery: [
     { q: "What are FillCarts daily delivery hours?", a: "Express delivery operates from 6:00 AM to 11:00 PM daily. Select urban zones support 24/7 late-night pharmacy and food delivery." },
     { q: "What is the minimum order value for Free Delivery?", a: "Orders above ₹299 qualify for Free Express Delivery. Orders below ₹299 incur a nominal delivery fee shown clearly at checkout." },
-    { q: "My rider is not moving on the map, what do I do?", a: "Riders may stop briefly at traffic signals or store pickups. If stationary for more than 5 minutes, tap 'Delivery Delay' to call your rider directly." },
+    { q: "My rider is not moving on the map, what do I do?", a: "Riders may stop briefly at traffic signals or store pickups. If stationary for more than 5 minutes, tap 'Live Chat' to call your rider directly." },
     { q: "Can I schedule a morning delivery slot?", a: "Yes! Use our Subscription feature to schedule daily morning milk, bakery, and produce drops between 6:30 AM and 8:30 AM." }
   ],
   account: [
     { q: "How do I update my profile name or delivery address?", a: "Go to Profile > Account Settings or Saved Addresses to add, edit, or set default delivery addresses for 1-tap checkout." },
     { q: "I am unable to receive OTP for login, what should I do?", a: "Ensure your phone network is active. If OTP is delayed, wait 30 seconds and click 'Resend OTP' or try logging in via WhatsApp OTP." },
     { q: "How do I delete my FillCarts account and data?", a: "Go to Profile > Account Settings > Privacy & Data, or email privacy@fillcarts.com. Account data will be permanently removed within 14 days." }
-  ],
-  vendor: [
-    { q: "How do I onboard my local store on FillCarts?", a: "Visit the 'Become a Vendor' page, fill in your store details, GST/FSSAI info, and our merchant team will verify your store within 24 hours." },
-    { q: "How do I update product stock and prices?", a: "Log into the FillCarts Merchant App or Web Dashboard, select 'Manage Products', and toggle item availability or update prices in real time." },
-    { q: "When are vendor payouts settled?", a: "Vendor earnings are settled on a regular weekly schedule directly to your registered bank account net of agreed commissions." },
-    { q: "Can I temporarily pause my store when away?", a: "Yes! You can toggle your store status to 'Offline' anytime from the merchant app whenever your shop is closed." }
-  ],
-  rider: [
-    { q: "How do I join FillCarts as a delivery partner?", a: "Visit the 'Become a Rider' page or download the FillCarts Rider App, upload your Driving License and Aadhaar, and get verified." },
-    { q: "How do rider payouts work?", a: "Earnings per completed order and weekly bonuses are tracked in your Rider App and deposited directly into your bank account every week." },
-    { q: "What if I get into a vehicle breakdown during delivery?", a: "Tap 'Rider Emergency Helpline' in your Rider App. Our fleet operations team will dispatch a backup rider to complete the delivery." },
-    { q: "Are delivery riders provided medical insurance?", a: "Yes! All active FillCarts delivery partners receive 100% accident and medical hospitalization insurance coverage from Day 1." }
   ]
 };
 
-
-export function SupportContent() {
+export function SupportContent({ isEmbedded = false }) {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("orders");
   const [openFaqIndex, setOpenFaqIndex] = useState(0);
@@ -123,45 +108,49 @@ export function SupportContent() {
 
   return (
     <>
-      {/* HERO SECTION */}
-      <section className="bg-white border-b border-slate-100 py-10 md:py-14 px-4 sm:px-6 relative text-center">
-        <div className="max-w-3xl mx-auto space-y-3">
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#17231A] leading-tight tracking-tight">
-            We're here to help you <span className="text-[#16A34A]">24x7 on Zepto App</span>
-          </h1>
+      {/* HERO SECTION - Rendered only when standalone */}
+      {!isEmbedded && (
+        <section className="bg-white border-b border-slate-100 py-10 md:py-14 px-4 sm:px-6 relative text-center">
+          <div className="max-w-3xl mx-auto space-y-3">
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-extrabold text-[#17231A] leading-tight tracking-tight">
+              We're here to help you <span className="text-[#16A34A]">24x7 on Zepto App</span>
+            </h1>
 
-          <p className="text-slate-600 max-w-xl mx-auto text-xs sm:text-sm font-medium leading-relaxed">
-            Find quick answers to your questions or get in touch with our customer support team anytime.
-          </p>
-        </div>
-      </section>
+            <p className="text-slate-600 max-w-xl mx-auto text-xs sm:text-sm font-medium leading-relaxed">
+              Find quick answers to your questions or get in touch with our customer support team anytime.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* MAIN CONTENT BODY */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-14 flex-1 w-full text-left">
+      <main className={isEmbedded ? "w-full min-w-0 space-y-6 text-left" : "max-w-6xl mx-auto px-4 sm:px-6 py-12 space-y-14 flex-1 w-full min-w-0 text-left"}>
 
         {/* FREQUENTLY ASKED QUESTIONS SECTION */}
-        <section className="space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-5">
-            <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-2">
-                <Sparkles size={13} className="text-[#16A34A]" /> Frequently Asked Questions
-              </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A] tracking-tight">
-                Got Questions? We've Got Answers
-              </h2>
+        <section className="space-y-4 min-w-0">
+          {!isEmbedded && (
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-200/80 pb-4">
+              <div>
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-1.5">
+                  <Sparkles size={13} className="text-[#16A34A]" /> Frequently Asked Questions
+                </span>
+                <h2 className="text-xl sm:text-2xl font-extrabold text-[#17231A] tracking-tight">
+                  Got Questions? We've Got Answers
+                </h2>
+              </div>
+              
+              <button
+                onClick={() => { setShowTicketModal(true); setTicketSubmitted(false); }}
+                className="inline-flex items-center gap-2 bg-[#FFFCF5] hover:bg-amber-50 text-amber-900 border border-amber-300/80 font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer self-start sm:self-auto shrink-0"
+              >
+                <LifeBuoy size={15} className="text-[#F59E0B]" /> Raise Support Ticket
+              </button>
             </div>
-            
-            <button
-              onClick={() => { setShowTicketModal(true); setTicketSubmitted(false); }}
-              className="inline-flex items-center gap-2 bg-[#FFFCF5] hover:bg-amber-50 text-amber-900 border border-amber-300/80 font-extrabold text-xs px-4 py-2.5 rounded-xl shadow-2xs transition-all cursor-pointer self-start sm:self-auto"
-            >
-              <LifeBuoy size={15} className="text-[#F59E0B]" /> Raise Support Ticket
-            </button>
-          </div>
+          )}
 
           {/* Category Chips / Navigation Bar */}
-          <div className="bg-white border border-emerald-100/80 rounded-2xl p-3 shadow-xs">
-            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none">
+          <div className="bg-[#FFFCF5] border border-emerald-100/80 rounded-2xl p-2.5 shadow-2xs min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0 scrollbar-none min-w-0 w-full">
               {helpCategories.map((cat) => {
                 const Icon = cat.icon;
                 const isActive = activeCategory === cat.key;
@@ -170,13 +159,13 @@ export function SupportContent() {
                   <button
                     key={cat.key}
                     onClick={() => { setActiveCategory(cat.key); setOpenFaqIndex(0); }}
-                    className={`flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all border cursor-pointer whitespace-nowrap shrink-0 ${
+                    className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-extrabold transition-all border cursor-pointer whitespace-nowrap shrink-0 ${
                       isActive
-                        ? "bg-[#16A34A] text-white border-[#16A34A] shadow-sm"
-                        : "bg-[#FFFCF5] border-slate-200/80 text-slate-700 hover:bg-[#ECFDF3] hover:border-emerald-300"
+                        ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
+                        : "bg-white border-slate-200/80 text-slate-700 hover:bg-[#ECFDF3] hover:border-emerald-300"
                     }`}
                   >
-                    <Icon size={15} className={isActive ? "text-white" : "text-[#16A34A]"} />
+                    <Icon size={14} className={isActive ? "text-white" : "text-[#16A34A]"} />
                     <span>{cat.title}</span>
                     <span className={`px-1.5 py-0.5 rounded-md text-[10px] font-extrabold ${isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-500"}`}>
                       {faqCount}
@@ -187,151 +176,131 @@ export function SupportContent() {
             </div>
           </div>
 
-          {/* Selected Category Header & FAQ Items */}
-          <div className="grid lg:grid-cols-12 gap-6 items-start">
-            {/* Category Info Sidebar / Card */}
-            <div className="lg:col-span-4 bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs space-y-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center font-extrabold shadow-2xs">
-                {React.createElement(currentCategoryData.icon, { size: 24 })}
+          {/* Selected Category Banner */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#ECFDF3]/80 border border-emerald-200/90 rounded-2xl p-4 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-10 h-10 rounded-xl bg-[#16A34A] text-white flex items-center justify-center font-extrabold shrink-0 shadow-xs">
+                {React.createElement(currentCategoryData.icon, { size: 20 })}
               </div>
-              <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-[#166534] bg-[#ECFDF3] px-2.5 py-1 rounded-md border border-emerald-200 inline-block mb-1">
-                  Selected Topic
-                </span>
-                <h3 className="text-xl font-extrabold text-[#17231A]">{currentCategoryData.title}</h3>
-                <p className="text-xs text-slate-500 font-medium leading-relaxed mt-1">
-                  {currentCategoryData.desc}
-                </p>
-              </div>
-
-              <div className="pt-2 border-t border-slate-100 text-xs font-semibold text-slate-600 space-y-2">
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <CheckCircle2 size={15} className="text-[#16A34A]" />
-                  <span>Instant self-serve solutions</span>
-                </div>
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <Clock size={15} className="text-[#16A34A]" />
-                  <span>Updated 24x7 resolution policy</span>
-                </div>
+              <div className="min-w-0">
+                <h3 className="text-sm font-extrabold text-[#17231A] truncate">{currentCategoryData.title}</h3>
+                <p className="text-[11px] text-slate-600 font-medium truncate">{currentCategoryData.desc}</p>
               </div>
             </div>
 
-            {/* Accordion List */}
-            <div className="lg:col-span-8 space-y-3">
-              {activeFaqs.map((faq, idx) => {
-                const isOpen = openFaqIndex === idx;
-                return (
-                  <div
-                    key={idx}
-                    className={`bg-white border rounded-2xl transition-all duration-200 overflow-hidden ${
-                      isOpen
-                        ? "border-[#16A34A] shadow-sm ring-1 ring-[#16A34A]/20"
-                        : "border-slate-200/80 hover:border-emerald-300"
-                    }`}
-                  >
-                    <button
-                      onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
-                      className="w-full flex items-center justify-between p-4 sm:p-5 text-left cursor-pointer group gap-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className={`w-7 h-7 rounded-lg text-xs font-black flex items-center justify-center shrink-0 transition-colors ${
-                          isOpen ? "bg-[#16A34A] text-white" : "bg-[#ECFDF3] text-[#166534]"
-                        }`}>
-                          {String(idx + 1).padStart(2, '0')}
-                        </span>
-                        <span className="text-xs sm:text-sm font-extrabold text-[#17231A] group-hover:text-[#16A34A] transition-colors leading-snug">
-                          {faq.q}
-                        </span>
-                      </div>
-                      
-                      <div className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
-                        isOpen ? "bg-[#16A34A] text-white rotate-180" : "bg-slate-100 text-slate-500 group-hover:bg-[#ECFDF3] group-hover:text-[#166534]"
-                      }`}>
-                        <ChevronDown size={15} />
-                      </div>
-                    </button>
+            <button
+              onClick={() => { setShowTicketModal(true); setTicketSubmitted(false); }}
+              className="inline-flex items-center gap-1.5 bg-[#F59E0B] hover:bg-[#D97706] text-white font-extrabold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all cursor-pointer shrink-0 self-start sm:self-auto"
+            >
+              <LifeBuoy size={14} /> Raise Ticket
+            </button>
+          </div>
 
-                    {isOpen && (
-                      <div className="px-4 pb-5 pt-0 sm:px-5">
-                        <div className="p-4 bg-[#ECFDF3]/50 border-l-4 border-[#16A34A] rounded-r-xl text-xs sm:text-sm text-slate-700 font-medium leading-relaxed space-y-2">
-                          <p>{faq.a}</p>
-                          <div className="pt-2 flex items-center gap-2 text-[11px] text-[#166534] font-bold">
-                            <ShieldCheck size={14} />
-                            <span>Was this answer helpful? If you need further help, reach our 24/7 live support.</span>
-                          </div>
+          {/* Accordion List */}
+          <div className="space-y-3 min-w-0">
+            {activeFaqs.map((faq, idx) => {
+              const isOpen = openFaqIndex === idx;
+              return (
+                <div
+                  key={idx}
+                  className={`bg-white border rounded-2xl transition-all duration-200 overflow-hidden ${
+                    isOpen
+                      ? "border-[#16A34A] shadow-xs ring-1 ring-[#16A34A]/20"
+                      : "border-slate-200 hover:border-emerald-300"
+                  }`}
+                >
+                  <button
+                    onClick={() => setOpenFaqIndex(isOpen ? null : idx)}
+                    className="w-full flex items-center justify-between p-4 text-left cursor-pointer group gap-3 min-w-0"
+                  >
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <span className={`w-6 h-6 rounded-lg text-[11px] font-black flex items-center justify-center shrink-0 transition-colors ${
+                        isOpen ? "bg-[#16A34A] text-white" : "bg-[#ECFDF3] text-[#166534]"
+                      }`}>
+                        {String(idx + 1).padStart(2, '0')}
+                      </span>
+                      <span className="text-xs sm:text-sm font-extrabold text-[#17231A] group-hover:text-[#16A34A] transition-colors leading-snug break-words min-w-0">
+                        {faq.q}
+                      </span>
+                    </div>
+                    
+                    <div className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 transition-transform duration-200 ${
+                      isOpen ? "bg-[#16A34A] text-white rotate-180" : "bg-slate-100 text-slate-500 group-hover:bg-[#ECFDF3] group-hover:text-[#166534]"
+                    }`}>
+                      <ChevronDown size={14} />
+                    </div>
+                  </button>
+
+                  {isOpen && (
+                    <div className="px-4 pb-4 pt-0 min-w-0">
+                      <div className="p-3.5 bg-[#ECFDF3]/50 border-l-4 border-[#16A34A] rounded-r-xl text-xs text-slate-700 font-medium leading-relaxed space-y-2 break-words">
+                        <p className="break-words">{faq.a}</p>
+                        <div className="pt-1 flex items-center gap-1.5 text-[11px] text-[#166534] font-bold">
+                          <ShieldCheck size={14} className="shrink-0" />
+                          <span>Was this answer helpful? If you need further help, reach our 24/7 live support below.</span>
                         </div>
                       </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </section>
 
-        {/* 5. CONTACT SUPPORT (CHAT, PHONE, EMAIL) */}
-        <section className="space-y-4">
-          <div className="flex items-center justify-between">
+        {/* CONTACT SUPPORT CHANNELS */}
+        <section className="pt-4 border-t border-slate-100 space-y-3 min-w-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-1">
-                <Sparkles size={13} /> Direct Connect
-              </span>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-[#17231A]">
-                Contact Support Channels
-              </h2>
+              <h3 className="text-sm font-extrabold text-[#17231A]">Need Direct Assistance?</h3>
+              <p className="text-[11px] text-slate-400 font-semibold">Connect directly with our customer support team</p>
             </div>
-            <span className="text-xs font-semibold text-slate-400 hidden sm:inline">24/7 Customer Care</span>
+            <span className="text-[10px] font-bold text-emerald-700 bg-[#ECFDF3] px-2.5 py-1 rounded-full self-start sm:self-auto shrink-0">24/7 Desk</span>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className={`grid gap-3 min-w-0 ${isEmbedded ? "grid-cols-1 md:grid-cols-3" : "grid-cols-1 sm:grid-cols-3"}`}>
             {/* Live Chat */}
-            <div className="bg-white border border-emerald-100 rounded-3xl p-6 text-center space-y-4 shadow-xs hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto shadow-2xs">
-                <MessageCircle size={22} />
+            <div className="bg-[#FFFCF5] border border-amber-200/80 rounded-2xl p-4 text-center space-y-2 shadow-2xs hover:shadow-xs transition-all min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mx-auto">
+                <MessageCircle size={18} />
               </div>
-              <div>
-                <h3 className="font-extrabold text-base text-[#17231A]">Live Chat Support</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1">Connect with our 24/7 AI & live resolution assistant.</p>
-              </div>
+              <div className="font-extrabold text-xs text-[#17231A] truncate">Live Chat</div>
+              <p className="text-[10px] text-slate-500 font-medium truncate">Instant AI & Agent Support</p>
               <button
                 onClick={() => setShowLiveChatDrawer(true)}
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-3 rounded-xl shadow-md transition-colors cursor-pointer flex items-center justify-center gap-2"
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-[11px] py-2 rounded-xl transition-colors cursor-pointer flex items-center justify-center gap-1 truncate px-2"
               >
-                <MessageCircle size={15} /> Start Live Chat
+                <MessageCircle size={13} className="shrink-0" /> <span className="truncate">Chat Now</span>
               </button>
             </div>
 
             {/* Phone Support */}
-            <div className="bg-white border border-emerald-100 rounded-3xl p-6 text-center space-y-4 shadow-xs hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] text-[#166534] flex items-center justify-center mx-auto shadow-2xs">
-                <Phone size={22} />
+            <div className="bg-[#FFFCF5] border border-amber-200/80 rounded-2xl p-4 text-center space-y-2 shadow-2xs hover:shadow-xs transition-all min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-[#ECFDF3] text-[#166534] flex items-center justify-center mx-auto">
+                <Phone size={18} />
               </div>
-              <div>
-                <h3 className="font-extrabold text-base text-[#17231A]">Toll-Free Phone Support</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1">Call us toll-free for urgent active order issues.</p>
-              </div>
+              <div className="font-extrabold text-xs text-[#17231A] truncate">Toll-Free Phone</div>
+              <p className="text-[10px] text-slate-500 font-medium truncate">Call for urgent active orders</p>
               <a
                 href="tel:1800123456"
-                className="w-full bg-[#FFFCF5] hover:bg-[#ECFDF3] text-[#166534] border border-emerald-200 font-extrabold text-xs py-3 rounded-xl transition-colors block text-center shadow-2xs"
+                className="w-full bg-white hover:bg-[#ECFDF3] text-[#166534] border border-emerald-200 font-extrabold text-[11px] py-2 rounded-xl transition-colors block text-center shadow-2xs truncate px-2"
               >
-                📞 Call 1800-123-456
+                📞 1800-123-456
               </a>
             </div>
 
             {/* Email Support */}
-            <div className="bg-white border border-emerald-100 rounded-3xl p-6 text-center space-y-4 shadow-xs hover:shadow-md transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-amber-50 text-[#F59E0B] flex items-center justify-center mx-auto shadow-2xs">
-                <Mail size={22} />
+            <div className="bg-[#FFFCF5] border border-amber-200/80 rounded-2xl p-4 text-center space-y-2 shadow-2xs hover:shadow-xs transition-all min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-amber-50 text-[#F59E0B] flex items-center justify-center mx-auto">
+                <Mail size={18} />
               </div>
-              <div>
-                <h3 className="font-extrabold text-base text-[#17231A]">Email Desk</h3>
-                <p className="text-xs text-slate-500 font-medium mt-1">Send us detailed queries or business inquiries.</p>
-              </div>
+              <div className="font-extrabold text-xs text-[#17231A] truncate">Email Support</div>
+              <p className="text-[10px] text-slate-500 font-medium truncate">Detailed queries & feedback</p>
               <a
                 href="mailto:support@fillcarts.com"
-                className="w-full bg-[#FFFCF5] hover:bg-amber-50 text-amber-800 border border-amber-200 font-extrabold text-xs py-3 rounded-xl transition-colors block text-center shadow-2xs"
+                className="w-full bg-white hover:bg-amber-50 text-amber-800 border border-amber-200 font-extrabold text-[11px] py-2 rounded-xl transition-colors block text-center shadow-2xs truncate px-2"
               >
-                ✉️ support@fillcarts.com
+                ✉️ Email Us
               </a>
             </div>
           </div>

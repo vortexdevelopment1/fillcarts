@@ -150,12 +150,6 @@ export default function AppKartHome() {
                 Shop groceries, bakery, dairy, food and everyday essentials from trusted local stores.
               </p>
 
-              {/* Location indicator */}
-              <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 px-1">
-                <MapPin size={14} className="text-[#16A34A]" />
-                <span>Delivering to: <strong className="text-[#17231A]">Indiranagar, Bengaluru</strong></span>
-                <span className="text-emerald-700 font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full text-[10px] ml-1">⚡ 15-30 Min Delivery</span>
-              </div>
 
               {/* CTA Buttons */}
               <div className="flex items-center gap-4 pt-2">

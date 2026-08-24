@@ -628,7 +628,7 @@ export default function UserProfilePage() {
           </aside>
 
           {/* Right Side Content Panel */}
-          <section className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 shadow-sm min-h-[450px]">
+          <section className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 shadow-sm min-h-[450px] min-w-0">
             {/* TABS CONTAINER */}
 
             {/* TAB 1: PROFILE FORM */}
@@ -1222,11 +1222,10 @@ export default function UserProfilePage() {
             {/* TAB 5: HELP CENTER */}
             {currentTab === "help" && (
               <div>
-                <h1 className="text-2xl font-extrabold text-[#17231A] mb-1.5">Help Center & FAQs</h1>
-                <p className="text-xs text-slate-500 font-semibold mb-6">Need assistance? Explore the support resources or reach out to our active helpdesk.</p>
-                <div className="border border-emerald-100 rounded-3xl p-2 bg-[#FFFCF5]">
-                  <SupportContent />
-                </div>
+                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Help Center & FAQs</h1>
+                <p className="text-xs text-slate-400 font-semibold mb-6">Need assistance? Explore our categorized topics or reach out to 24x7 customer support.</p>
+
+                <SupportContent isEmbedded={true} />
               </div>
             )}
 
