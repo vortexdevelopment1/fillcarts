@@ -12,19 +12,31 @@
 }
 
 :root {
+  --font-sans: 'Manrope', 'Inter', sans-serif;
   --primary-green: #16A34A;
   --dark-green: #166534;
   --soft-green: #ECFDF3;
   --warm-orange: #F59E0B;
   --cream-bg: #FFFCF5;
   --dark-text: #17231A;
+  --secondary-text: #475569;
 }
 
-body {
+* {
+  font-family: var(--font-sans);
+}
+
+html, body {
   background-color: #FFFCF5;
   color: #17231A;
-  font-family: 'Manrope', 'Inter', sans-serif;
+  font-family: var(--font-sans);
   overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+button, input, select, textarea {
+  font-family: var(--font-sans);
 }
 
 /* Glassmorphism utilities */
@@ -41,7 +53,33 @@ body {
   border: 1px solid rgba(22, 163, 74, 0.08);
 }
 
-/* Custom scrollbar for horizontal categories */
 .smooth-scroll {
   scroll-behavior: smooth;
+}
+
+/* Global Typography Design Tokens */
+.font-h1 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.025em;
+}
+
+.font-h2 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+}
+
+.font-h3 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.font-h4 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  line-height: 1.3;
 }

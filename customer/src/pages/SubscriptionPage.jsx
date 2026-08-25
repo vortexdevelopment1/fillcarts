@@ -2,10 +2,11 @@ import React, { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import {
   ChevronRight, Repeat, Clock, Milk, ShoppingBasket,
-  Sparkles, Star, Plus, Trash2,
+  Sparkles, Star, Plus, Minus, Trash2,
   X, Search, SlidersHorizontal, ShieldCheck, Download, Smartphone, QrCode,
   ArrowRight, ArrowLeft, Carrot, Apple, Croissant, Pill, UtensilsCrossed, Home, FileText, CheckCircle2, Info,
-  Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle, Zap
+  Filter, Calendar, MapPin, ExternalLink, PauseCircle, PlayCircle, Edit3, AlertCircle, Zap,
+  ChevronDown, HelpCircle
 } from "lucide-react";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
@@ -13,7 +14,7 @@ import { useCart } from "../context/CartContext";
 import { getProductImage } from "../utils/productImages";
 import api from "../api";
 
-// Only categories containing recurring subscription products
+// Subscription Categories
 const categories = [
   { key: "dairy", name: "Dairy", icon: Milk, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
   { key: "bakery", name: "Bakery", icon: Croissant, color: "text-[#F59E0B]", bg: "bg-amber-50" },
@@ -40,6 +41,58 @@ function genProducts(catKey) {
     img: `${catKey}-item-${i}`,
   }));
 }
+
+// 4 Core Subscription Benefits
+const subscriptionBenefits = [
+  {
+    icon: Zap,
+    title: "Express Morning Slots",
+    desc: "Guaranteed doorstep drop before 7:30 AM every morning.",
+    bg: "bg-[#ECFDF3]",
+    color: "text-[#16A34A]"
+  },
+  {
+    icon: ShieldCheck,
+    title: "10% Member Savings",
+    desc: "Flat 10% subscriber discount applied on all recurring items.",
+    bg: "bg-amber-50",
+    color: "text-[#F59E0B]"
+  },
+  {
+    icon: PauseCircle,
+    title: "Pause or Resume Anytime",
+    desc: "Going out of town? Pause deliveries with 1-tap in your dashboard.",
+    bg: "bg-blue-50",
+    color: "text-blue-600"
+  },
+  {
+    icon: Repeat,
+    title: "Flexible Schedules",
+    desc: "Choose daily, alternate days, or custom weekly delivery days.",
+    bg: "bg-purple-50",
+    color: "text-purple-600"
+  }
+];
+
+// Subscription FAQ List
+const subscriptionFaqs = [
+  {
+    q: "How does FillCarts Subscription work?",
+    a: "Select your daily essentials (like Milk, Bread, Eggs, or Produce), pick your preferred delivery frequency and morning time slot, and confirm your card. Orders are auto-delivered to your door with zero hassle!"
+  },
+  {
+    q: "Can I pause my subscription when I travel?",
+    a: "Yes! You can pause your active subscription card anytime from your 'My Subscriptions' tracking tab with 1 click. You won't be charged for paused days."
+  },
+  {
+    q: "Is there any extra delivery charge for subscriptions?",
+    a: "No! All subscription plans enjoy free delivery on scheduled morning shifts."
+  },
+  {
+    q: "How do payments work for recurring subscriptions?",
+    a: "Once you build your subscription card, you can download the FillCarts Mobile App to activate 1-tap UPI AutoPay or wallet deduction."
+  }
+];
 
 export default function SubscriptionPage() {
   const navigate = useNavigate();
@@ -115,6 +168,11 @@ export default function SubscriptionPage() {
   const [customCardTitle, setCustomCardTitle] = useState("");
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [userAddress, setUserAddress] = useState(() => getCustomerAddress(user, userLocation));
+  const [openFaq, setOpenFaq] = useState(null);
+
+  const toggleFaq = (idx) => {
+    setOpenFaq(openFaq === idx ? null : idx);
+  };
 
   useEffect(() => {
     const fetched = getCustomerAddress(user, userLocation);
@@ -194,6 +252,21 @@ export default function SubscriptionPage() {
       console.error("Failed to save subscription orders to localStorage", e);
     }
   }, [myOrders, user]);
+
+  // Fetch saved addresses if available
+  useEffect(() => {
+    if (user) {
+      api.get("/addresses")
+        .then((res) => {
+          setSavedAddresses(res.data.addresses || []);
+        })
+        .catch(() => {});
+    }
+  }, [user]);
+
+  const handleAddressChange = (addrVal) => {
+    setUserAddress(addrVal);
+  };
 
   // Products generated for the active category
   const activeCategoryProducts = useMemo(() => {
@@ -312,10 +385,7 @@ export default function SubscriptionPage() {
   // Filtered & Searched Orders for Tracking Tab
   const filteredOrders = useMemo(() => {
     return myOrders.filter(ord => {
-      // Filter by status
       if (orderFilter !== "All" && ord.status !== orderFilter) return false;
-
-      // Filter by search query
       if (orderSearchQuery.trim()) {
         const q = orderSearchQuery.toLowerCase();
         const matchesId = ord.orderId.toLowerCase().includes(q);
@@ -337,421 +407,459 @@ export default function SubscriptionPage() {
       {/* Shared Navbar */}
       <Navbar />
 
-
-      {/* Soft Green Shaded Hero Header with Side-by-side max-w-6xl bounds */}
-      <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4] to-[#FFFCF5] border-b border-emerald-200/60 py-10 px-4 sm:px-6 relative text-left">
+      {/* 1. CLEAN HERO SECTION */}
+      <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4]/80 to-[#FFFCF5] border-b border-emerald-200/50 py-10 sm:py-14 px-4 sm:px-6 text-left">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-1.5">
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-white px-3.5 py-1.5 rounded-full border border-amber-200/80 mb-1 shadow-2xs">
-              <Sparkles size={13} /> Daily & Weekly Auto-Delivery
+          <div className="space-y-2 max-w-2xl">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#166534] bg-white px-3.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
+              <Sparkles size={13} className="text-[#16A34A]" /> FILLCARTS SUBSCRIPTION
             </span>
-            <h1 className="text-2xl sm:text-4xl font-extrabold text-[#17231A] leading-tight tracking-tight">
-              Subscribe & Save on <span className="text-[#16A34A]">Essentials</span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-[#17231A] tracking-tight leading-tight">
+              Save more on every order.
             </h1>
-            <p className="text-xs sm:text-sm text-[#166534] font-semibold max-w-xl leading-relaxed">
-              Add store items dynamically to your card, select your custom schedule, track your subscription orders in real-time, and complete your purchase via the FillCarts App!
+            <p className="text-xs sm:text-sm text-[#475569] font-medium leading-relaxed">
+              Subscribe to Milk, Bakery, Fruits & Groceries. Enjoy automatic doorstep delivery on your preferred morning schedule with flat 10% subscriber savings.
             </p>
           </div>
 
-          {/* Navigation Tab Switcher */}
-          <div className="bg-white border border-emerald-200 p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap gap-2 shadow-xs shrink-0 self-start md:self-center">
+          {/* Clean Navigation Tab Switcher */}
+          <div className="bg-white border border-emerald-200 p-1.5 rounded-2xl flex flex-wrap sm:flex-nowrap gap-2 shadow-2xs shrink-0">
             <button
               onClick={() => setViewTab("create")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "create"
-                ? "bg-[#16A34A] text-white shadow-md"
-                : "text-[#166534] hover:bg-[#ECFDF3]"
-                }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+                viewTab === "create"
+                  ? "bg-[#16A34A] text-white shadow-sm"
+                  : "text-[#166534] hover:bg-[#ECFDF3]"
+              }`}
             >
               <Plus size={14} /> Build Subscription Card
             </button>
             <button
               onClick={() => setViewTab("my_subscriptions")}
-              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${viewTab === "my_subscriptions"
-                ? "bg-[#16A34A] text-white shadow-md"
-                : "text-[#166534] hover:bg-[#ECFDF3]"
-                }`}
+              className={`px-5 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
+                viewTab === "my_subscriptions"
+                  ? "bg-[#16A34A] text-white shadow-sm"
+                  : "text-[#166534] hover:bg-[#ECFDF3]"
+              }`}
             >
-              <FileText size={14} /> Dynamic Order Tracking ({myOrders.length})
+              <FileText size={14} /> My Subscriptions ({myOrders.length})
             </button>
           </div>
         </div>
       </section>
 
-      {/* Main Body */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+      {/* MAIN BODY AREA */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 space-y-12 flex-1 w-full text-left">
+
+        {/* 2. SUBSCRIPTION BENEFITS SECTION (COMPACT & CLEAN) */}
+        <section className="space-y-4">
+          <div className="text-left space-y-1">
+            <span className="text-xs font-extrabold text-[#166534] uppercase tracking-wider block">
+              Why Subscribe?
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#17231A]">
+              Member Benefits Included With Every Card
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {subscriptionBenefits.map((b, idx) => (
+              <div
+                key={idx}
+                className="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl p-5 space-y-2.5 transition-all shadow-2xs"
+              >
+                <div className={`w-10 h-10 rounded-xl ${b.bg} ${b.color} flex items-center justify-center`}>
+                  <b.icon size={20} />
+                </div>
+                <h3 className="font-extrabold text-sm text-[#17231A]">
+                  {b.title}
+                </h3>
+                <p className="text-xs text-slate-500 font-medium leading-relaxed">
+                  {b.desc}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
         {/* TAB 1: BUILD SUBSCRIPTION CARD */}
         {viewTab === "create" && (
-          <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
+          <section className="space-y-8">
+            <div className="grid lg:grid-cols-[380px_1fr] gap-8 items-start">
 
-            {/* Left Column: Sticky Subscription Summary & Card Checkout Panel */}
-            <div className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-md sticky top-6 space-y-5 text-left">
-              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
-                <div className="flex items-center gap-2">
-                  <ShoppingBasket size={18} className="text-[#16A34A]" />
-                  <h3 className="text-base font-extrabold text-[#17231A]">Subscription Card</h3>
-                </div>
-                <span className="bg-[#ECFDF3] text-[#166534] text-xs font-black px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  {basket.reduce((sum, i) => sum + i.qty, 0)} Items
-                </span>
-              </div>
-
-              {/* Title Input */}
-              <div>
-                <label className="block text-[11px] font-black text-[#166534] uppercase tracking-wider mb-1">
-                  Card Name (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Daily Milk & Breakfast Routine"
-                  value={customCardTitle}
-                  onChange={(e) => setCustomCardTitle(e.target.value)}
-                  className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
-                />
-              </div>
-
-              {/* Basket Items List */}
-              <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
-                {basket.length === 0 ? (
-                  <div className="text-center py-8 text-xs text-slate-400 bg-[#FFFCF5] rounded-2xl border border-dashed border-slate-200">
-                    No items selected yet. Select products from category grid.
+              {/* LEFT COLUMN: STICKY SUBSCRIPTION SUMMARY & CHECKOUT PANEL */}
+              <div className="bg-white border border-emerald-200 rounded-3xl p-6 shadow-sm sticky top-6 space-y-5">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                  <div className="flex items-center gap-2">
+                    <ShoppingBasket size={18} className="text-[#16A34A]" />
+                    <h3 className="text-base font-extrabold text-[#17231A]">Subscription Card</h3>
                   </div>
-                ) : (
-                  basket.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between bg-[#FFFCF5] p-3 rounded-2xl text-xs font-semibold border border-slate-100">
-                      <div>
-                        <div className="font-extrabold text-[#17231A]">{item.name}</div>
-                        <div className="text-[11px] text-slate-500 font-mono">₹{item.price} × {item.qty}</div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
-                          <button
-                            onClick={() => updateQty({ id: item.id }, -1)}
-                            className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs cursor-pointer"
-                          >
-                            -
-                          </button>
-                          <span className="font-mono text-xs px-1 font-bold">{item.qty}</span>
-                          <button
-                            onClick={() => updateQty({ id: item.id }, 1)}
-                            className="w-5 h-5 rounded bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs cursor-pointer"
-                          >
-                            +
-                          </button>
-                        </div>
-                        <span className="font-black text-[#166534] font-mono w-12 text-right">₹{item.price * item.qty}</span>
-                        <button
-                          onClick={() => updateQty({ id: item.id }, -item.qty)}
-                          className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
-                          title="Remove item"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Schedule & Address Configuration */}
-              <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
-                <div>
-                  <label className="block font-extrabold text-[#17231A] mb-1">Delivery Frequency</label>
-                  <select
-                    value={frequency}
-                    onChange={(e) => setFrequency(e.target.value)}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
-                  >
-                    <option value="Daily">Daily Morning Delivery</option>
-                    <option value="Every 2 Days">Every 2 Days</option>
-                    <option value="Mon / Wed / Fri">Mon / Wed / Fri</option>
-                    <option value="Weekly (Sundays)">Weekly (Sundays)</option>
-                  </select>
+                  <span className="bg-[#ECFDF3] text-[#166534] text-xs font-extrabold px-3 py-1 rounded-full border border-emerald-200">
+                    {basket.reduce((sum, i) => sum + i.qty, 0)} Items
+                  </span>
                 </div>
 
+                {/* Card Title Input */}
                 <div>
-                  <label className="block font-extrabold text-[#17231A] mb-1">Guaranteed Slot</label>
-                  <select
-                    value={timeSlot}
-                    onChange={(e) => setTimeSlot(e.target.value)}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
-                  >
-                    <option value="6:30 AM - 7:30 AM">6:30 AM - 7:30 AM (Express Morning)</option>
-                    <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
-                    <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
-                  </select>
-                </div>
-
-                {/* Subscription Duration */}
-                <div>
-                  <label className="block font-extrabold text-[#17231A] mb-1 flex items-center gap-1">
-                    <Calendar size={13} className="text-[#16A34A]" /> Subscription Duration
+                  <label className="block text-xs font-extrabold text-[#17231A] mb-1">
+                    Card Name (Optional)
                   </label>
-                  <select
-                    value={durationType}
-                    onChange={(e) => handleDurationTypeChange(e.target.value)}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] mb-2 cursor-pointer"
-                  >
-                    <option value="1_month">1 Month (30 Days Plan)</option>
-                    <option value="7_days">7 Days Plan</option>
-                    <option value="3_months">3 Months Plan</option>
-                    <option value="until_cancelled">Until Cancelled (Flexible)</option>
-                    <option value="custom">Custom Date Range (Pick Dates)</option>
-                  </select>
-
-                  {/* Start Date & End Date Inputs */}
-                  <div className="grid grid-cols-2 gap-2 bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
-                    <div>
-                      <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">Start Date</span>
-                      <input
-                        type="date"
-                        value={startDate}
-                        onChange={(e) => {
-                          setStartDate(e.target.value);
-                          if (durationType !== "custom" && durationType !== "until_cancelled") {
-                            const start = new Date(e.target.value);
-                            const days = durationType === "7_days" ? 7 : durationType === "3_months" ? 90 : 30;
-                            const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
-                            setEndDate(end.toISOString().split("T")[0]);
-                          }
-                        }}
-                        className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#16A34A] cursor-pointer"
-                      />
-                    </div>
-
-                    <div>
-                      <span className="block text-[10px] font-black text-slate-400 uppercase mb-1">End Date</span>
-                      {durationType === "until_cancelled" ? (
-                        <div className="bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[11px] font-bold py-1 px-2 rounded-lg text-center truncate mt-0.5">
-                          Until Cancelled
-                        </div>
-                      ) : (
-                        <input
-                          type="date"
-                          value={endDate}
-                          readOnly={durationType !== "custom"}
-                          onChange={(e) => setEndDate(e.target.value)}
-                          className={`w-full border rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none ${durationType === "custom" ? "bg-white border-slate-200 focus:border-[#16A34A] cursor-pointer" : "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"}`}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-
-                {/* Delivery Address Section (Fetched dynamically from Account) */}
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="font-extrabold text-[#17231A] flex items-center gap-1">
-                      <MapPin size={13} className="text-[#16A34A]" /> Delivery Address
-                    </label>
-                    {user && (
-                      <span className="text-[10px] text-[#166534] font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-emerald-200">
-                        ✓ Account Synced
-                      </span>
-                    )}
-                  </div>
-
-                  {savedAddresses.length > 0 && (
-                    <select
-                      onChange={(e) => handleAddressChange(e.target.value)}
-                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-semibold text-xs mb-2 focus:outline-none focus:border-[#16A34A] cursor-pointer"
-                    >
-                      <option value="">-- Choose Saved Location --</option>
-                      {user && user.address && (
-                        <option value={`${user.address}${user.pincode ? `, Pincode: ${user.pincode}` : ""}`}>
-                          [Profile] {user.address}
-                        </option>
-                      )}
-                      {savedAddresses.map((addr) => {
-                        const fullStr = `[${addr.type}] ${addr.address_line}${addr.pincode ? `, Pincode: ${addr.pincode}` : ""}`;
-                        return (
-                          <option key={addr.id} value={fullStr}>
-                            [{addr.type}] {addr.address_line.slice(0, 35)}...
-                          </option>
-                        );
-                      })}
-                    </select>
-                  )}
-
                   <input
                     type="text"
-                    value={userAddress}
-                    onChange={(e) => handleAddressChange(e.target.value)}
-                    placeholder="Doorstep delivery address..."
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
+                    placeholder="e.g. Daily Milk & Breakfast Routine"
+                    value={customCardTitle}
+                    onChange={(e) => setCustomCardTitle(e.target.value)}
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
                   />
                 </div>
-              </div>
 
-              {/* Basket Total Breakdown in Dark Green Container */}
-              <div className="bg-[#166534] text-white p-4 rounded-2xl space-y-2 shadow-xs">
-                <div className="flex justify-between text-xs text-emerald-100">
-                  <span>Recurring Item Total</span>
-                  <span className="font-mono font-bold text-white">₹{basketTotal}</span>
-                </div>
-                <div className="flex justify-between text-[11px] text-amber-300 font-extrabold">
-                  <span>Subscriber Discount</span>
-                  <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px]">-10% Applied</span>
-                </div>
-                <div className="pt-2 border-t border-emerald-700 flex justify-between text-sm font-black text-white">
-                  <span>Estimated Total / Cycle</span>
-                  <span className="font-mono text-amber-300 text-base">₹{Math.round(basketTotal * 0.9)}</span>
-                </div>
-              </div>
-
-              {/* DYNAMIC CARD CHECKOUT ACTION */}
-              <button
-                onClick={handleCreateSubscriptionCard}
-                disabled={basket.length === 0}
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-40 text-white font-extrabold text-xs rounded-xl py-3.5 shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Confirm Subscription Card</span>
-                <ArrowRight size={15} />
-              </button>
-
-              <div className="text-[11px] text-slate-400 text-center font-medium leading-tight">
-                🔒 Card will be added to <strong>Order Tracking</strong>. Download the mobile app to activate 1-tap AutoPay.
-              </div>
-            </div>
-
-            {/* Right Column: Categories Selector & Product Grid */}
-            <div className="space-y-6 text-left">
-
-              {/* Category Chips Bar */}
-              <div className="bg-white border border-emerald-100 rounded-3xl p-5 shadow-xs">
-                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#166534] bg-[#ECFDF3] px-3 py-1 rounded-full border border-emerald-200/80 mb-3">
-                  <SlidersHorizontal size={13} /> Select Store Category
-                </span>
-                <div className="flex flex-wrap items-center gap-2">
-                  {categories.map((c) => {
-                    const IconComp = c.icon;
-                    const isActive = activeCategory === c.key;
-                    return (
-                      <button
-                        key={c.key}
-                        onClick={() => setActiveCategory(c.key)}
-                        className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${isActive
-                          ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
-                          : "bg-[#FFFCF5] border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-[#ECFDF3]"
-                          }`}
-                      >
-                        <IconComp size={14} className={isActive ? "text-white" : c.color} />
-                        {c.name}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Products Section Header & Search */}
-              <div className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs space-y-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div>
-                    <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-1">
-                      <Sparkles size={13} /> Select Subscription Products
-                    </span>
-                    <h2 className="text-xl font-extrabold text-[#17231A]">
-                      Fresh items in {categories.find(c => c.key === activeCategory)?.name}
-                    </h2>
-                  </div>
-
-                  {/* Search Bar */}
-                  <div className="relative">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
-                    <input
-                      type="text"
-                      placeholder="Search category items..."
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      className="bg-[#FFFCF5] border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full sm:w-56 focus:outline-none focus:border-[#16A34A]"
-                    />
-                  </div>
-                </div>
-
-                {/* Product Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {activeCategoryProducts.map((p) => {
-                    const inBasket = basket.find(b => b.id === p.id);
-                    const qty = inBasket ? inBasket.qty : 0;
-
-                    return (
-                      <div key={p.id} className="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col justify-between p-3 group">
+                {/* Selected Basket Items List */}
+                <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                  {basket.length === 0 ? (
+                    <div className="text-center py-8 text-xs text-slate-400 bg-[#FFFCF5] rounded-2xl border border-dashed border-slate-200 font-medium">
+                      No items selected yet. Choose products from category grid.
+                    </div>
+                  ) : (
+                    basket.map((item) => (
+                      <div key={item.id} className="flex items-center justify-between bg-[#FFFCF5] p-3 rounded-2xl text-xs font-semibold border border-slate-100">
                         <div>
-                          <div className="aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3 relative">
-                            <img
-                              src={getProductImage(p.name, p.categoryKey || activeCategory)}
-                              alt={p.name}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                              loading="lazy"
-                            />
-                            <div className="absolute top-2 left-2 bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-[10px] font-black flex items-center gap-0.5 shadow-xs">
-                              <Star size={10} fill="currentColor" /> {p.rating}
-                            </div>
-                          </div>
-
-                          <div className="font-extrabold text-xs text-[#17231A] mb-1 leading-snug line-clamp-2">{p.name}</div>
-                          <div className="flex items-center gap-1.5 mb-3">
-                            <span className="font-black text-sm text-[#166534] font-mono">₹{p.price}</span>
-                            <span className="text-[11px] text-slate-400 line-through">₹{p.mrp}</span>
-                          </div>
+                          <div className="font-extrabold text-[#17231A]">{item.name}</div>
+                          <div className="text-xs text-slate-500 font-mono">₹{item.price} × {item.qty}</div>
                         </div>
-
-                        {/* Add / Quantity Control Button */}
-                        {qty === 0 ? (
-                          <button
-                            onClick={() => updateQty(p, 1)}
-                            className="w-full bg-[#ECFDF3] hover:bg-[#16A34A] text-[#166534] hover:text-white border border-emerald-200 font-extrabold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
-                          >
-                            <Plus size={14} /> Add to Card
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between bg-[#16A34A] text-white rounded-xl p-1 shadow-xs">
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg p-0.5 shadow-2xs">
                             <button
-                              onClick={() => updateQty(p, -1)}
-                              className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
+                              onClick={() => updateQty({ id: item.id }, -1)}
+                              className="w-5 h-5 rounded bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               -
                             </button>
-                            <span className="font-mono font-black text-xs px-2">{qty}</span>
+                            <span className="font-mono text-xs px-1 font-bold">{item.qty}</span>
                             <button
-                              onClick={() => updateQty(p, 1)}
-                              className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
+                              onClick={() => updateQty({ id: item.id }, 1)}
+                              className="w-5 h-5 rounded bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs cursor-pointer"
                             >
                               +
                             </button>
                           </div>
+                          <span className="font-extrabold text-[#166534] font-mono w-12 text-right">₹{item.price * item.qty}</span>
+                          <button
+                            onClick={() => updateQty({ id: item.id }, -item.qty)}
+                            className="text-slate-400 hover:text-rose-600 p-1 cursor-pointer"
+                            title="Remove item"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Schedule Configuration */}
+                <div className="space-y-3 pt-3 border-t border-slate-100 text-xs">
+                  <div>
+                    <label className="block font-extrabold text-[#17231A] mb-1">Delivery Frequency</label>
+                    <select
+                      value={frequency}
+                      onChange={(e) => setFrequency(e.target.value)}
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
+                    >
+                      <option value="Daily">Daily Morning Delivery</option>
+                      <option value="Every 2 Days">Every 2 Days</option>
+                      <option value="Mon / Wed / Fri">Mon / Wed / Fri</option>
+                      <option value="Weekly (Sundays)">Weekly (Sundays)</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block font-extrabold text-[#17231A] mb-1">Guaranteed Time Slot</label>
+                    <select
+                      value={timeSlot}
+                      onChange={(e) => setTimeSlot(e.target.value)}
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] cursor-pointer"
+                    >
+                      <option value="6:30 AM - 7:30 AM">6:30 AM - 7:30 AM (Express Morning)</option>
+                      <option value="7:30 AM - 8:30 AM">7:30 AM - 8:30 AM</option>
+                      <option value="8:30 AM - 9:30 AM">8:30 AM - 9:30 AM</option>
+                    </select>
+                  </div>
+
+                  {/* Plan Duration Selection */}
+                  <div>
+                    <label className="block font-extrabold text-[#17231A] mb-1 flex items-center gap-1">
+                      <Calendar size={13} className="text-[#16A34A]" /> Subscription Duration
+                    </label>
+                    <select
+                      value={durationType}
+                      onChange={(e) => handleDurationTypeChange(e.target.value)}
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-bold text-xs focus:outline-none focus:border-[#16A34A] mb-2 cursor-pointer"
+                    >
+                      <option value="1_month">1 Month (30 Days Plan)</option>
+                      <option value="7_days">7 Days Plan</option>
+                      <option value="3_months">3 Months Plan</option>
+                      <option value="until_cancelled">Until Cancelled (Flexible)</option>
+                      <option value="custom">Custom Date Range (Pick Dates)</option>
+                    </select>
+
+                    {/* Start Date & End Date Inputs */}
+                    <div className="grid grid-cols-2 gap-2 bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
+                      <div>
+                        <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">Start Date</span>
+                        <input
+                          type="date"
+                          value={startDate}
+                          onChange={(e) => {
+                            setStartDate(e.target.value);
+                            if (durationType !== "custom" && durationType !== "until_cancelled") {
+                              const start = new Date(e.target.value);
+                              const days = durationType === "7_days" ? 7 : durationType === "3_months" ? 90 : 30;
+                              const end = new Date(start.getTime() + days * 24 * 60 * 60 * 1000);
+                              setEndDate(end.toISOString().split("T")[0]);
+                            }
+                          }}
+                          className="w-full bg-white border border-slate-200 rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none focus:border-[#16A34A] cursor-pointer"
+                        />
+                      </div>
+
+                      <div>
+                        <span className="block text-[10px] font-extrabold text-slate-400 uppercase mb-1">End Date</span>
+                        {durationType === "until_cancelled" ? (
+                          <div className="bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[11px] font-bold py-1 px-2 rounded-lg text-center truncate mt-0.5">
+                            Until Cancelled
+                          </div>
+                        ) : (
+                          <input
+                            type="date"
+                            value={endDate}
+                            readOnly={durationType !== "custom"}
+                            onChange={(e) => setEndDate(e.target.value)}
+                            className={`w-full border rounded-lg px-2 py-1 text-xs font-semibold text-slate-900 focus:outline-none ${
+                              durationType === "custom" ? "bg-white border-slate-200 focus:border-[#16A34A] cursor-pointer" : "bg-slate-100 border-slate-200 text-slate-500 cursor-not-allowed"
+                            }`}
+                          />
                         )}
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+
+                  {/* Delivery Address Section */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="font-extrabold text-[#17231A] flex items-center gap-1">
+                        <MapPin size={13} className="text-[#16A34A]" /> Delivery Address
+                      </label>
+                      {user && (
+                        <span className="text-[10px] text-[#166534] font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-emerald-200">
+                          ✓ Synced
+                        </span>
+                      )}
+                    </div>
+
+                    {savedAddresses.length > 0 && (
+                      <select
+                        onChange={(e) => handleAddressChange(e.target.value)}
+                        className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 font-semibold text-xs mb-2 focus:outline-none focus:border-[#16A34A] cursor-pointer"
+                      >
+                        <option value="">-- Choose Saved Location --</option>
+                        {user && user.address && (
+                          <option value={`${user.address}${user.pincode ? `, Pincode: ${user.pincode}` : ""}`}>
+                            [Profile] {user.address}
+                          </option>
+                        )}
+                        {savedAddresses.map((addr) => {
+                          const fullStr = `[${addr.type}] ${addr.address_line}${addr.pincode ? `, Pincode: ${addr.pincode}` : ""}`;
+                          return (
+                            <option key={addr.id} value={fullStr}>
+                              [{addr.type}] {addr.address_line.slice(0, 35)}...
+                            </option>
+                          );
+                        })}
+                      </select>
+                    )}
+
+                    <input
+                      type="text"
+                      value={userAddress}
+                      onChange={(e) => handleAddressChange(e.target.value)}
+                      placeholder="Doorstep delivery address..."
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3 py-2 text-xs font-semibold focus:outline-none focus:border-[#16A34A]"
+                    />
+                  </div>
+                </div>
+
+                {/* Basket Total Breakdown Container */}
+                <div className="bg-[#166534] text-white p-4 rounded-2xl space-y-2 shadow-2xs">
+                  <div className="flex justify-between text-xs text-emerald-100">
+                    <span>Item Total</span>
+                    <span className="font-mono font-bold text-white">₹{basketTotal}</span>
+                  </div>
+                  <div className="flex justify-between text-xs text-amber-300 font-extrabold">
+                    <span>Subscriber Discount</span>
+                    <span className="bg-amber-400 text-slate-950 px-2 py-0.5 rounded-full text-[10px]">-10% Applied</span>
+                  </div>
+                  <div className="pt-2 border-t border-emerald-700 flex justify-between text-sm font-extrabold text-white">
+                    <span>Estimated Total / Cycle</span>
+                    <span className="font-mono text-amber-300 text-lg">₹{Math.round(basketTotal * 0.9)}</span>
+                  </div>
+                </div>
+
+                {/* Primary CTA Button */}
+                <button
+                  onClick={handleCreateSubscriptionCard}
+                  disabled={basket.length === 0}
+                  className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:opacity-40 text-white font-extrabold text-sm rounded-xl py-3.5 shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Confirm Subscription Card</span>
+                  <ArrowRight size={16} />
+                </button>
+
+                <div className="text-[11px] text-slate-400 text-center font-medium leading-tight">
+                  🔒 Card saved to <strong>My Subscriptions</strong>. Download the mobile app for 1-tap AutoPay.
                 </div>
               </div>
+
+              {/* RIGHT COLUMN: STORE CATEGORY CHIPS & PRODUCTS SELECTOR GRID */}
+              <div className="space-y-6">
+
+                {/* Category Chips Bar */}
+                <div className="bg-white border border-slate-200 rounded-3xl p-5 shadow-2xs space-y-3">
+                  <span className="text-xs font-extrabold text-[#166534] uppercase tracking-wider block">
+                    Select Category
+                  </span>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {categories.map((c) => {
+                      const IconComp = c.icon;
+                      const isActive = activeCategory === c.key;
+                      return (
+                        <button
+                          key={c.key}
+                          onClick={() => setActiveCategory(c.key)}
+                          className={`flex items-center gap-2 px-4 py-2 rounded-full text-xs font-extrabold transition-all border cursor-pointer ${
+                            isActive
+                              ? "bg-[#16A34A] text-white border-[#16A34A] shadow-2xs"
+                              : "bg-[#FFFCF5] border-slate-200 text-slate-700 hover:border-emerald-300 hover:bg-[#ECFDF3]"
+                          }`}
+                        >
+                          <IconComp size={14} className={isActive ? "text-white" : c.color} />
+                          {c.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Products Section Header & Search */}
+                <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-2xs space-y-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-xl font-extrabold text-[#17231A]">
+                        Fresh Items in {categories.find(c => c.key === activeCategory)?.name}
+                      </h2>
+                      <p className="text-xs text-slate-500 font-medium">
+                        Click 'Add to Card' to customize your recurring items.
+                      </p>
+                    </div>
+
+                    {/* Search Bar */}
+                    <div className="relative">
+                      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
+                      <input
+                        type="text"
+                        placeholder="Search category items..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-[#FFFCF5] border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full sm:w-56 focus:outline-none focus:border-[#16A34A]"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Product Cards Grid */}
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {activeCategoryProducts.map((p) => {
+                      const inBasket = basket.find(b => b.id === p.id);
+                      const qty = inBasket ? inBasket.qty : 0;
+
+                      return (
+                        <div key={p.id} className="bg-white border border-slate-200 hover:border-emerald-300 rounded-2xl overflow-hidden hover:shadow-md transition-all flex flex-col justify-between p-3 group">
+                          <div>
+                            <div className="aspect-square bg-slate-50 rounded-xl overflow-hidden mb-3 relative">
+                              <img
+                                src={getProductImage(p.name, p.categoryKey || activeCategory)}
+                                alt={p.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                                loading="lazy"
+                              />
+                              <div className="absolute top-2 left-2 bg-amber-500 text-slate-950 px-2 py-0.5 rounded-full text-xs font-extrabold flex items-center gap-0.5 shadow-2xs">
+                                <Star size={10} fill="currentColor" /> {p.rating}
+                              </div>
+                            </div>
+
+                            <div className="font-extrabold text-xs sm:text-sm text-[#17231A] mb-1 leading-snug line-clamp-2">{p.name}</div>
+                            <div className="flex items-center gap-1.5 mb-3">
+                              <span className="font-extrabold text-sm text-[#166534] font-mono">₹{p.price}</span>
+                              <span className="text-xs text-slate-400 line-through">₹{p.mrp}</span>
+                            </div>
+                          </div>
+
+                          {/* Add / Quantity Control Button */}
+                          {qty === 0 ? (
+                            <button
+                              onClick={() => updateQty(p, 1)}
+                              className="w-full bg-[#ECFDF3] hover:bg-[#16A34A] text-[#166534] hover:text-white border border-emerald-200 font-extrabold text-xs py-2 rounded-xl transition-all flex items-center justify-center gap-1 cursor-pointer"
+                            >
+                              <Plus size={14} /> Add to Card
+                            </button>
+                          ) : (
+                            <div className="flex items-center justify-between bg-[#16A34A] text-white rounded-xl p-1 shadow-2xs">
+                              <button
+                                onClick={() => updateQty(p, -1)}
+                                className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
+                              >
+                                -
+                              </button>
+                              <span className="font-mono font-black text-xs px-2">{qty}</span>
+                              <button
+                                onClick={() => updateQty(p, 1)}
+                                className="w-7 h-7 rounded-lg bg-[#15803D] hover:bg-[#166534] flex items-center justify-center font-bold text-xs cursor-pointer"
+                              >
+                                +
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+              </div>
+
             </div>
-          </div>
+          </section>
         )}
 
-        {/* TAB 2: DYNAMIC ORDER TRACKING & SUBSCRIPTION RECORDS DASHBOARD */}
+        {/* TAB 2: MY SUBSCRIPTIONS DASHBOARD & ORDER TRACKING */}
         {viewTab === "my_subscriptions" && (
-          <div className="max-w-5xl mx-auto space-y-6 text-left">
-
-            {/* Header Metrics Bar in Dark Green Container */}
-            <div className="bg-[#166534] text-white rounded-3xl p-6 sm:p-8 shadow-md flex flex-wrap items-center justify-between gap-4">
+          <section className="space-y-6">
+            {/* Header Metrics Bar */}
+            <div className="bg-[#166534] text-white rounded-3xl p-6 sm:p-8 shadow-sm flex flex-wrap items-center justify-between gap-4">
               <div>
-                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-amber-300 bg-emerald-900/60 px-3 py-1 rounded-full border border-emerald-600 mb-2">
-                  <Sparkles size={13} /> Real-time Subscriptions Dashboard
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-amber-300 bg-emerald-900/60 px-3 py-1 rounded-full border border-emerald-600 mb-2">
+                  <Sparkles size={13} /> Real-Time Subscription Dashboard
                 </span>
                 <h2 className="text-2xl sm:text-3xl font-extrabold">
-                  Subscription Order Cards & Delivery Tracking
+                  Active Subscription Cards
                 </h2>
-                <p className="text-xs text-emerald-100 mt-1 font-medium max-w-xl">
-                  Track your dynamic subscription cards, view product breakdowns, and download the app to purchase.
+                <p className="text-xs sm:text-sm text-emerald-100 mt-1 font-medium max-w-xl">
+                  Manage delivery schedules, pause/resume active plans, or complete checkout via mobile app.
                 </p>
               </div>
 
               <div className="flex items-center gap-3 bg-[#15803D] border border-emerald-500 p-3 rounded-2xl">
                 <div className="text-center px-3 border-r border-emerald-600">
                   <div className="text-xl font-black font-mono text-white">{activeCount}</div>
-                  <div className="text-[10px] text-emerald-100 font-bold uppercase">Active Cards</div>
+                  <div className="text-[10px] text-emerald-100 font-bold uppercase">Active</div>
                 </div>
                 <div className="text-center px-3 border-r border-emerald-600">
                   <div className="text-xl font-black font-mono text-amber-300">{pendingCount}</div>
@@ -765,18 +873,19 @@ export default function SubscriptionPage() {
             </div>
 
             {/* Filter & Search Bar */}
-            <div className="bg-white border border-emerald-100 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row items-center justify-between gap-4">
               {/* Status Filter Buttons */}
               <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto">
-                <span className="text-xs font-black text-slate-400 mr-1 uppercase text-[10px]">Filter:</span>
+                <span className="text-xs font-bold text-slate-400 mr-1 uppercase text-[11px]">Filter:</span>
                 {["All", "Active Schedule", "App Setup Pending", "Paused"].map((st) => (
                   <button
                     key={st}
                     onClick={() => setOrderFilter(st)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all border whitespace-nowrap cursor-pointer ${orderFilter === st
-                      ? "bg-[#16A34A] text-white border-[#16A34A]"
-                      : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3]"
-                      }`}
+                    className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold transition-all border whitespace-nowrap cursor-pointer ${
+                      orderFilter === st
+                        ? "bg-[#16A34A] text-white border-[#16A34A]"
+                        : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3]"
+                    }`}
                   >
                     {st}
                   </button>
@@ -788,7 +897,7 @@ export default function SubscriptionPage() {
                 <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" size={15} />
                 <input
                   type="text"
-                  placeholder="Search tracking cards or items..."
+                  placeholder="Search tracking cards..."
                   value={orderSearchQuery}
                   onChange={(e) => setOrderSearchQuery(e.target.value)}
                   className="bg-[#FFFCF5] border border-slate-200 text-xs font-semibold rounded-full pl-9 pr-4 py-2 w-full focus:outline-none focus:border-[#16A34A]"
@@ -799,33 +908,32 @@ export default function SubscriptionPage() {
             {/* Subscriptions Order Cards List */}
             <div className="space-y-6">
               {!user ? (
-                <div className="bg-white border border-emerald-100 rounded-3xl p-12 text-center max-w-md mx-auto shadow-xs space-y-3">
+                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto shadow-2xs space-y-3">
                   <FileText size={36} className="text-slate-300 mx-auto" />
                   <h3 className="text-base font-extrabold text-[#17231A]">No active subscription cards</h3>
                   <p className="text-xs text-slate-500 font-medium">Please log in to view and create your subscription cards.</p>
                   <button
                     onClick={() => navigate("/login")}
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-sm transition-colors cursor-pointer"
                   >
                     Log In to Subscribe
                   </button>
                 </div>
               ) : filteredOrders.length === 0 ? (
-                <div className="bg-white border border-emerald-100 rounded-3xl p-12 text-center max-w-md mx-auto shadow-xs">
+                <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center max-w-md mx-auto shadow-2xs">
                   <FileText size={36} className="text-slate-300 mx-auto mb-3" />
                   <h3 className="text-base font-extrabold text-[#17231A]">No matching subscription cards found</h3>
                   <p className="text-xs text-slate-500 mb-6 font-medium">Build a new subscription card or adjust your filter options.</p>
                   <button
                     onClick={() => setViewTab("create")}
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-md transition-colors cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-6 py-3 rounded-full shadow-sm transition-colors cursor-pointer"
                   >
                     Build First Subscription Card
                   </button>
                 </div>
               ) : (
                 filteredOrders.map((ord) => (
-                  <div key={ord.orderId} className="bg-white border border-emerald-100 rounded-3xl p-6 shadow-xs hover:shadow-md transition-all space-y-5 relative overflow-hidden">
-
+                  <div key={ord.orderId} className="bg-white border border-slate-200 hover:border-emerald-300 rounded-3xl p-6 shadow-2xs transition-all space-y-5 relative overflow-hidden">
                     {/* Header: Order ID, Status & Quick Controls */}
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
                       <div className="flex items-center gap-3">
@@ -834,7 +942,7 @@ export default function SubscriptionPage() {
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="text-[10px] font-mono font-black text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200">
+                            <span className="text-xs font-mono font-extrabold text-[#166534] bg-[#ECFDF3] px-2 py-0.5 rounded border border-emerald-200">
                               {ord.orderId}
                             </span>
                             <span className="text-xs text-slate-400 font-semibold">{ord.orderDate}</span>
@@ -844,33 +952,29 @@ export default function SubscriptionPage() {
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {/* Status Badge */}
                         {ord.status === "Active Schedule" && (
-                          <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                          <span className="bg-[#ECFDF3] text-[#166534] border border-emerald-200 text-xs font-extrabold px-3.5 py-1 rounded-full flex items-center gap-1.5">
                             <CheckCircle2 size={14} className="text-[#16A34A]" /> Active Schedule
                           </span>
                         )}
                         {ord.status === "App Setup Pending" && (
-                          <span className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
-                            <AlertCircle size={14} className="text-[#F59E0B]" /> App Download Needed
+                          <span className="bg-amber-50 text-amber-800 border border-amber-200 text-xs font-extrabold px-3.5 py-1 rounded-full flex items-center gap-1.5">
+                            <AlertCircle size={14} className="text-[#F59E0B]" /> App Setup Pending
                           </span>
                         )}
                         {ord.status === "Paused" && (
-                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs font-extrabold px-3.5 py-1.5 rounded-full flex items-center gap-1.5">
+                          <span className="bg-slate-100 text-slate-600 border border-slate-200 text-xs font-extrabold px-3.5 py-1 rounded-full flex items-center gap-1.5">
                             <PauseCircle size={14} /> Paused
                           </span>
                         )}
 
-                        {/* Status Toggle Button */}
                         <button
                           onClick={() => handleToggleStatus(ord.orderId)}
                           className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
-                          title="Toggle Status"
                         >
                           {ord.status === "Active Schedule" ? "Pause" : "Activate"}
                         </button>
 
-                        {/* Delete Button */}
                         <button
                           onClick={() => handleDeleteCard(ord.orderId)}
                           className="text-slate-400 hover:text-rose-600 p-1.5 rounded-full hover:bg-rose-50 transition-colors cursor-pointer"
@@ -885,8 +989,8 @@ export default function SubscriptionPage() {
                     <div className="grid md:grid-cols-3 gap-5 text-xs">
                       {/* Products List */}
                       <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100">
-                        <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
-                          <ShoppingBasket size={13} /> Subscribed Products ({ord.items.length}):
+                        <div className="font-extrabold text-[#166534] uppercase text-xs flex items-center gap-1 mb-2">
+                          <ShoppingBasket size={14} /> Subscribed Items ({ord.items.length}):
                         </div>
                         {ord.items.map((i, idx) => (
                           <div key={idx} className="flex justify-between font-semibold text-slate-800">
@@ -902,26 +1006,23 @@ export default function SubscriptionPage() {
 
                       {/* Schedule Details */}
                       <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100">
-                        <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
-                          <Clock size={13} /> Schedule & Slot:
+                        <div className="font-extrabold text-[#166534] uppercase text-xs flex items-center gap-1 mb-2">
+                          <Clock size={14} /> Schedule & Slot:
                         </div>
                         <div className="text-slate-700 font-semibold">Frequency: <strong>{ord.frequency}</strong></div>
                         <div className="text-slate-700 font-semibold">Morning Slot: <strong>{ord.timeSlot}</strong></div>
                         {ord.duration && (
-                          <div className="text-[#166534] font-bold text-[11px] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-1 rounded-xl">
+                          <div className="text-[#166534] font-bold text-xs bg-[#ECFDF3] border border-emerald-200 px-2.5 py-1 rounded-xl">
                             📅 Period: <strong>{ord.duration}</strong>
                           </div>
                         )}
-                        <div className="text-[#166534] font-extrabold bg-[#ECFDF3] border border-emerald-200 p-2 rounded-xl mt-1">
-                          Next Scheduled: {ord.nextDate}
-                        </div>
                       </div>
 
                       {/* Location & Payment Info */}
                       <div className="space-y-2 bg-[#FFFCF5] p-4 rounded-2xl border border-slate-100 flex flex-col justify-between">
                         <div>
-                          <div className="font-black text-[#166534] uppercase text-[10px] flex items-center gap-1 mb-2">
-                            <MapPin size={13} strokeWidth={2.5} /> Address & Payment Mode:
+                          <div className="font-extrabold text-[#166534] uppercase text-xs flex items-center gap-1 mb-2">
+                            <MapPin size={14} /> Delivery Address:
                           </div>
                           <div className="text-slate-700 font-semibold truncate mb-1">
                             📍 {ord.address}
@@ -931,72 +1032,109 @@ export default function SubscriptionPage() {
                           </div>
                         </div>
 
-                        <div className="text-[10px] text-slate-400 italic">
-                          Automatic doorstep drop by morning time slot.
+                        <div className="text-xs text-slate-400 italic">
+                          Doorstep delivery during morning slot.
                         </div>
                       </div>
                     </div>
 
-                    {/* Action Footer -> Select Card for Subscription Purchase via Mobile App */}
+                    {/* Action Footer */}
                     <div className="pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs bg-[#ECFDF3]/60 p-3.5 rounded-2xl">
                       <div className="text-[#166534] font-extrabold text-xs flex items-center gap-1.5">
                         <Info size={15} className="text-[#16A34A] shrink-0" />
-                        <span>Select this subscription card to complete your purchase after app download.</span>
+                        <span>Select this card to complete purchase via the mobile app.</span>
                       </div>
 
                       <button
                         onClick={() => handleSelectCardForApp(ord)}
-                        className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl shadow-xs transition-all flex items-center gap-1.5 cursor-pointer ml-auto"
+                        className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer ml-auto text-xs"
                       >
-                        <Smartphone size={14} /> Select Card to Purchase ({ord.orderId}) <ArrowRight size={14} />
+                        <Smartphone size={14} /> Select Card ({ord.orderId}) <ArrowRight size={14} />
                       </button>
                     </div>
-
                   </div>
                 ))
               )}
             </div>
-          </div>
+          </section>
         )}
+
+        {/* 3. SUBSCRIPTION FAQ ACCORDION SECTION */}
+        <section className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-10 space-y-6 shadow-2xs">
+          <div className="text-left space-y-1">
+            <span className="text-xs font-extrabold text-[#166534] uppercase tracking-wider block">
+              Clarifications
+            </span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#17231A]">
+              Subscription FAQ & Help
+            </h2>
+          </div>
+
+          <div className="space-y-3">
+            {subscriptionFaqs.map((faq, idx) => (
+              <div
+                key={idx}
+                className="border border-slate-200 rounded-2xl overflow-hidden bg-[#FFFCF5]/50 transition-all"
+              >
+                <button
+                  onClick={() => toggleFaq(idx)}
+                  className="w-full p-4 text-left font-extrabold text-xs sm:text-sm text-[#17231A] flex items-center justify-between gap-3 cursor-pointer"
+                >
+                  <span>{faq.q}</span>
+                  <ChevronDown
+                    size={16}
+                    className={`text-[#16A34A] shrink-0 transition-transform duration-300 ${
+                      openFaq === idx ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {openFaq === idx && (
+                  <div className="px-4 pb-4 text-xs text-slate-600 font-medium leading-relaxed border-t border-slate-100 pt-3 bg-white">
+                    {faq.a}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+
       </main>
 
-      {/* FULL-SCREEN SUBSCRIPTION CONFIRMATION OVERLAY */}
+      {/* FULL-SCREEN OVERLAY MODAL FOR MOBILE APP SETUP */}
       {showAppInstallModal && (
         <div className="fixed inset-0 z-50 bg-[#FFFCF5] text-[#17231A] overflow-hidden flex flex-col justify-between p-4 sm:p-8 md:p-12">
-
           {/* Top Bar */}
           <div className="max-w-6xl w-full mx-auto flex items-center justify-between shrink-0 pb-2 border-b border-slate-200">
             <button
               onClick={() => setShowAppInstallModal(false)}
-              className="flex items-center gap-2 text-xs font-extrabold text-slate-700 hover:text-[#16A34A] transition-colors cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-full shadow-xs"
+              className="flex items-center gap-2 text-xs font-extrabold text-slate-700 hover:text-[#16A34A] transition-colors cursor-pointer bg-white border border-slate-200 px-4 py-2 rounded-full shadow-2xs"
             >
-              <ArrowLeft size={16} /> Back to Subscription Builder
+              <ArrowLeft size={16} /> Back to Builder
             </button>
 
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-black text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3.5 py-1.5 rounded-full">
-              <CheckCircle2 size={15} className="text-[#16A34A]" /> Card Added to Order Tracking
+            <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3.5 py-1.5 rounded-full">
+              <CheckCircle2 size={15} className="text-[#16A34A]" /> Card Saved to My Subscriptions
             </span>
 
             <button
               onClick={() => setShowAppInstallModal(false)}
-              className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors cursor-pointer shadow-xs"
+              className="w-9 h-9 rounded-full bg-white border border-slate-200 hover:bg-slate-100 text-slate-700 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
               title="Close"
             >
               <X size={18} />
             </button>
           </div>
 
-          {/* Center Main View (2-Column Spacious Grid) */}
+          {/* Center Content (2-Column Grid) */}
           <div className="max-w-6xl w-full mx-auto my-auto py-4 grid lg:grid-cols-2 gap-8 lg:gap-14 items-center text-left">
-
             {/* LEFT COLUMN: Confirmation Info & Card Details */}
             <div className="space-y-5">
               <div className="space-y-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-1">
-                  <Smartphone size={14} /> FillCarts App Purchase
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200">
+                  <Smartphone size={14} /> FillCarts App Checkout
                 </span>
 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-[#17231A] leading-tight">
+                <h2 className="text-2xl sm:text-4xl font-extrabold text-[#17231A] leading-tight">
                   Complete Purchase via FillCarts App
                 </h2>
 
@@ -1007,7 +1145,7 @@ export default function SubscriptionPage() {
 
               {/* Card Summary Box */}
               {selectedCardForAppInstall && (
-                <div className="bg-white border border-emerald-100 rounded-3xl p-5 md:p-6 shadow-sm space-y-3 text-xs">
+                <div className="bg-white border border-emerald-100 rounded-3xl p-5 md:p-6 shadow-2xs space-y-3 text-xs">
                   <div className="flex justify-between items-center pb-3 border-b border-slate-100">
                     <span className="font-extrabold text-sm text-[#17231A]">{selectedCardForAppInstall.name || "Subscription Card"}</span>
                     <span className="font-mono text-xs font-black text-[#166534] bg-[#ECFDF3] px-2.5 py-1 rounded-lg border border-emerald-200">
@@ -1017,18 +1155,18 @@ export default function SubscriptionPage() {
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <span className="text-slate-400 font-semibold block text-[11px]">Selected Products</span>
+                      <span className="text-slate-400 font-semibold block text-xs">Selected Products</span>
                       <span className="text-slate-900 font-bold">{selectedCardForAppInstall.items?.length || 0} Items Subscribed</span>
                     </div>
                     <div>
-                      <span className="text-slate-400 font-semibold block text-[11px]">Delivery Frequency</span>
+                      <span className="text-slate-400 font-semibold block text-xs">Delivery Frequency</span>
                       <span className="text-[#16A34A] font-bold">{selectedCardForAppInstall.frequency || "Daily"}</span>
                     </div>
                   </div>
 
                   {selectedCardForAppInstall.duration && (
                     <div className="pt-2 border-t border-slate-100">
-                      <span className="text-slate-400 font-semibold block text-[11px]">Subscription Validity</span>
+                      <span className="text-slate-400 font-semibold block text-xs">Subscription Validity</span>
                       <span className="text-[#166534] font-bold block">
                         📅 {selectedCardForAppInstall.duration}
                       </span>
@@ -1036,7 +1174,7 @@ export default function SubscriptionPage() {
                   )}
 
                   <div className="pt-2 border-t border-slate-100">
-                    <span className="text-slate-400 font-semibold block text-[11px]">Slot & Address</span>
+                    <span className="text-slate-400 font-semibold block text-xs">Slot & Address</span>
                     <span className="text-slate-800 font-bold truncate block">
                       {selectedCardForAppInstall.timeSlot || "Morning Slot"} • {typeof selectedCardForAppInstall.address === "object" ? (selectedCardForAppInstall.address?.address_line || "Home Address") : String(selectedCardForAppInstall.address || "Home Address")}
                     </span>
@@ -1051,8 +1189,7 @@ export default function SubscriptionPage() {
             </div>
 
             {/* RIGHT COLUMN: QR Code Card & App Install Action */}
-            <div className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-lg text-center space-y-6">
-
+            <div className="bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-md text-center space-y-6">
               <div className="space-y-3">
                 <div className="w-32 h-32 bg-[#FFFCF5] p-2.5 rounded-3xl border border-slate-200 shadow-inner flex items-center justify-center mx-auto">
                   <QrCode size={110} className="text-slate-900" />
@@ -1072,35 +1209,32 @@ export default function SubscriptionPage() {
                   <a
                     href="#download-playstore"
                     onClick={() => alert("Downloading FillCarts for Android...")}
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                   >
                     <Download size={16} /> Google Play
                   </a>
                   <a
                     href="#download-appstore"
                     onClick={() => alert("Downloading FillCarts for iOS...")}
-                    className="bg-slate-900 hover:bg-slate-800 text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
+                    className="bg-slate-900 hover:bg-slate-800 text-white py-3.5 px-3 rounded-2xl font-extrabold text-xs flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer"
                   >
                     <Smartphone size={16} /> App Store
                   </a>
                 </div>
 
-                <p className="text-[11px] text-slate-400 font-semibold">
+                <p className="text-xs text-slate-400 font-semibold">
                   Available for Android & iOS · Log in with your registered phone number to view active cards.
                 </p>
               </div>
-
             </div>
-
           </div>
 
           {/* Bottom Notice */}
           <div className="max-w-6xl w-full mx-auto text-center shrink-0 pt-2 border-t border-slate-200">
-            <p className="text-[11px] text-slate-400 font-semibold">
-              🔒 AutoPay setup required in Mobile App to start scheduled deliveries. Card saved in your Order Tracking tab.
+            <p className="text-xs text-slate-400 font-semibold">
+              🔒 AutoPay setup required in Mobile App to start scheduled deliveries. Card saved in your My Subscriptions tab.
             </p>
           </div>
-
         </div>
       )}
 

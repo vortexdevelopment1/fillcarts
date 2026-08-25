@@ -106,20 +106,10 @@ const whyFillCartsCards = [
 export default function AppKartHome() {
   const { cart, addToCart, removeFromCart } = useCart();
   const navigate = useNavigate();
-  const [heroQuery, setHeroQuery] = useState("");
-
-  const handleHeroSearch = (e) => {
-    e.preventDefault();
-    if (heroQuery.trim()) {
-      navigate(`/categories?q=${encodeURIComponent(heroQuery.trim())}`);
-    } else {
-      navigate("/categories");
-    }
-  };
 
   return (
     <div className="bg-[#FFFCF5] text-[#17231A] min-h-screen flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
-      {/* Top Offer Bar & Main Navbar (Sections 1 & 2) */}
+      {/* Navbar */}
       <Navbar />
 
       {/* 3. HERO + SEARCH SECTION */}
@@ -134,8 +124,8 @@ export default function AppKartHome() {
                 <span>Express Neighborhood Fulfillment</span>
               </div>
 
-              {/* Main Heading */}
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold tracking-tight leading-[1.12] text-[#17231A]">
+              {/* Main H1 Heading — UNCHANGED TEXT AS PER MANDATORY RULE */}
+              <h1 className="text-[36px] sm:text-[48px] lg:text-[56px] font-extrabold tracking-[-0.025em] leading-[1.10] text-[#17231A]">
                 Everything you need, <br />
                 <span className="text-[#16A34A] relative inline-block">
                   delivered from your neighborhood.
@@ -146,23 +136,22 @@ export default function AppKartHome() {
               </h1>
 
               {/* Supporting Subtext */}
-              <p className="text-base sm:text-lg text-slate-600 font-medium max-w-xl leading-relaxed">
+              <p className="text-base sm:text-lg text-[#475569] font-medium max-w-xl leading-relaxed">
                 Shop groceries, bakery, dairy, food and everyday essentials from trusted local stores.
               </p>
-
 
               {/* CTA Buttons */}
               <div className="flex items-center gap-4 pt-2">
                 <a
                   href="#offers"
-                  className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-7 py-3.5 rounded-xl text-sm transition-all shadow-md shadow-emerald-900/10 hover:shadow-lg flex items-center gap-2 cursor-pointer"
+                  className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-7 py-3.5 rounded-xl text-[15px] transition-all shadow-md shadow-emerald-900/10 hover:shadow-lg flex items-center gap-2 cursor-pointer"
                 >
                   <ShoppingBag size={18} />
                   <span>Shop Now</span>
                 </a>
                 <Link
                   to="/categories"
-                  className="bg-white hover:bg-emerald-50 text-[#166534] font-extrabold px-6 py-3.5 rounded-xl text-sm transition-all border border-emerald-200 shadow-xs flex items-center gap-2"
+                  className="bg-white hover:bg-emerald-50 text-[#166534] font-extrabold px-6 py-3.5 rounded-xl text-[15px] transition-all border border-emerald-200 shadow-xs flex items-center gap-2"
                 >
                   <span>Explore Categories</span>
                   <ChevronRight size={16} />
@@ -184,7 +173,7 @@ export default function AppKartHome() {
                       <div className="w-3 h-3 rounded-full bg-[#16A34A]" />
                       <span className="text-xs font-black uppercase tracking-wider text-[#166534]">Neighborhood Basket</span>
                     </div>
-                    <span className="text-[11px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Fresh & Local</span>
+                    <span className="text-xs font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">Fresh & Local</span>
                   </div>
 
                   {/* Collage Grid Cards */}
@@ -210,7 +199,7 @@ export default function AppKartHome() {
                     </div>
                     <div className="text-left">
                       <div className="text-xs font-extrabold text-[#166534]">Local Rider On The Way</div>
-                      <div className="text-[11px] font-semibold text-slate-500">Fast 15–20 minute doorstep dropoff</div>
+                      <div className="text-xs font-semibold text-[#475569]">Fast 15–20 minute doorstep dropoff</div>
                     </div>
                   </div>
                 </div>
@@ -228,7 +217,7 @@ export default function AppKartHome() {
               <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block mb-1">
                 Explore Marketplace
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+              <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#17231A] leading-[1.2]">
                 Shop by Category
               </h2>
             </div>
@@ -258,11 +247,11 @@ export default function AppKartHome() {
                   />
                 </div>
                 <div className="text-left flex-1 min-w-0">
-                  <h3 className="font-extrabold text-sm text-[#17231A] truncate group-hover:text-[#16A34A] transition-colors">
+                  <h3 className="font-extrabold text-sm sm:text-base text-[#17231A] truncate group-hover:text-[#16A34A] transition-colors">
                     {cat.name}
                   </h3>
-                  <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{cat.sub}</p>
-                  <span className="text-[11px] font-bold text-[#166534] inline-flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <p className="text-xs text-[#475569] font-medium truncate mt-0.5">{cat.sub}</p>
+                  <span className="text-xs font-bold text-[#166534] inline-flex items-center gap-0.5 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     Shop <ChevronRight size={12} />
                   </span>
                 </div>
@@ -280,7 +269,7 @@ export default function AppKartHome() {
               <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3 py-1 rounded-full border border-amber-200/80 mb-2">
                 <Sparkles size={13} /> Exclusive Neighborhood Deals
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+              <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#17231A] leading-[1.2]">
                 Today's Best Offers 🔥
               </h2>
             </div>
@@ -308,28 +297,28 @@ export default function AppKartHome() {
                   <div className="relative aspect-square bg-slate-50 overflow-hidden">
                     <img src={imgUrl} alt={prod.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" />
                     {/* Orange Offer Badge */}
-                    <span className="absolute top-2 left-2 bg-[#F59E0B] text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-xs">
+                    <span className="absolute top-2 left-2 bg-[#F59E0B] text-white text-xs font-extrabold px-2 py-0.5 rounded-full shadow-xs">
                       {prod.off}
                     </span>
                     {/* Rating Badge */}
-                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
-                      <Star size={10} className="fill-amber-400 text-amber-400" />
+                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-xs font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
                       {prod.rating}
                     </span>
                   </div>
 
                   <div className="p-3 text-left flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-semibold text-slate-400 truncate block">{prod.store}</span>
-                      <h4 className="font-extrabold text-xs text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
+                      <span className="text-xs font-semibold text-[#475569] truncate block">{prod.store}</span>
+                      <h4 className="font-bold text-sm text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
                         {prod.name}
                       </h4>
                     </div>
 
                     <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-black text-[#166534]">₹{prod.price}</div>
-                        <div className="text-[10px] text-slate-400 line-through font-semibold">₹{prod.mrp}</div>
+                        <div className="text-base sm:text-lg font-extrabold text-[#166534]">₹{prod.price}</div>
+                        <div className="text-xs text-slate-400 line-through font-semibold">₹{prod.mrp}</div>
                       </div>
 
                       {/* Add to Cart Button */}
@@ -377,7 +366,7 @@ export default function AppKartHome() {
               <span className="text-xs font-black uppercase tracking-widest text-[#166534] block mb-1">
                 Verified Neighborhood Vendors
               </span>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+              <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#17231A] leading-[1.2]">
                 Shop from Local Stores Near You
               </h2>
             </div>
@@ -404,7 +393,7 @@ export default function AppKartHome() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     loading="lazy"
                   />
-                  <span className="absolute top-2.5 left-2.5 bg-[#16A34A] text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-xs">
+                  <span className="absolute top-2.5 left-2.5 bg-[#16A34A] text-white text-xs font-extrabold px-2.5 py-0.5 rounded-full shadow-xs">
                     {store.tag}
                   </span>
                   <span className="absolute bottom-2.5 right-2.5 bg-white/90 backdrop-blur-xs text-slate-800 text-xs font-bold px-2 py-0.5 rounded-md shadow-xs flex items-center gap-1">
@@ -415,13 +404,13 @@ export default function AppKartHome() {
 
                 <div className="p-4 flex-1 flex flex-col justify-between space-y-3">
                   <div>
-                    <h3 className="font-extrabold text-base text-[#17231A] group-hover:text-[#16A34A] transition-colors">
+                    <h3 className="font-extrabold text-base sm:text-lg text-[#17231A] group-hover:text-[#16A34A] transition-colors">
                       {store.name}
                     </h3>
-                    <p className="text-xs text-slate-500 font-semibold mt-0.5">{store.category}</p>
+                    <p className="text-xs text-[#475569] font-semibold mt-0.5">{store.category}</p>
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-slate-600 font-semibold bg-white p-2.5 rounded-xl border border-emerald-100/60">
+                  <div className="flex items-center justify-between text-xs text-[#475569] font-semibold bg-white p-2.5 rounded-xl border border-emerald-100/60">
                     <span className="flex items-center gap-1">
                       <MapPin size={13} className="text-[#16A34A]" /> {store.distance}
                     </span>
@@ -432,7 +421,7 @@ export default function AppKartHome() {
 
                   <Link
                     to={`/categories?store=${encodeURIComponent(store.name)}`}
-                    className="w-full bg-white hover:bg-[#ECFDF3] text-[#166534] border border-emerald-200 font-extrabold py-2 rounded-xl text-xs transition-colors flex items-center justify-center gap-1"
+                    className="w-full bg-white hover:bg-[#ECFDF3] text-[#166534] border border-emerald-200 font-extrabold py-2.5 rounded-xl text-xs sm:text-sm transition-colors flex items-center justify-center gap-1"
                   >
                     <span>View Store</span>
                     <ChevronRight size={14} />
@@ -459,11 +448,11 @@ export default function AppKartHome() {
                   <span>MAIN FILLCARTS USP</span>
                 </div>
 
-                <h2 className="text-3xl sm:text-4xl font-extrabold text-[#17231A] leading-tight">
+                <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold text-[#17231A] leading-tight">
                   Never run out of your everyday essentials.
                 </h2>
 
-                <p className="text-sm sm:text-base text-slate-600 font-medium leading-relaxed max-w-xl">
+                <p className="text-base sm:text-lg text-[#475569] font-medium leading-relaxed max-w-xl">
                   Subscribe to Milk, Water, Bakery items and other daily staples. Get them delivered automatically on your preferred schedule.
                 </p>
 
@@ -475,7 +464,7 @@ export default function AppKartHome() {
                     "Resume instantly with one tap",
                     "Easy subscription wallet management"
                   ].map((feat, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-xs font-bold text-[#166534]">
+                    <div key={idx} className="flex items-center gap-2 text-xs sm:text-sm font-bold text-[#166534]">
                       <CheckCircle2 size={16} className="text-[#16A34A] flex-shrink-0" />
                       <span>{feat}</span>
                     </div>
@@ -486,7 +475,7 @@ export default function AppKartHome() {
                 <div className="pt-4 flex items-center gap-4 flex-wrap">
                   <Link
                     to="/subscriptions"
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-8 py-3.5 rounded-xl text-sm transition-all shadow-md shadow-emerald-900/10 hover:shadow-lg flex items-center gap-2"
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-8 py-3.5 rounded-xl text-[15px] transition-all shadow-md shadow-emerald-900/10 hover:shadow-lg flex items-center gap-2"
                   >
                     <span>Start Subscription →</span>
                   </Link>
@@ -501,19 +490,19 @@ export default function AppKartHome() {
                 <div className="bg-[#FFFCF5] border border-emerald-200 rounded-2xl p-4 shadow-sm space-y-3">
                   <div className="text-xs font-extrabold text-[#166534] flex items-center justify-between border-b border-emerald-100 pb-2">
                     <span>Essential Daily Bundle</span>
-                    <span className="bg-[#16A34A] text-white text-[10px] font-black px-2 py-0.5 rounded-full">Auto-Delivered</span>
+                    <span className="bg-[#16A34A] text-white text-xs font-bold px-2 py-0.5 rounded-full">Auto-Delivered</span>
                   </div>
 
                   <div className="grid grid-cols-2 gap-2.5">
                     <div className="bg-white p-2 rounded-xl border border-slate-100 text-center">
                       <img src={SUBSCRIPTION_IMAGE_MAP.milk} alt="Daily Milk" className="w-full h-20 object-cover rounded-lg mb-1" />
-                      <div className="text-[11px] font-extrabold text-[#17231A]">Fresh Milk 1L</div>
-                      <div className="text-[10px] text-slate-400 font-semibold">Everyday 7:00 AM</div>
+                      <div className="text-xs font-extrabold text-[#17231A]">Fresh Milk 1L</div>
+                      <div className="text-xs text-[#475569] font-semibold">Everyday 7:00 AM</div>
                     </div>
                     <div className="bg-white p-2 rounded-xl border border-slate-100 text-center">
                       <img src={SUBSCRIPTION_IMAGE_MAP.bread} alt="Fresh Bread" className="w-full h-20 object-cover rounded-lg mb-1" />
-                      <div className="text-[11px] font-extrabold text-[#17231A]">Wheat Bread</div>
-                      <div className="text-[10px] text-slate-400 font-semibold">Alternate Days</div>
+                      <div className="text-xs font-extrabold text-[#17231A]">Wheat Bread</div>
+                      <div className="text-xs text-[#475569] font-semibold">Alternate Days</div>
                     </div>
                   </div>
                 </div>
@@ -529,11 +518,11 @@ export default function AppKartHome() {
           <span className="text-xs font-black uppercase tracking-widest text-[#16A34A] block mb-1">
             Trust & Simplicity
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A] mb-10">
+          <h2 className="text-2xl sm:text-3xl lg:text-[34px] font-extrabold text-[#17231A] mb-10 leading-[1.2]">
             Why FillCarts?
           </h2>
 
-          {/* Exactly 4 Feature Cards */}
+          {/* Feature Cards */}
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
             {whyFillCartsCards.map((card, i) => (
               <div
@@ -543,8 +532,8 @@ export default function AppKartHome() {
                 <div className="w-12 h-12 rounded-2xl bg-[#ECFDF3] text-[#16A34A] flex items-center justify-center mb-4">
                   <card.icon size={22} />
                 </div>
-                <h3 className="font-extrabold text-base text-[#17231A] mb-1.5">{card.title}</h3>
-                <p className="text-xs text-slate-600 font-medium leading-relaxed">{card.desc}</p>
+                <h3 className="font-extrabold text-base sm:text-lg text-[#17231A] mb-1.5">{card.title}</h3>
+                <p className="text-xs sm:text-sm text-[#475569] font-medium leading-relaxed">{card.desc}</p>
               </div>
             ))}
           </div>
@@ -556,13 +545,13 @@ export default function AppKartHome() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="bg-[#17231A] text-white rounded-3xl p-8 sm:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-8">
             <div className="space-y-4 max-w-xl text-left">
-              <span className="bg-[#16A34A] text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="bg-[#16A34A] text-white text-xs font-extrabold px-3 py-1 rounded-full uppercase tracking-wider">
                 Mobile Shopping
               </span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight">
+              <h2 className="text-2xl sm:text-3xl lg:text-[36px] font-extrabold leading-tight">
                 Your everyday shopping, now in your pocket.
               </h2>
-              <p className="text-sm text-slate-300 font-medium leading-relaxed">
+              <p className="text-sm sm:text-base text-slate-300 font-medium leading-relaxed">
                 Order faster, track your rider live and manage your subscriptions from the FillCarts app.
               </p>
 
@@ -571,7 +560,7 @@ export default function AppKartHome() {
                   href="https://play.google.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition-all shadow-sm"
+                  className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-5 py-3 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all shadow-sm"
                 >
                   <Download size={16} /> Google Play
                 </a>
@@ -579,7 +568,7 @@ export default function AppKartHome() {
                   href="https://apps.apple.com"
                   target="_blank"
                   rel="noreferrer"
-                  className="bg-white/10 hover:bg-white/20 text-white font-extrabold px-5 py-3 rounded-xl text-xs flex items-center gap-2 transition-all border border-white/20"
+                  className="bg-white/10 hover:bg-white/20 text-white font-extrabold px-5 py-3 rounded-xl text-xs sm:text-sm flex items-center gap-2 transition-all border border-white/20"
                 >
                   <Smartphone size={16} /> App Store
                 </a>
@@ -592,15 +581,15 @@ export default function AppKartHome() {
                 <QrCode size={70} className="text-[#17231A]" />
               </div>
               <div>
-                <div className="text-xs font-black text-white">Scan QR Code</div>
-                <div className="text-[11px] text-emerald-300 font-medium mt-0.5">Instant Mobile App Download</div>
+                <div className="text-xs sm:text-sm font-extrabold text-white">Scan QR Code</div>
+                <div className="text-xs text-emerald-300 font-medium mt-0.5">Instant Mobile App Download</div>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 10. FOOTER */}
+      {/* Footer */}
       <Footer />
     </div>
   );
