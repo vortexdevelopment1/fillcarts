@@ -13,27 +13,19 @@ import { useCart } from "../context/CartContext";
 import { getProductImage } from "../utils/productImages";
 import api from "../api";
 
-// Sourced directly from CategoriesPage for 100% category consistency
+// Only categories containing recurring subscription products
 const categories = [
-  { key: "grocery", name: "Grocery", icon: Carrot, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
-  { key: "fruits", name: "Fruits & Veg", icon: Apple, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
   { key: "dairy", name: "Dairy", icon: Milk, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
   { key: "bakery", name: "Bakery", icon: Croissant, color: "text-[#F59E0B]", bg: "bg-amber-50" },
-  { key: "pharmacy", name: "Pharmacy", icon: Pill, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
-  { key: "food", name: "Food", icon: UtensilsCrossed, color: "text-[#F59E0B]", bg: "bg-amber-50" },
-  { key: "home", name: "Home Essentials", icon: Home, color: "text-slate-700", bg: "bg-slate-100" },
-  { key: "personal", name: "Personal Care", icon: Sparkles, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "fruits", name: "Fruits & Veg", icon: Apple, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
+  { key: "grocery", name: "Grocery", icon: Carrot, color: "text-[#16A34A]", bg: "bg-[#ECFDF3]" },
 ];
 
 const productNames = {
-  grocery: ["Basmati Rice 5kg", "Toor Dal 1kg", "Sunflower Oil 1L", "Sugar 1kg", "Atta 5kg", "Salt 1kg", "Tea Leaves 250g", "Poha 500g"],
-  fruits: ["Fresh Bananas 1dz", "Red Apples 1kg", "Onions 1kg", "Tomatoes 1kg", "Potatoes 1kg", "Green Grapes 500g", "Spinach Bunch", "Carrots 500g"],
   dairy: ["Toned Milk 1L", "Curd 400g", "Paneer 200g", "Butter 100g", "Cheese Slices", "Ghee 500ml", "Buttermilk 200ml", "Flavoured Yogurt"],
   bakery: ["Brown Bread", "Butter Croissant", "Chocolate Muffin", "Multigrain Bread", "Bun Pack", "Cookies 200g", "Cup Cakes 4pc", "Rusk 200g"],
-  pharmacy: ["Paracetamol Strip", "Vitamin C Tablets", "Hand Sanitizer", "Digital Thermometer", "Face Masks 10pc", "Cough Syrup", "Antiseptic Cream", "First Aid Kit"],
-  food: ["Veg Burger", "Paneer Roll", "Margherita Pizza", "Chicken Biryani", "Masala Dosa", "Veg Thali", "Cold Coffee", "Chowmein"],
-  home: ["Dish Wash Liquid", "Floor Cleaner 1L", "Laundry Detergent", "Air Freshener", "Trash Bags 30pc", "Tissue Box", "Broom Set", "Toilet Cleaner"],
-  personal: ["Face Wash 100ml", "Shampoo 340ml", "Toothpaste 150g", "Body Lotion", "Hair Oil 200ml", "Deodorant Spray", "Razor Pack", "Lip Balm"],
+  fruits: ["Fresh Bananas 1dz", "Red Apples 1kg", "Onions 1kg", "Tomatoes 1kg", "Potatoes 1kg", "Green Grapes 500g", "Spinach Bunch", "Carrots 500g"],
+  grocery: ["Basmati Rice 5kg", "Toor Dal 1kg", "Sunflower Oil 1L", "Sugar 1kg", "Atta 5kg", "Salt 1kg", "Tea Leaves 250g", "Poha 500g"],
 };
 
 function genProducts(catKey) {
