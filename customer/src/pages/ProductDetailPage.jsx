@@ -660,7 +660,7 @@ export default function ProductDetailPage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3.5 sm:gap-4">
             {relatedProducts.map((rel) => {
               const inCart = cart.find((item) => item.id === rel.id);
               const catStr = (rel.categoryKey || rel.category || "").toLowerCase();
@@ -679,31 +679,31 @@ export default function ProductDetailPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-xs font-bold px-1.5 py-0.5 rounded-md shadow-2xs flex items-center gap-0.5">
-                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs flex items-center gap-0.5">
+                      <Star size={10} className="fill-amber-400 text-amber-400" />
                       {rel.rating || "4.8"}
                     </span>
                   </div>
 
                   <div className="p-3 text-left flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-xs font-semibold text-slate-400 block truncate">{rel.brand || "Fresh Mart"}</span>
-                      <h4 className="font-extrabold text-xs sm:text-sm text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
+                      <span className="text-[10px] font-semibold text-slate-400 block truncate">{rel.brand || "Fresh Mart"}</span>
+                      <h4 className="font-extrabold text-xs text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
                         {rel.name}
                       </h4>
 
                       {isRelSubEligible && (
-                        <div className="mt-1.5 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-md">
-                          <Repeat size={10} className="text-[#16A34A]" />
-                          <span>Save 10% on Subscription</span>
+                        <div className="mt-1.5 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[9px] font-extrabold px-1.5 py-0.5 rounded-md">
+                          <Repeat size={9} className="text-[#16A34A]" />
+                          <span>Save 10% on Sub</span>
                         </div>
                       )}
                     </div>
 
                     <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
                       <div>
-                        <div className="text-base font-extrabold text-[#166534]">₹{rel.price}</div>
-                        <div className="text-xs text-slate-400 line-through font-semibold">₹{rel.mrp || Math.round(rel.price * 1.2)}</div>
+                        <div className="text-sm font-black text-[#166534]">₹{rel.price}</div>
+                        <div className="text-[10px] text-slate-400 line-through font-semibold">₹{rel.mrp || Math.round(rel.price * 1.2)}</div>
                       </div>
 
                       {/* Add Button Action */}
