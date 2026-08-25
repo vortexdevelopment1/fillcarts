@@ -48,6 +48,7 @@ export default function ProductDetailPage() {
   const [showNutrition, setShowNutrition] = useState(false);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [appModalOpen, setAppModalOpen] = useState(false);
+  const [isProductInfoModalOpen, setIsProductInfoModalOpen] = useState(false);
 
   const [deliveryAddress, setDeliveryAddress] = useState(
     userLocation?.formatted || (userLocation?.area ? `${userLocation.area}, ${userLocation.city}` : "Vijay Nagar, Indore")
@@ -59,8 +60,8 @@ export default function ProductDetailPage() {
   const [reviewsList, setReviewsList] = useState([]);
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
   const [isAllReviewsModalOpen, setIsAllReviewsModalOpen] = useState(false);
-  const [reviewSort, setReviewSort] = useState("recent"); // "recent" | "highest" | "lowest" | "helpful"
-  const [starFilter, setStarFilter] = useState(0); // 0 = all, 1..5 = star filter
+  const [reviewSort, setReviewSort] = useState("recent");
+  const [starFilter, setStarFilter] = useState(0);
 
   // Write Review Form State
   const [formRating, setFormRating] = useState(5);
@@ -312,7 +313,7 @@ export default function ProductDetailPage() {
     mainProductImg,
   ];
 
-  // Related products (filtered by category)
+  // Related products
   const relatedProducts = useMemo(() => {
     return getRelatedProducts(product) || [];
   }, [product]);
@@ -332,44 +333,58 @@ export default function ProductDetailPage() {
   };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen text-slate-900" style={{ fontFamily: "'Manrope', sans-serif" }}>
-      <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-
-      {/* Shared Common Navbar */}
+    <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+      {/* Navbar */}
       <Navbar />
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed top-20 right-6 bg-slate-900 text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-50 animate-bounce flex items-center gap-2 border border-slate-700">
-          <Sparkles size={14} className="text-amber-400" /> {toastMessage}
+        <div className="fixed top-20 right-6 bg-[#17231A] text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-50 animate-bounce flex items-center gap-2 border border-slate-700">
+          <Sparkles size={14} className="text-[#16A34A]" /> {toastMessage}
         </div>
       )}
 
-      {/* ========================================================================= */}
-      {/* WORLD-CLASS E-COMMERCE PRODUCT DETAIL LAYOUT */}
-      {/* ========================================================================= */}
-      <main className="max-w-7xl mx-auto px-4 md:px-8 py-6 md:py-10">
-        <div className="grid lg:grid-cols-[1fr_1.15fr] gap-8 md:gap-12 items-start">
+      {/* BREADCRUMB / BACK LINK */}
+      <div className="max-w-6xl w-full mx-auto px-4 sm:px-6 pt-4 pb-2">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <Link to="/" className="hover:text-[#16A34A] transition-colors">Home</Link>
+          <ChevronRight size={13} className="text-slate-400" />
+          <Link to="/categories" className="hover:text-[#16A34A] transition-colors">{product.category || "Grocery"}</Link>
+          <ChevronRight size={13} className="text-slate-400" />
+          <span className="text-[#17231A] font-extrabold truncate max-w-[200px] sm:max-w-xs">{product.name}</span>
+        </div>
+      </div>
 
-          {/* LEFT COLUMN: E-Commerce Multi-Image Gallery & Trust Badges */}
-          <div className="space-y-4 lg:sticky lg:top-24">
+      {/* MAIN PERFECTLY BALANCED 2-COLUMN HERO CONTAINER */}
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-4 space-y-12 flex-1 w-full text-left">
+        
+        {/* 2-COLUMN GRID */}
+        <div className="grid lg:grid-cols-12 gap-8 items-start relative">
 
-            {/* Main Product Hero Gallery Display Card */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-8 shadow-sm text-center relative flex flex-col items-center justify-center overflow-hidden group">
-              {/* Clickable Small Rating Box Pill Overlay */}
+          {/* LEFT COLUMN: Image Gallery + Product Details & Seller Details Cards */}
+          <div className="lg:col-span-5 space-y-4">
+            
+            {/* Product Image Gallery Card */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-7 shadow-2xs relative flex flex-col items-center justify-center overflow-hidden group">
+
+              {/* Wishlist Button */}
               <button
-                onClick={() => setIsAllReviewsModalOpen(true)}
-                className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm border border-amber-200/90 shadow-sm hover:shadow-md hover:border-amber-400 rounded-full px-3 py-1 flex items-center gap-1.5 text-xs font-extrabold text-slate-800 transition-all cursor-pointer z-10 group/pill"
-                title="Click to view all ratings & reviews"
+                onClick={() => {
+                  setIsWishlisted(!isWishlisted);
+                  triggerToast(isWishlisted ? "Removed from Wishlist" : "Added to Wishlist!");
+                }}
+                className={`absolute top-4 right-4 w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer z-10 ${
+                  isWishlisted
+                    ? "bg-rose-50 border-rose-200 text-rose-600"
+                    : "bg-white border-slate-200 hover:border-rose-300 text-slate-400 hover:text-rose-500"
+                }`}
+                title="Wishlist"
               >
-                <Star size={13} className="fill-amber-400 text-amber-400 group-hover/pill:scale-110 transition-transform" />
-                <span>{averageRating}</span>
-                <span className="text-slate-400 font-normal text-[11px]">({totalReviewsCount})</span>
-                <span className="text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full font-extrabold ml-0.5">Reviews ➔</span>
+                <Heart size={18} className={isWishlisted ? "fill-rose-600" : ""} />
               </button>
 
-              {/* Main Image View */}
-              <div className="w-full h-72 md:h-96 flex items-center justify-center py-4 relative">
+              {/* Main Product Image */}
+              <div className="w-full h-56 sm:h-64 flex items-center justify-center py-2 relative">
                 <img
                   src={galleryImages[activeThumbIdx]}
                   alt={product.name}
@@ -377,14 +392,15 @@ export default function ProductDetailPage() {
                 />
               </div>
 
-              {/* Interactive Thumbnail Selector Bar */}
-              <div className="flex items-center justify-center gap-3 pt-3">
+              {/* Gallery Thumbnail Selector Bar */}
+              <div className="flex items-center justify-center gap-2 pt-2">
                 {galleryImages.map((imgUrl, i) => (
                   <button
                     key={i}
                     onClick={() => setActiveThumbIdx(i)}
-                    className={`w-14 h-14 rounded-xl border-2 overflow-hidden transition-all cursor-pointer ${activeThumbIdx === i ? "border-amber-500 scale-105 shadow-xs" : "border-slate-200 opacity-60 hover:opacity-100"
-                      }`}
+                    className={`w-11 h-11 rounded-xl border-2 overflow-hidden transition-all cursor-pointer ${
+                      activeThumbIdx === i ? "border-[#16A34A] scale-105 shadow-2xs" : "border-slate-200 opacity-60 hover:opacity-100"
+                    }`}
                   >
                     <img src={imgUrl} alt="Thumbnail" className="w-full h-full object-cover" />
                   </button>
@@ -392,300 +408,254 @@ export default function ProductDetailPage() {
               </div>
             </div>
 
+            {/* TWO SMALL SIDE-BY-SIDE BOXES ON LEFT SIDE (PRODUCT DETAILS & SELLER DETAILS) */}
+            <div className="grid sm:grid-cols-2 gap-3.5">
+              
+              {/* LEFT SMALL BOX: Product Details with Popup Trigger Link */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-4.5 shadow-2xs space-y-2.5">
+                <div className="text-xs font-extrabold uppercase tracking-wider text-[#17231A] flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                  <Sparkles size={13} className="text-[#16A34A]" /> Product Details
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-600 font-medium leading-relaxed line-clamp-2">
+                    {product.desc}
+                  </p>
+
+                  <button
+                    onClick={() => setIsProductInfoModalOpen(true)}
+                    className="text-[11px] font-bold text-[#16A34A] hover:underline flex items-center justify-between w-full bg-[#ECFDF3] border border-emerald-200 px-2.5 py-1.5 rounded-xl transition-all cursor-pointer group mt-1"
+                  >
+                    <span>View Details, Benefits & MFG ➔</span>
+                    <ChevronRight size={13} className="group-hover:translate-x-0.5 transition-transform text-[#16A34A]" />
+                  </button>
+                </div>
+              </div>
+
+              {/* RIGHT SMALL BOX: Seller Details */}
+              <div className="bg-white border border-slate-200 rounded-3xl p-4.5 shadow-2xs space-y-2.5">
+                <div className="text-xs font-extrabold uppercase tracking-wider text-[#17231A] flex items-center gap-1.5 border-b border-slate-100 pb-2">
+                  <Store size={13} className="text-blue-600" /> Seller Details
+                </div>
+
+                <div className="space-y-1.5 text-xs font-medium text-slate-700">
+                  <div className="font-extrabold text-[#17231A] flex items-center gap-1">
+                    <span>Fresh Mart Superstore</span>
+                    <CheckCircle2 size={13} className="text-[#16A34A]" />
+                  </div>
+                  <div className="text-[11px] text-[#166534] font-bold flex items-center gap-1">
+                    <Clock size={12} /> 15-20 min • Free Delivery
+                  </div>
+
+                  <button
+                    onClick={() => setIsAllReviewsModalOpen(true)}
+                    className="text-[11px] font-bold text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2 py-1 rounded-lg w-full mt-1.5 transition-all cursor-pointer flex items-center justify-between"
+                  >
+                    <span className="flex items-center gap-1">
+                      <Star size={11} className="fill-amber-400 text-amber-400" /> {averageRating} ({totalReviewsCount})
+                    </span>
+                    <span className="underline font-extrabold">View All ➔</span>
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
           </div>
 
-          {/* RIGHT COLUMN: Rich Product Details, Variant Selector, Pincode & Action Buttons */}
-          <div className="space-y-6">
+          {/* RIGHT COLUMN: Product Information & Purchase Flow (Matches Left Height Perfectly!) */}
+          <div className="lg:col-span-7 space-y-4">
 
-            {/* Title & Pricing Card */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
+            {/* Main Product Card: Title, Price, Pack Selector, Delivery & Action CTAs */}
+            <div className="bg-white border border-slate-200 rounded-3xl p-5 sm:p-6 shadow-2xs space-y-3.5">
+              
+              {/* Brand Tag & In-Stock Status */}
               <div className="flex items-center justify-between gap-2 flex-wrap">
-                <span className="text-xs font-black uppercase tracking-wider text-amber-700 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full">
-                  {product.brand} Brand
+                <span className="text-xs font-bold uppercase tracking-wider text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3 py-0.5 rounded-full">
+                  {product.brand || "FillCarts Shop"}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                    <CheckCircle2 size={14} /> In Stock at Nearby Kirana
+                  <span className="text-xs font-bold text-[#16A34A] flex items-center gap-1">
+                    <CheckCircle2 size={13} /> In Stock Nearby
                   </span>
                   <button
                     onClick={() => {
                       navigator.clipboard?.writeText(window.location.href);
                       triggerToast("Product link copied!");
                     }}
-                    className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
+                    className="w-7 h-7 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center transition-colors cursor-pointer"
                     title="Share Product"
                   >
-                    <Share2 size={14} />
+                    <Share2 size={13} />
                   </button>
                 </div>
               </div>
 
-              <h1 className="text-xl md:text-2xl font-bold text-slate-900 leading-tight">
+              {/* Product Name */}
+              <h1 className="text-lg sm:text-xl font-bold text-[#17231A] leading-snug tracking-tight">
                 {product.name}
               </h1>
 
-              {/* Rating & Reviews Bar - Small Box Trigger */}
-              <div className="flex items-center gap-3 text-xs font-bold text-slate-600 pb-2 border-b border-slate-100">
+              {/* Rating & Reviews Bar */}
+              <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-500 pb-2 border-b border-slate-100 flex-wrap">
                 <button
                   onClick={() => setIsAllReviewsModalOpen(true)}
-                  className="flex items-center gap-1.5 text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200/90 px-3 py-1 rounded-xl font-extrabold transition-all shadow-2xs cursor-pointer group"
+                  className="flex items-center gap-1 text-amber-800 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-2.5 py-0.5 rounded-lg font-bold transition-all shadow-2xs cursor-pointer"
                 >
-                  <Star size={13} fill="currentColor" className="text-amber-500 group-hover:scale-110 transition-transform" />
+                  <Star size={12} className="fill-amber-400 text-amber-400" />
                   <span>{averageRating}</span>
                   <span className="text-slate-400 font-normal">|</span>
-                  <span className="text-slate-800 hover:text-amber-800 underline font-semibold">
+                  <span className="text-slate-800 hover:underline font-semibold">
                     {totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"} ➔
                   </span>
                 </button>
                 <span>•</span>
-                <span className="text-blue-600 font-semibold">12k+ Orders Fulfilled</span>
+                <span className="text-blue-600 font-medium">12,000+ Orders Delivered</span>
               </div>
 
-              {/* Price Block */}
-              <div className="space-y-1 pt-1">
+              {/* Pricing Section */}
+              <div className="space-y-0.5">
                 <div className="flex items-baseline gap-2.5">
-                  <span className="text-xl md:text-2xl font-bold text-slate-900">₹{activeVariant.price}</span>
-                  <span className="text-sm text-slate-400 line-through font-medium">₹{activeVariant.mrp}</span>
-                  <span className="text-xs font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-lg">
+                  <span className="text-xl sm:text-2xl font-extrabold text-[#17231A]">₹{activeVariant.price}</span>
+                  <span className="text-xs sm:text-sm text-slate-400 line-through font-semibold">₹{activeVariant.mrp}</span>
+                  <span className="text-xs font-bold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-0.5 rounded-md">
                     {activeVariant.off}
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400 font-semibold">Inclusive of all taxes · Free delivery on orders above ₹199</p>
-              </div>
-            </div>
-
-            {/* Quantity Variant Selector Cards */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
-              <div className="flex items-center justify-between">
-                <label className="block text-sm font-bold text-slate-900">Quantity / Pack Size</label>
-                <span className="text-xs font-semibold text-slate-400">Select Pack</span>
+                <p className="text-[11px] text-slate-400 font-medium">Inclusive of all taxes · Free local delivery above ₹199</p>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {variants.map((v, idx) => {
-                  const isSelected = selectedVariantIdx === idx;
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => setSelectedVariantIdx(idx)}
-                      className={`p-3.5 rounded-2xl border text-center transition-all cursor-pointer ${isSelected
-                        ? "border-amber-500 bg-amber-50/50 ring-2 ring-amber-400/50 shadow-xs"
-                        : "border-slate-200 bg-white hover:border-slate-300"
+              {/* Variant / Pack Size Selector */}
+              <div className="space-y-2 pt-2 border-t border-slate-100">
+                <label className="block text-xs font-bold text-[#17231A] uppercase tracking-wider">Select Pack Size</label>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {variants.map((v, idx) => {
+                    const isSelected = selectedVariantIdx === idx;
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => setSelectedVariantIdx(idx)}
+                        className={`p-2.5 rounded-xl border text-center transition-all cursor-pointer ${
+                          isSelected
+                            ? "border-[#16A34A] bg-[#ECFDF3] ring-1 ring-[#16A34A]/30 shadow-2xs"
+                            : "border-slate-200 bg-white hover:border-emerald-300"
                         }`}
-                    >
-                      <div className="text-xs font-extrabold text-slate-900">{v.size}</div>
-                      <div className="text-[11px] font-bold text-amber-600 mt-0.5">{v.off}</div>
-                      <div className="text-xs font-black text-slate-900 mt-1">₹{v.price} <span className="text-[10px] text-slate-400 line-through font-normal">₹{v.mrp}</span></div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Address & Delivery Checker Bar */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-5 md:p-6 shadow-xs space-y-2">
-              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wide">
-                Check Express Local Delivery
-              </label>
-              <form onSubmit={handleAddressCheck} className="flex gap-2">
-                <div className="relative flex-1">
-                  <MapPin size={16} className="absolute left-3 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    value={deliveryAddress}
-                    onChange={(e) => setDeliveryAddress(e.target.value)}
-                    placeholder="Enter Delivery Address / Area (e.g. Vijay Nagar, Indore)"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2.5 text-xs font-bold text-slate-900 focus:outline-none focus:border-amber-500"
-                  />
+                      >
+                        <div className="text-xs font-bold text-[#17231A]">{v.size}</div>
+                        <div className="text-[10px] font-bold text-amber-600">{v.off}</div>
+                        <div className="text-xs font-extrabold text-[#17231A] mt-0.5">
+                          ₹{v.price} <span className="text-[10px] text-slate-400 line-through font-normal">₹{v.mrp}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
-                <button
-                  type="submit"
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
-                >
-                  Check
-                </button>
-              </form>
-              {deliveryStatus && (
-                <p className="text-xs font-semibold text-emerald-600 flex items-center gap-1.5 pt-1">
-                  <Clock size={13} /> {deliveryStatus}
-                </p>
-              )}
-            </div>
+              </div>
 
-            {/* Product Details, Benefits & Nutrition Accordion Cards (Matching Screenshots) */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-4">
-              <div className="border-b border-slate-100 pb-3">
-                <button
-                  onClick={() => setShowDetails(!showDetails)}
-                  className="w-full flex items-center justify-between font-bold text-sm text-slate-900 cursor-pointer"
-                >
-                  Product details
-                  {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {showDetails && (
-                  <div className="space-y-3 mt-2.5">
-                    <p className="text-xs md:text-sm text-slate-500 font-medium leading-relaxed">
-                      {product.desc}
-                    </p>
-
-                    {/* Manufacturing & Expiry Dates Info */}
-                    <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100/80">
-                      <div className="bg-slate-50 border border-slate-200/70 p-2.5 rounded-xl">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">MFG Date</div>
-                        <div className="text-xs font-extrabold text-slate-800 mt-0.5">15 Aug 2026</div>
-                      </div>
-                      <div className="bg-slate-50 border border-slate-200/70 p-2.5 rounded-xl">
-                        <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Expiry Date</div>
-                        <div className="text-xs font-extrabold text-emerald-700 mt-0.5">30 Aug 2026</div>
-                      </div>
-                    </div>
+              {/* Delivery Checker Bar */}
+              <div className="pt-2 border-t border-slate-100 space-y-1">
+                <form onSubmit={handleAddressCheck} className="flex gap-2">
+                  <div className="relative flex-1">
+                    <MapPin size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="text"
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                      placeholder="Enter Delivery Area..."
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl pl-8 pr-3 py-2 text-xs font-semibold text-[#17231A] focus:outline-none focus:border-[#16A34A]"
+                    />
                   </div>
-                )}
-              </div>
-
-              <div className="border-b border-slate-100 pb-3">
-                <button
-                  onClick={() => setShowBenefits(!showBenefits)}
-                  className="w-full flex items-center justify-between font-bold text-sm text-slate-900 cursor-pointer"
-                >
-                  Benefits
-                  {showBenefits ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {showBenefits && (
-                  <ul className="text-xs md:text-sm text-slate-500 font-medium space-y-1.5 mt-2.5 list-disc list-inside">
-                    <li>Rich in dietary fiber and essential proteins.</li>
-                    <li>100% natural, unpolished grain quality.</li>
-                    <li>Directly sourced from trusted local vendors.</li>
-                  </ul>
-                )}
-              </div>
-
-              <div>
-                <button
-                  onClick={() => setShowNutrition(!showNutrition)}
-                  className="w-full flex items-center justify-between font-bold text-sm text-slate-900 cursor-pointer"
-                >
-                  Nutritional Information (per 100g)
-                  {showNutrition ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                </button>
-                {showNutrition && (
-                  <div className="grid grid-cols-3 gap-2 mt-3 text-center text-xs font-semibold">
-                    <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl">
-                      <div className="text-slate-400 text-[10px]">Protein</div>
-                      <div className="font-bold text-slate-900">24.5g</div>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl">
-                      <div className="text-slate-400 text-[10px]">Dietary Fiber</div>
-                      <div className="font-bold text-slate-900">16.2g</div>
-                    </div>
-                    <div className="bg-slate-50 border border-slate-200 p-2 rounded-xl">
-                      <div className="text-slate-400 text-[10px]">Energy</div>
-                      <div className="font-bold text-slate-900">347 kcal</div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Seller Details Card (Exact Match with Image 1) */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-2">
-              <div className="text-sm font-bold text-slate-900">Seller Details</div>
-
-              <div className="flex items-center gap-1.5 text-xs font-bold text-slate-900">
-                <span>Seller Name: Fresh Mart Superstore</span>
-                <CheckCircle2 size={16} className="text-blue-600 fill-blue-600 text-white" />
-              </div>
-
-              <div className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
-                <span>⚡ 15-20 min • Free Delivery on ₹199</span>
-              </div>
-
-              <button
-                onClick={() => setIsAllReviewsModalOpen(true)}
-                className="text-xs font-bold text-slate-600 hover:text-amber-700 transition-colors flex items-center gap-1.5 cursor-pointer bg-slate-50 border border-slate-200/80 px-3 py-1 rounded-xl w-fit mt-1"
-              >
-                <span className="text-amber-500">⭐ {averageRating}</span>
-                <span>({totalReviewsCount} {totalReviewsCount === 1 ? "review" : "reviews"})</span>
-                <span className="text-amber-700 font-extrabold text-[11px] underline ml-1">View All ➔</span>
-              </button>
-            </div>
-
-            {/* Action Buttons: Add to Cart & Download App to Buy */}
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 md:p-7 shadow-xs space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-                {/* Add to Cart */}
-                {inCart ? (
-                  <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-2xl p-2 px-4">
-                    <button
-                      onClick={() => removeFromCart(product.id)}
-                      className="w-9 h-9 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-200 shadow-xs cursor-pointer"
-                    >
-                      <Minus size={15} />
-                    </button>
-                    <span className="font-bold text-sm text-slate-900">{inCart.quantity} in Cart</span>
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="w-9 h-9 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-200 shadow-xs cursor-pointer"
-                    >
-                      <Plus size={15} />
-                    </button>
-                  </div>
-                ) : (
                   <button
-                    onClick={() => {
-                      addToCart({
-                        ...product,
-                        price: activeVariant.price,
-                        mrp: activeVariant.mrp,
-                        name: `${product.name} (${activeVariant.size})`,
-                      });
-                      triggerToast(`Added ${product.name} (${activeVariant.size}) to Cart!`);
-                    }}
-                    className="w-full bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-900 font-bold py-4 px-4 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                    type="submit"
+                    className="bg-[#17231A] hover:bg-slate-800 text-white font-bold px-3.5 py-2 rounded-xl text-xs transition-colors cursor-pointer"
                   >
-                    <ShoppingCart size={17} /> Add to Cart
+                    Check
+                  </button>
+                </form>
+                {deliveryStatus && (
+                  <p className="text-xs font-bold text-[#166534] flex items-center gap-1 pt-0.5">
+                    <Clock size={12} className="text-[#16A34A]" /> {deliveryStatus}
+                  </p>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="pt-2 space-y-2">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  {/* Add to Cart */}
+                  {inCart ? (
+                    <div className="flex items-center justify-between bg-slate-100 border border-slate-300 rounded-xl p-1.5 px-3">
+                      <button
+                        onClick={() => removeFromCart(product.id)}
+                        className="w-8 h-8 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-200 shadow-2xs cursor-pointer"
+                      >
+                        <Minus size={14} />
+                      </button>
+                      <span className="font-extrabold text-xs text-[#17231A]">{inCart.quantity} in Cart</span>
+                      <button
+                        onClick={() => addToCart(product)}
+                        className="w-8 h-8 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-200 shadow-2xs cursor-pointer"
+                      >
+                        <Plus size={14} />
+                      </button>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        addToCart({
+                          ...product,
+                          price: activeVariant.price,
+                          mrp: activeVariant.mrp,
+                          name: `${product.name} (${activeVariant.size})`,
+                        });
+                        triggerToast(`Added ${product.name} (${activeVariant.size}) to Cart!`);
+                      }}
+                      className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                    >
+                      <ShoppingCart size={15} /> Add to Cart
+                    </button>
+                  )}
+
+                  {/* App Download Buy */}
+                  <button
+                    onClick={() => setAppModalOpen(true)}
+                    className="w-full bg-[#17231A] hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl text-xs flex items-center justify-center gap-2 shadow-xs transition-all cursor-pointer"
+                  >
+                    <Smartphone size={15} /> Download App to Buy
+                  </button>
+                </div>
+
+                {/* Subscription Button */}
+                {isSubscriptionEligible && (
+                  <button
+                    type="button"
+                    onClick={handleSubscribeAndSave}
+                    className="w-full bg-[#ECFDF3] hover:bg-emerald-100 text-[#166534] font-bold py-2.5 px-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer border border-emerald-200 group"
+                  >
+                    <Repeat size={15} className="text-[#16A34A] group-hover:rotate-180 transition-transform duration-500" />
+                    <span>Subscribe & Save 10% (₹{Math.round(activeVariant.price * 0.9)})</span>
                   </button>
                 )}
-
-                {/* Download App to Buy */}
-                <button
-                  onClick={() => setAppModalOpen(true)}
-                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black py-4 px-4 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-                >
-                  <Smartphone size={17} /> Download App to Buy
-                </button>
               </div>
 
-              {/* Subscribe and Save 10% Button Link (Only for Subscription Eligible Products) */}
-              {isSubscriptionEligible && (
-                <button
-                  type="button"
-                  onClick={handleSubscribeAndSave}
-                  className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-4 px-4 rounded-2xl text-xs md:text-sm flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer border border-emerald-600 group"
-                >
-                  <Repeat size={18} className="group-hover:rotate-180 transition-transform duration-500" />
-                  <span>Subscribe & Save 10% (₹{Math.round(activeVariant.price * 0.9)})</span>
-                </button>
-              )}
             </div>
 
           </div>
 
         </div>
 
-        {/* ========================================================================= */}
-        {/* RELATED PRODUCTS GRID SECTION */}
-        {/* ========================================================================= */}
-        <section className="mt-16 pt-10 border-t border-slate-200/90 space-y-6">
+        {/* RELATED / SIMILAR PRODUCTS SECTION */}
+        <section className="pt-8 border-t border-slate-200 space-y-6">
           <div className="flex items-center justify-between">
             <div>
-              <span className="block text-xs font-extrabold tracking-widest uppercase text-blue-600 mb-1">More Essentials</span>
-              <h2 className="text-2xl md:text-3xl font-extrabold text-slate-900">
-                Related Products
+              <span className="block text-xs font-black uppercase tracking-widest text-[#16A34A] mb-1">
+                More Essentials
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+                Similar Products
               </h2>
             </div>
-            <Link to="/categories" className="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+            <Link to="/categories" className="text-xs font-extrabold text-[#16A34A] hover:text-[#15803D] flex items-center gap-1">
               View All Categories <ChevronRight size={14} />
             </Link>
           </div>
@@ -709,47 +679,47 @@ export default function ProductDetailPage() {
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                       loading="lazy"
                     />
-                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
-                      <Star size={10} className="fill-amber-400 text-amber-400" />
+                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-xs font-bold px-1.5 py-0.5 rounded-md shadow-2xs flex items-center gap-0.5">
+                      <Star size={11} className="fill-amber-400 text-amber-400" />
                       {rel.rating || "4.8"}
                     </span>
                   </div>
 
                   <div className="p-3 text-left flex-1 flex flex-col justify-between">
                     <div>
-                      <span className="text-[10px] font-semibold text-slate-400 block truncate">{rel.brand || "Fresh Mart"}</span>
-                      <h4 className="font-extrabold text-xs text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
+                      <span className="text-xs font-semibold text-slate-400 block truncate">{rel.brand || "Fresh Mart"}</span>
+                      <h4 className="font-extrabold text-xs sm:text-sm text-[#17231A] line-clamp-2 mt-0.5 leading-snug group-hover:text-[#16A34A] transition-colors">
                         {rel.name}
                       </h4>
 
                       {isRelSubEligible && (
                         <div className="mt-1.5 inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-md">
                           <Repeat size={10} className="text-[#16A34A]" />
-                          <span>Save 10% with Subscription</span>
+                          <span>Save 10% on Subscription</span>
                         </div>
                       )}
                     </div>
 
                     <div className="mt-3 pt-2 border-t border-slate-100 flex items-center justify-between">
                       <div>
-                        <div className="text-sm font-black text-[#166534]">₹{rel.price}</div>
-                        <div className="text-[10px] text-slate-400 line-through font-semibold">₹{rel.mrp || Math.round(rel.price * 1.2)}</div>
+                        <div className="text-base font-extrabold text-[#166534]">₹{rel.price}</div>
+                        <div className="text-xs text-slate-400 line-through font-semibold">₹{rel.mrp || Math.round(rel.price * 1.2)}</div>
                       </div>
 
-                      {/* Add to Cart Actions with Event Propagation Prevention */}
+                      {/* Add Button Action */}
                       <div onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                         {inCart ? (
                           <div className="flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 rounded-full p-0.5">
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); removeFromCart(rel.id); }}
-                              className="w-5 h-5 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-100 cursor-pointer shadow-xs"
+                              className="w-5 h-5 rounded-full bg-white text-slate-700 flex items-center justify-center hover:bg-slate-100 cursor-pointer shadow-2xs"
                             >
                               <Minus size={10} />
                             </button>
                             <span className="w-4 text-center text-xs font-black text-[#166534]">{inCart.quantity}</span>
                             <button
                               onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(rel); }}
-                              className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center hover:bg-[#15803D] cursor-pointer shadow-xs"
+                              className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center hover:bg-[#15803D] cursor-pointer shadow-2xs"
                             >
                               <Plus size={10} />
                             </button>
@@ -757,7 +727,7 @@ export default function ProductDetailPage() {
                         ) : (
                           <button
                             onClick={(e) => { e.preventDefault(); e.stopPropagation(); addToCart(rel); triggerToast(`Added ${rel.name} to Cart!`); }}
-                            className="bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-extrabold px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-xs"
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white text-xs font-extrabold px-3 py-1.5 rounded-full transition-all flex items-center gap-1 cursor-pointer shadow-2xs"
                           >
                             <Plus size={13} /> Add
                           </button>
@@ -773,6 +743,151 @@ export default function ProductDetailPage() {
 
       </main>
 
+      {/* MOBILE STICKY BOTTOM ACTION BAR */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 p-3 shadow-lg flex items-center justify-between gap-3 sm:hidden">
+        <div className="text-left leading-none">
+          <div className="text-xs text-slate-400 font-semibold">{activeVariant.size}</div>
+          <div className="text-lg font-extrabold text-[#17231A] mt-0.5">
+            ₹{activeVariant.price} <span className="text-xs text-slate-400 line-through font-normal">₹{activeVariant.mrp}</span>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {inCart ? (
+            <div className="flex items-center gap-2 bg-[#ECFDF3] border border-emerald-200 rounded-full px-3 py-1.5">
+              <button
+                onClick={() => removeFromCart(product.id)}
+                className="w-6 h-6 rounded-full bg-white text-slate-700 flex items-center justify-center font-bold text-xs shadow-2xs"
+              >
+                <Minus size={12} />
+              </button>
+              <span className="font-extrabold text-xs text-[#166534] px-1">{inCart.quantity}</span>
+              <button
+                onClick={() => addToCart(product)}
+                className="w-6 h-6 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-bold text-xs shadow-2xs"
+              >
+                <Plus size={12} />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                addToCart({
+                  ...product,
+                  price: activeVariant.price,
+                  mrp: activeVariant.mrp,
+                  name: `${product.name} (${activeVariant.size})`,
+                });
+                triggerToast(`Added ${product.name} (${activeVariant.size}) to Cart!`);
+              }}
+              className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-5 py-2.5 rounded-full text-xs flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
+            >
+              <ShoppingCart size={15} /> Add to Cart
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* PRODUCT SPECIFICATIONS, BENEFITS & MFG MODAL */}
+      {isProductInfoModalOpen && (
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl p-5 md:p-7 max-w-lg w-full flex flex-col space-y-4 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out] text-left">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-4 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 bg-[#ECFDF3] border border-emerald-200 text-[#16A34A] rounded-2xl flex items-center justify-center shrink-0">
+                  <Sparkles size={20} />
+                </div>
+                <div>
+                  <h3 className="text-lg font-extrabold text-[#17231A] leading-tight">
+                    Product Specifications & Info
+                  </h3>
+                  <p className="text-xs text-slate-500 font-semibold truncate max-w-[220px] sm:max-w-xs">
+                    {product.name}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setIsProductInfoModalOpen(false)}
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="overflow-y-auto pr-1 space-y-4 flex-1 text-left text-xs font-medium no-scrollbar">
+              
+              {/* Full Product Description */}
+              <div className="space-y-1.5">
+                <div className="font-extrabold text-[#17231A] text-xs uppercase tracking-wider">Description</div>
+                <p className="text-slate-600 leading-relaxed bg-[#FFFCF5] border border-slate-200/80 p-3 rounded-2xl">
+                  {product.desc}
+                </p>
+              </div>
+
+              {/* Manufacturing & Expiry Dates */}
+              <div className="space-y-1.5">
+                <div className="font-extrabold text-[#17231A] text-xs uppercase tracking-wider">Manufacturing & Shelf Life</div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-[#FFFCF5] border border-slate-200 p-3 rounded-2xl">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">MFG Date</div>
+                    <div className="text-xs font-extrabold text-[#17231A] mt-0.5">15 Aug 2026</div>
+                  </div>
+                  <div className="bg-[#FFFCF5] border border-slate-200 p-3 rounded-2xl">
+                    <div className="text-[10px] font-bold text-slate-400 uppercase">Expiry Date</div>
+                    <div className="text-xs font-extrabold text-[#166534] mt-0.5">30 Aug 2026</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Key Benefits */}
+              <div className="space-y-1.5">
+                <div className="font-extrabold text-[#17231A] text-xs uppercase tracking-wider">Key Benefits</div>
+                <ul className="bg-[#FFFCF5] border border-slate-200 p-3 rounded-2xl space-y-1.5 text-slate-700 list-disc list-inside">
+                  <li>100% natural, handpicked local store quality.</li>
+                  <li>Hyperlocal neighborhood dispatch in 15-20 minutes.</li>
+                  <li>Sourced directly from verified local Kirana vendors.</li>
+                </ul>
+              </div>
+
+              {/* Nutritional Information */}
+              <div className="space-y-1.5">
+                <div className="font-extrabold text-[#17231A] text-xs uppercase tracking-wider">Nutritional Info (per 100g)</div>
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
+                    <div className="text-slate-400 text-[10px]">Protein</div>
+                    <div className="font-extrabold text-[#17231A]">24.5g</div>
+                  </div>
+                  <div className="bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
+                    <div className="text-slate-400 text-[10px]">Dietary Fiber</div>
+                    <div className="font-extrabold text-[#17231A]">16.2g</div>
+                  </div>
+                  <div className="bg-[#FFFCF5] border border-slate-200 p-2.5 rounded-xl">
+                    <div className="text-slate-400 text-[10px]">Energy</div>
+                    <div className="font-extrabold text-[#17231A]">347 kcal</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-2 border-t border-slate-100 shrink-0 flex items-center justify-end">
+              <button
+                onClick={() => setIsProductInfoModalOpen(false)}
+                className="bg-[#17231A] hover:bg-slate-800 text-white font-bold px-4 py-2 rounded-xl text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
       {/* ALL RATINGS & REVIEWS POPUP MODAL */}
       {isAllReviewsModalOpen && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
@@ -784,7 +899,7 @@ export default function ProductDetailPage() {
                   <Star size={20} className="fill-amber-400 text-amber-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-slate-900 leading-tight">
+                  <h3 className="text-lg font-extrabold text-[#17231A] leading-tight">
                     Ratings & Buyer Reviews
                   </h3>
                   <p className="text-xs text-slate-500 font-semibold truncate max-w-[240px] sm:max-w-xs">
@@ -796,7 +911,7 @@ export default function ProductDetailPage() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleOpenWriteReview}
-                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-xs flex items-center gap-1.5"
+                  className="bg-[#17231A] hover:bg-slate-800 text-white font-extrabold text-xs px-3.5 py-2 rounded-xl transition-all cursor-pointer shadow-2xs flex items-center gap-1.5"
                 >
                   <Sparkles size={13} className="text-amber-400" /> Write Review
                 </button>
@@ -810,28 +925,25 @@ export default function ProductDetailPage() {
             </div>
 
             {/* Modal Body: Scrollable Content */}
-            <div className="overflow-y-auto pr-1 space-y-5 flex-1 no-scrollbar">
-
-              {/* Rating Breakdown Banner inside Modal */}
-              <div className="grid sm:grid-cols-[180px_1fr] gap-4 bg-gradient-to-br from-amber-50/70 to-orange-50/40 border border-amber-100/90 p-4 rounded-2xl">
-                {/* Average Rating Score Box */}
+            <div className="overflow-y-auto pr-1 space-y-5 flex-1 no-scrollbar text-left">
+              {/* Rating Breakdown Banner */}
+              <div className="grid sm:grid-cols-[180px_1fr] gap-4 bg-gradient-to-br from-amber-50/70 to-amber-100/40 border border-amber-200/70 p-4 rounded-2xl">
                 <div className="text-center flex flex-col justify-center items-center border-b sm:border-b-0 sm:border-r border-amber-200/60 pb-3 sm:pb-0 sm:pr-4">
-                  <div className="text-4xl font-black text-slate-900 tracking-tight">{averageRating}</div>
+                  <div className="text-4xl font-extrabold text-[#17231A] tracking-tight">{averageRating}</div>
                   <div className="flex items-center justify-center gap-0.5 text-amber-400 my-1">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} size={16} className={i < Math.round(Number(averageRating)) ? "fill-amber-400 text-amber-400" : "text-slate-300"} />
                     ))}
                   </div>
-                  <div className="text-[11px] font-bold text-slate-600">
+                  <div className="text-xs font-extrabold text-slate-600">
                     {totalReviewsCount} Verified {totalReviewsCount === 1 ? "Buyer" : "Buyers"}
                   </div>
-                  <div className="inline-flex items-center gap-1 bg-emerald-50 border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-full mt-1.5">
+                  <div className="inline-flex items-center gap-1 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-[10px] font-extrabold px-2 py-0.5 rounded-full mt-1.5">
                     <CheckCircle2 size={11} className="text-[#16A34A]" />
                     <span>{recommendPercent}% Recommend</span>
                   </div>
                 </div>
 
-                {/* Dynamic Rating Progress Bars */}
                 <div className="space-y-1.5 text-xs font-bold text-slate-600 justify-center flex flex-col">
                   {[5, 4, 3, 2, 1].map((starNum) => {
                     const item = ratingDistribution[starNum] || { count: 0, percent: 0 };
@@ -858,7 +970,7 @@ export default function ProductDetailPage() {
               {/* Filter & Sort Toolbar */}
               <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-50 border border-slate-200/80 p-2.5 rounded-xl">
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-extrabold text-slate-800">
+                  <span className="text-xs font-extrabold text-[#17231A]">
                     Reviews ({filteredSortedReviews.length})
                   </span>
                   {starFilter > 0 && (
@@ -873,11 +985,11 @@ export default function ProductDetailPage() {
                 </div>
 
                 <div className="flex items-center gap-1.5 text-xs font-bold text-slate-600">
-                  <span className="text-slate-400 text-[11px]">Sort:</span>
+                  <span className="text-slate-400 text-xs">Sort:</span>
                   <select
                     value={reviewSort}
                     onChange={(e) => setReviewSort(e.target.value)}
-                    className="bg-white border border-slate-200 text-slate-800 text-xs font-bold rounded-lg px-2.5 py-1 outline-none focus:border-amber-500 cursor-pointer"
+                    className="bg-white border border-slate-200 text-[#17231A] text-xs font-bold rounded-lg px-2.5 py-1 outline-none focus:border-[#16A34A] cursor-pointer"
                   >
                     <option value="recent">Most Recent</option>
                     <option value="highest">Highest Rating</option>
@@ -913,11 +1025,11 @@ export default function ProductDetailPage() {
                       >
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
-                            <div className="w-7 h-7 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-[11px] shadow-2xs">
+                            <div className="w-7 h-7 rounded-full bg-[#16A34A] text-white flex items-center justify-center font-black text-[11px]">
                               {initials}
                             </div>
                             <div>
-                              <div className="font-extrabold text-xs text-slate-900 flex items-center gap-1.5">
+                              <div className="font-extrabold text-xs text-[#17231A] flex items-center gap-1.5">
                                 <span>{rev.name}</span>
                                 {rev.verified && (
                                   <span className="inline-flex items-center gap-0.5 bg-blue-50 text-blue-700 text-[9px] font-black px-1.5 py-0.2 rounded-md border border-blue-200">
@@ -925,13 +1037,13 @@ export default function ProductDetailPage() {
                                   </span>
                                 )}
                               </div>
-                              <div className="text-[10px] text-slate-400 font-semibold">
+                              <div className="text-xs text-slate-400 font-medium">
                                 {rev.date} {rev.location ? `· ${rev.location}` : ""}
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-700 px-2 py-0.5 rounded-lg text-xs font-black">
+                          <div className="flex items-center gap-1 bg-amber-50 border border-amber-200 text-amber-800 px-2 py-0.5 rounded-lg text-xs font-black">
                             <Star size={11} className="fill-amber-400 text-amber-400" />
                             <span>{Number(rev.rating).toFixed(1)}</span>
                           </div>
@@ -968,7 +1080,6 @@ export default function ProductDetailPage() {
                 Close Box
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -976,7 +1087,7 @@ export default function ProductDetailPage() {
       {/* WRITE A REVIEW MODAL */}
       {isWriteReviewOpen && (
         <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-5 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out]">
+          <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-5 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out] text-left">
             <button
               onClick={() => setIsWriteReviewOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"
@@ -989,7 +1100,7 @@ export default function ProductDetailPage() {
                 <Star size={24} className="fill-amber-400 text-amber-400" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-slate-900">
+                <h3 className="text-lg font-extrabold text-[#17231A]">
                   Write a Review
                 </h3>
                 <p className="text-xs text-slate-500 font-semibold">
@@ -999,7 +1110,6 @@ export default function ProductDetailPage() {
             </div>
 
             <form onSubmit={handleAddReview} className="space-y-4 pt-1">
-              {/* Star Rating Picker */}
               <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-2xl text-center space-y-2">
                 <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                   Select Rating Score
@@ -1033,7 +1143,6 @@ export default function ProductDetailPage() {
                 </div>
               </div>
 
-              {/* User Details */}
               <div className="grid sm:grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">Your Name</label>
@@ -1042,7 +1151,7 @@ export default function ProductDetailPage() {
                     value={formName}
                     onChange={(e) => setFormName(e.target.value)}
                     placeholder="e.g. Rahul Sharma"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-amber-500"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
                     required
                   />
                 </div>
@@ -1053,13 +1162,12 @@ export default function ProductDetailPage() {
                     value={formLocation}
                     onChange={(e) => setFormLocation(e.target.value)}
                     placeholder="e.g. Vijay Nagar, Indore"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-amber-500"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
                     required
                   />
                 </div>
               </div>
 
-              {/* Review Comment */}
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Your Detailed Review</label>
                 <textarea
@@ -1067,12 +1175,11 @@ export default function ProductDetailPage() {
                   value={formComment}
                   onChange={(e) => setFormComment(e.target.value)}
                   placeholder="How was the product freshness, packaging, and local kirana delivery?"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs font-semibold outline-none focus:border-amber-500"
+                  className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl p-3.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
                   required
                 />
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2 pt-2">
                 <button
                   type="button"
@@ -1083,7 +1190,7 @@ export default function ProductDetailPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-amber-500 hover:bg-amber-600 text-slate-950 font-black py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-md flex items-center justify-center gap-1.5"
+                  className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
                 >
                   <Sparkles size={14} /> Submit Review
                 </button>
@@ -1104,12 +1211,12 @@ export default function ProductDetailPage() {
               <X size={18} />
             </button>
 
-            <div className="w-14 h-14 bg-amber-50 text-amber-600 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+            <div className="w-14 h-14 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
               <Smartphone size={28} />
             </div>
 
             <div>
-              <h3 className="text-xl font-extrabold text-slate-900">
+              <h3 className="text-xl font-extrabold text-[#17231A]">
                 Complete Purchase on App
               </h3>
               <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1117,10 +1224,10 @@ export default function ProductDetailPage() {
               </p>
             </div>
 
-            <div className="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 flex items-center justify-center gap-3">
-              <QrCode size={48} className="text-slate-900" />
+            <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-4 flex items-center justify-center gap-3">
+              <QrCode size={48} className="text-[#17231A]" />
               <div className="text-left text-xs">
-                <div className="font-extrabold text-slate-900">Scan to Install</div>
+                <div className="font-extrabold text-[#17231A]">Scan to Install</div>
                 <div className="text-slate-500 font-semibold">Available on Android & iOS</div>
               </div>
             </div>
@@ -1128,13 +1235,13 @@ export default function ProductDetailPage() {
             <div className="grid grid-cols-2 gap-2 pt-1">
               <button
                 onClick={() => alert("Downloading FillCarts for Android...")}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Download size={14} /> Google Play
               </button>
               <button
                 onClick={() => alert("Downloading FillCarts for iOS...")}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
               >
                 <Smartphone size={14} /> App Store
               </button>
