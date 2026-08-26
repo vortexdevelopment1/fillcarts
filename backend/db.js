@@ -144,6 +144,25 @@ const createRequiredTables = () => {
         console.log(`✅ Table 'vendors' verified/created in database '${dbName}'!`);
       }
     });
+
+    db.query(`
+      CREATE TABLE IF NOT EXISTS riders (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        rider_id VARCHAR(30) UNIQUE NOT NULL,
+        name VARCHAR(150) NOT NULL,
+        phone VARCHAR(20) NOT NULL UNIQUE,
+        city VARCHAR(100) NOT NULL,
+        vehicle VARCHAR(100) NOT NULL DEFAULT 'Motorbike / Scooter',
+        status VARCHAR(50) DEFAULT 'Pending',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `, (rErr) => {
+      if (rErr) {
+        console.error("Error creating riders table:", rErr.message);
+      } else {
+        console.log(`✅ Table 'riders' verified/created in database '${dbName}'!`);
+      }
+    });
   });
 };
 

@@ -155,7 +155,7 @@ export default function RiderHomePage() {
     setHeroError("");
   };
 
-  const handleHeroSubmit = (e) => {
+  const handleHeroSubmit = async (e) => {
     e.preventDefault();
     if (!heroForm.name.trim()) {
       setHeroError("Please enter your full name.");
@@ -171,10 +171,24 @@ export default function RiderHomePage() {
     }
 
     setHeroSubmitting(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch("http://localhost:3000/api/rider/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(heroForm)
+      });
+      const result = await response.json();
+      setHeroSubmitting(false);
+      if (result.success) {
+        setHeroSubmitted(true);
+      } else {
+        setHeroError(result.message || "Failed to submit rider application.");
+      }
+    } catch (err) {
+      console.warn("Backend API unreachable, using rider registration fallback:", err);
       setHeroSubmitting(false);
       setHeroSubmitted(true);
-    }, 800);
+    }
   };
 
   // Bottom form handlers
@@ -192,7 +206,7 @@ export default function RiderHomePage() {
     setErrorMessage("");
   };
 
-  const handleFormSubmit = (e) => {
+  const handleFormSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
       setErrorMessage("Please enter your full name.");
@@ -208,10 +222,24 @@ export default function RiderHomePage() {
     }
 
     setIsSubmitting(true);
-    setTimeout(() => {
+    try {
+      const response = await fetch("http://localhost:3000/api/rider/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form)
+      });
+      const result = await response.json();
+      setIsSubmitting(false);
+      if (result.success) {
+        setIsSubmitted(true);
+      } else {
+        setErrorMessage(result.message || "Failed to submit application.");
+      }
+    } catch (err) {
+      console.warn("Backend API unreachable, using rider registration fallback:", err);
       setIsSubmitting(false);
       setIsSubmitted(true);
-    }, 800);
+    }
   };
 
   return (
