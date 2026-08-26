@@ -1,266 +1,252 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import VendorNavbar from "../components/VendorNavbar";
 import Footer from "../components/Footer";
-import { FileText, ShieldCheck, CheckCircle2, ChevronRight, Lock, Scale, HelpCircle } from "lucide-react";
 
 export default function VendorTermsPrivacyPage() {
-  const [activeTab, setActiveTab] = useState("terms");
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  // Sync tab state with current URL pathname
+  const [activeTab, setActiveTab] = useState(() => {
+    return location.pathname.includes("privacy") ? "privacy" : "terms";
+  });
+
+  useEffect(() => {
+    if (location.pathname.includes("privacy")) {
+      setActiveTab("privacy");
+    } else if (location.pathname.includes("terms")) {
+      setActiveTab("terms");
+    }
+  }, [location.pathname]);
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === "terms") {
+      navigate("/terms");
+    } else {
+      navigate("/privacy");
+    }
+  };
 
   return (
-    <div className="bg-[#F8FAFC] min-h-screen text-[#17231A] flex flex-col font-sans antialiased">
+    <div
+      className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col font-sans"
+      style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}
+    >
       {/* Navbar */}
       <VendorNavbar />
 
-      {/* Hero Banner Header */}
-      <section className="relative bg-white border-b border-slate-200 py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-left space-y-4">
-          <div className="inline-flex items-center gap-2 bg-[#ECFDF3] border border-emerald-200 text-[#166534] text-xs font-bold px-3 py-1 rounded-md uppercase tracking-wider">
-            <Scale size={14} className="text-[#16A34A]" />
-            <span>Merchant Legal Documentation</span>
-          </div>
+      {/* Dark Green Header Strip (Zepto Style) */}
+      <div className="bg-[#166534] text-white py-8 sm:py-12 px-4 text-center space-y-4 shadow-md">
+        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight underline underline-offset-8 decoration-emerald-400">
+          {activeTab === "terms"
+            ? "Filcarts Merchant Terms of Use"
+            : "Filcarts Merchant Privacy Policy"}
+        </h1>
 
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-[#17231A] leading-tight tracking-tight">
-            Terms & Conditions <span className="text-[#16A34A]">&</span> Privacy Policy
-          </h1>
-
-          <p className="text-sm sm:text-base text-slate-600 font-normal leading-relaxed max-w-3xl">
-            Everything you need to know about partnering with Filcarts, store operation guidelines, merchant terms, commission structures, and how we protect your business data.
-          </p>
-
-          <div className="pt-2 text-xs text-slate-400 font-medium">
-            Last updated: August 24, 2026 • Applicable to all registered Filcarts Merchants & Partners
-          </div>
-        </div>
-      </section>
-
-      {/* Main Content Area */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-1 w-full text-left">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-3 border-b border-slate-200 pb-4 mb-8">
+        {/* Quick Switcher */}
+        <div className="pt-2 flex justify-center items-center gap-2">
           <button
-            onClick={() => setActiveTab("terms")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${activeTab === "terms"
-              ? "bg-[#16A34A] text-white shadow-xs"
-              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-              }`}
+            onClick={() => handleTabChange("terms")}
+            className={
+              activeTab === "terms"
+                ? "bg-white/20 text-white font-extrabold text-xs px-4 py-1.5 rounded-full border border-white/30 backdrop-blur-xs cursor-default"
+                : "bg-emerald-950/60 hover:bg-emerald-950 text-emerald-100 font-extrabold text-xs px-4 py-1.5 rounded-full transition-all cursor-pointer"
+            }
           >
-            <FileText size={16} />
-            <span>Terms & Conditions</span>
+            Terms of Use
           </button>
-
           <button
-            onClick={() => setActiveTab("privacy")}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-lg font-bold text-sm transition-all cursor-pointer ${activeTab === "privacy"
-              ? "bg-[#16A34A] text-white shadow-xs"
-              : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
-              }`}
+            onClick={() => handleTabChange("privacy")}
+            className={
+              activeTab === "privacy"
+                ? "bg-white/20 text-white font-extrabold text-xs px-4 py-1.5 rounded-full border border-white/30 backdrop-blur-xs cursor-default"
+                : "bg-emerald-950/60 hover:bg-emerald-950 text-emerald-100 font-extrabold text-xs px-4 py-1.5 rounded-full transition-all cursor-pointer"
+            }
           >
-            <ShieldCheck size={16} />
-            <span>Privacy Policy</span>
+            Privacy Policy
           </button>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Quick Jump Sidebar */}
-          <aside className="lg:col-span-3 space-y-4">
-            <div className="bg-white border border-slate-200 rounded-xl p-5 shadow-xs sticky top-6">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">
-                Quick Navigation
-              </h3>
-              <nav className="space-y-1.5 text-xs sm:text-sm font-medium">
-                {activeTab === "terms" ? (
-                  <>
-                    <a href="#terms-1" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">1. Eligibility & Registration</a>
-                    <a href="#terms-2" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">2. Catalog & Pricing Rules</a>
-                    <a href="#terms-3" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">3. Order Preparation & Fulfillment</a>
-                    <a href="#terms-4" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">4. Commission & Bank Settlements</a>
-                    <a href="#terms-5" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">5. Merchant Code of Conduct</a>
-                    <a href="#terms-6" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">6. Account Termination & Pause</a>
-                  </>
-                ) : (
-                  <>
-                    <a href="#privacy-1" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">1. Merchant Data We Collect</a>
-                    <a href="#privacy-2" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">2. How Data Is Used</a>
-                    <a href="#privacy-3" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">3. Sharing with Delivery Partners</a>
-                    <a href="#privacy-4" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">4. Data Security & Storage</a>
-                    <a href="#privacy-5" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">5. Merchant Privacy Rights</a>
-                    <a href="#privacy-6" className="block text-slate-700 hover:text-[#16A34A] py-1 transition-colors">6. Legal & Privacy Contacts</a>
-                  </>
-                )}
-              </nav>
-
-              <div className="mt-6 pt-4 border-t border-slate-100">
-                <div className="bg-[#ECFDF3] rounded-lg p-3 text-xs text-[#166534] space-y-1">
-                  <div className="font-bold flex items-center gap-1">
-                    <HelpCircle size={14} />
-                    Need Legal Support?
-                  </div>
-                  <p className="text-[11px] text-slate-600 leading-snug">
-                    Contact merchant support for agreement queries.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </aside>
-
-          {/* Detailed Content Column */}
-          <div className="lg:col-span-9 space-y-8">
-            {/* SECTION 1: TERMS & CONDITIONS */}
-            <div className={`space-y-8 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs ${activeTab === "terms" ? "block" : "hidden"}`}>
-              <div className="border-b border-slate-200 pb-5">
-                <div className="inline-flex items-center gap-2 text-[#16A34A] text-xs font-bold uppercase tracking-wider mb-1">
-                  <FileText size={16} />
-                  Part 1
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
-                  Merchant Terms & Conditions
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  By registering your store on Filcarts, you agree to adhere to these operating guidelines.
-                </p>
-              </div>
-
-              {/* Terms Sub-sections */}
-              <div id="terms-1" className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">1</span>
-                  Eligibility & Store Registration
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  To register as a merchant on Filcarts, you must own or legally represent a physical store, retail shop, or commercial business entity operating within supported delivery zones. All details provided during registration (Store Name, Address, Owner Contact, GST/PAN) must be authentic and verifiable.
-                </p>
-              </div>
-
-              <div id="terms-2" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">2</span>
-                  Catalog, Pricing & Stock Availability
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Merchants are responsible for maintaining accurate product listings, selling prices, MRP, and stock availability via the Filcarts Merchant App. Prices listed on the app must not exceed the maximum retail price (MRP) set by manufacturers. Out-of-stock items must be updated immediately to prevent order cancellations.
-                </p>
-              </div>
-
-              <div id="terms-3" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">3</span>
-                  Order Preparation & Packaging
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Once an order is accepted via the Merchant App, the store must pack items securely and mark the order ready within the estimated preparation timeframe. Products must meet fresh quality, safety, and hygiene standards. Filcarts delivery partners will collect packed orders directly from your store.
-                </p>
-              </div>
-
-              <div id="terms-4" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">4</span>
-                  Commission & Settlement Payouts
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Filcarts charges a transparent platform commission per completed customer order as agreed during onboarding. Accumulated earnings after commission deduction are deposited directly into your verified business bank account according to the standard settlement cycle (daily/weekly).
-                </p>
-              </div>
-
-              <div id="terms-5" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">5</span>
-                  Merchant Code of Conduct
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Merchants must treat delivery partners and customers with respect. Selling expired goods, counterfeit items, prohibited substances, or engaging in fraudulent activity will result in immediate store suspension and legal compliance action.
-                </p>
-              </div>
-
-              <div id="terms-6" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">6</span>
-                  Store Pause & Account Termination
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Merchants may temporarily pause receiving orders at any time through the Merchant App toggle. Either party may terminate the merchant partnership by providing 7 days prior notice, subject to settlement of outstanding orders and payouts.
-                </p>
-              </div>
-            </div>
-
-            {/* SECTION 2: PRIVACY POLICY */}
-            <div className={`space-y-8 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-2xs ${activeTab === "privacy" ? "block" : "hidden"}`}>
-              <div className="border-b border-slate-200 pb-5">
-                <div className="inline-flex items-center gap-2 text-[#16A34A] text-xs font-bold uppercase tracking-wider mb-1">
-                  <ShieldCheck size={16} />
-                  Part 2
-                </div>
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
-                  Merchant Privacy Policy
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  How Filcarts collects, uses, and safeguards your store information and personal details.
-                </p>
-              </div>
-
-              {/* Privacy Sub-sections */}
-              <div id="privacy-1" className="space-y-2">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">1</span>
-                  Merchant Data We Collect
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  We collect information necessary to onboard and operate your store on Filcarts. This includes store name, category, store address, owner full name, phone number, email address, bank account details for payouts, and business verification documents (GSTIN/PAN).
-                </p>
-              </div>
-
-              <div id="privacy-2" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">2</span>
-                  How We Use Merchant Data
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Your data is used exclusively for: display of your store catalog to nearby customers, processing order notifications, facilitating delivery pickup, transferring bank settlements, sending critical app updates, and maintaining legal compliance.
-                </p>
-              </div>
-
-              <div id="privacy-3" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">3</span>
-                  Sharing with Delivery & Logistics Partners
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Store location and packed order details are shared with assigned Filcarts delivery partners solely to enable order pickup and customer delivery. We do not sell or monetize merchant contact details to third-party advertisers.
-                </p>
-              </div>
-
-              <div id="privacy-4" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">4</span>
-                  Data Protection & Storage Security
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  We implement industry-standard encryption protocols, secure servers, and access controls to safeguard your business credentials and payout information against unauthorized access or breaches.
-                </p>
-              </div>
-
-              <div id="privacy-5" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">5</span>
-                  Merchant Data Rights & Controls
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  Merchants can request updates to store details, bank information, or account credentials at any time via the Merchant App support or by contacting our onboarding team.
-                </p>
-              </div>
-
-              <div id="privacy-6" className="space-y-2 pt-4 border-t border-slate-100">
-                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-[#16A34A] text-xs font-extrabold flex items-center justify-center">6</span>
-                  Privacy Inquiries & Support
-                </h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
-                  If you have questions regarding data privacy or merchant compliance, please reach out to our team at support@filcarts.com or through the Filcarts Merchant App help section.
-                </p>
-              </div>
-            </div>
-
-          </div>
+      {/* Clean Zepto-Style Document Body */}
+      <main className="max-w-4xl mx-auto px-6 sm:px-8 py-10 space-y-6 flex-1 w-full text-left">
+        {/* Meta Version & Last Updated */}
+        <div className="space-y-1 text-xs text-slate-500 italic font-semibold border-b border-slate-200/80 pb-4">
+          <p>Version 1.0</p>
+          <p>Last updated: 24 August 2026</p>
         </div>
+
+        {activeTab === "terms" ? (
+          <>
+            {/* Legal Electronic Record Statement */}
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+              This document is an electronic record published in accordance with the provisions of the Information Technology Act, 2000 and rules thereunder. This agreement governs the onboarding, store operations, catalog listing, order fulfillment, platform commission, and business relationship between Filcarts Technologies Pvt Ltd ("Filcarts", "We", "Platform") and registered merchant partners ("Merchant", "You", "Store Partner").
+            </p>
+
+            {/* Section 1 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                1. Merchant Eligibility & Store Registration
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                To register as a merchant on Filcarts, you must legally own or represent a physical retail store, dark store, or commercial business entity operating within supported delivery zones in India. All details provided during registration (Store Name, Physical Address, GSTIN, PAN, FSSAI License, Bank Details) must be authentic and verifiable.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Filcarts reserves the right to verify submitted business credentials and reject onboarding if documentation is found to be fraudulent, invalid, or incomplete.
+              </p>
+            </div>
+
+            {/* Section 2 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                2. Store Catalog, Pricing & MRP Compliance
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Merchants are responsible for maintaining accurate product listings, selling prices, MRP, and stock availability via the Filcarts Merchant App. Prices listed on the app must not exceed the Maximum Retail Price (MRP) mandated by manufacturers under the Legal Metrology Act.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Out-of-stock items must be updated immediately in the app to prevent order cancellations and customer dissatisfaction.
+              </p>
+            </div>
+
+            {/* Section 3 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                3. Order Preparation, Packaging & 15-30 Min Delivery
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Upon receiving an order notification, the store agrees to pack items securely within the target 5-10 minute preparation window. Products must meet fresh quality, safety, and hygiene standards.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Assigned Filcarts delivery partners will collect packed orders directly from your store for fast 15–30 minute doorstep delivery to nearby customers.
+              </p>
+            </div>
+
+            {/* Section 4 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                4. Platform Commission & Bank Settlement Payouts
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Filcarts charges a transparent platform commission per completed customer order as agreed during onboarding. Applicable statutory taxes (including GST and TCS under CGST Act) will be deducted per regulations.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Accumulated merchant earnings after commission deductions are deposited directly into your verified business bank account according to the standard settlement cycle (daily/weekly).
+              </p>
+            </div>
+
+            {/* Section 5 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                5. Cancellations, Quality Refunds & Deductions
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Orders cancelled after store acceptance due to stock unavailability may incur operational penalty fees.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Refunds issued to customers for damaged, expired, missing, or incorrect items packed by the store will be deducted from subsequent merchant settlement payouts upon verification.
+              </p>
+            </div>
+
+            {/* Section 6 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                6. Code of Conduct & Prohibited Products
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Merchants must treat delivery partners and customers with respect. Selling expired goods, counterfeit items, illegal substances, or unauthorized products is strictly prohibited and leads to immediate store suspension and legal action.
+              </p>
+            </div>
+
+            {/* Section 7 */}
+            <div className="space-y-2 pt-2 pb-6">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                7. Store Pause, Termination & Governing Law
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Merchants can temporarily pause receiving orders at any time using the toggle in the Merchant App. Either party may terminate the merchant partnership with 7 days prior written notice, subject to settlement of outstanding orders.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                These Merchant Terms of Use shall be governed by the laws of India, with exclusive jurisdiction in the courts of Gurgaon / New Delhi.
+              </p>
+            </div>
+          </>
+        ) : (
+          <>
+            {/* Privacy Statement */}
+            <p className="text-xs sm:text-sm text-slate-700 leading-relaxed font-medium">
+              Filcarts Technologies Pvt Ltd ("Filcarts", "We", "Our", or "Us") is committed to respecting your privacy and protecting your merchant business data and personal information in compliance with the Digital Personal Data Protection (DPDP) Act, 2023 of India.
+            </p>
+
+            {/* Section 1 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                1. Collection of Merchant Information
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                We collect business and personal information necessary to onboard and operate your store on Filcarts. This includes store name, store category, physical shop address, owner full name, contact phone number, email address, GSTIN, PAN, FSSAI certificates, and bank account details for settlement payouts.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Bank account details are verified and stored using bank-grade encrypted financial systems. Filcarts does not store unencrypted sensitive financial credentials.
+              </p>
+            </div>
+
+            {/* Section 2 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                2. Use of Location & Store Data
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                We use your store's precise geographic location to display your catalog to nearby customers within your delivery radius and to optimize rider route assignment for fast pickup.
+              </p>
+            </div>
+
+            {/* Section 3 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                3. Sharing with Logistics & Financial Partners
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Packed order details and store pickup addresses are shared with assigned Filcarts delivery partners solely to enable order collection. Bank details are shared securely with PCI-DSS compliant payout gateways for direct settlements.
+              </p>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                We NEVER sell, rent, or trade merchant contact phone numbers or business information to third-party telemarketers or advertisers.
+              </p>
+            </div>
+
+            {/* Section 4 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                4. Data Security & Storage Standards
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                We employ industry-standard SSL/TLS encryption for data in transit and AES-256 encryption at rest to safeguard merchant information against unauthorized access, loss, or data breaches.
+              </p>
+            </div>
+
+            {/* Section 5 */}
+            <div className="space-y-2 pt-2">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                5. Merchant Data Rights & Controls
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                Merchants can review and request updates to store details, contact numbers, or bank account information at any time through Merchant App settings or by contacting merchant support at <strong>merchant-support@filcarts.com</strong>.
+              </p>
+            </div>
+
+            {/* Section 6 */}
+            <div className="space-y-2 pt-2 pb-6">
+              <h2 className="text-base sm:text-lg font-bold text-[#17231A]">
+                6. Grievance Redressal & Contact Officer
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
+                In accordance with Information Technology Rules and the DPDP Act 2023, you may write to our Data Protection Officer at <strong>privacy@filcarts.com</strong> for any data protection or privacy concerns regarding your merchant account.
+              </p>
+            </div>
+          </>
+        )}
       </main>
 
       {/* Footer */}
@@ -268,3 +254,4 @@ export default function VendorTermsPrivacyPage() {
     </div>
   );
 }
+
