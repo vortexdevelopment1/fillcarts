@@ -6,6 +6,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const otpRoutes = require("./routes/otpRoutes");
+const vendorRoutes = require("./routes/vendorRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/api/vendor", vendorRoutes);
 app.use("/api", otpRoutes);
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
