@@ -15,7 +15,7 @@ export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const cartContext = useCart() || {};
-  const { cart = [], addToCart = () => { }, removeFromCart = () => { }, user, userLocation } = cartContext;
+  const { cart = [], addToCart = () => { }, removeFromCart = () => { }, user, userLocation, toggleWishlist, isInWishlist } = cartContext;
 
   // Find selected product dynamically by ID
   const product = useMemo(() => {
@@ -46,7 +46,8 @@ export default function ProductDetailPage() {
   const [showDetails, setShowDetails] = useState(true);
   const [showBenefits, setShowBenefits] = useState(false);
   const [showNutrition, setShowNutrition] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  const isWishlisted = isInWishlist ? isInWishlist(product.id) : false;
   const [appModalOpen, setAppModalOpen] = useState(false);
   const [isProductInfoModalOpen, setIsProductInfoModalOpen] = useState(false);
 
@@ -54,7 +55,11 @@ export default function ProductDetailPage() {
     userLocation?.formatted || (userLocation?.area ? `${userLocation.area}, ${userLocation.city}` : "Vijay Nagar, Indore")
   );
   const [deliveryStatus, setDeliveryStatus] = useState("⚡ Delivery in 15-20 mins by Fresh Mart Kirana");
-  const [toastMessage, setToastMessage] = useState("");
+  const [toastMsg, setToastMsg] = useState("");
+  const triggerToast = (msg) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(""), 3000);
+  };
 
   // Dynamic Reviews & Ratings State
   const [reviewsList, setReviewsList] = useState([]);
@@ -318,11 +323,6 @@ export default function ProductDetailPage() {
     return getRelatedProducts(product) || [];
   }, [product]);
 
-  const triggerToast = (msg) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(""), 3000);
-  };
-
   const handleAddressCheck = (e) => {
     e.preventDefault();
     if (deliveryAddress && deliveryAddress.trim().length >= 3) {
@@ -338,9 +338,9 @@ export default function ProductDetailPage() {
       <Navbar />
 
       {/* Toast Notification */}
-      {toastMessage && (
+      {toastMsg && (
         <div className="fixed top-20 right-6 bg-[#17231A] text-white text-xs font-bold px-4 py-2.5 rounded-2xl shadow-2xl z-50 animate-bounce flex items-center gap-2 border border-slate-700">
-          <Sparkles size={14} className="text-[#16A34A]" /> {toastMessage}
+          <Sparkles size={14} className="text-[#16A34A]" /> {toastMsg}
         </div>
       )}
 
@@ -370,8 +370,12 @@ export default function ProductDetailPage() {
               {/* Wishlist Button */}
               <button
                 onClick={() => {
-                  setIsWishlisted(!isWishlisted);
-                  triggerToast(isWishlisted ? "Removed from Wishlist" : "Added to Wishlist!");
+                  if (toggleWishlist) {
+                    const added = toggleWishlist(product);
+                    if (user) {
+                      triggerToast(added ? "Added to Wishlist! ❤️" : "Removed from Wishlist");
+                    }
+                  }
                 }}
                 className={`absolute top-4 right-4 w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer z-10 ${
                   isWishlisted

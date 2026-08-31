@@ -246,6 +246,14 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                         My Orders
                       </Link>
                       <Link
+                        to="/profile?tab=wishlist"
+                        onClick={() => setProfileOpen(false)}
+                        className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-600 transition-colors"
+                      >
+                        <span>My Wishlist</span>
+                        <span className="text-rose-600 font-bold text-[10px]">❤️</span>
+                      </Link>
+                      <Link
                         to="/profile?tab=subscriptions"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-[#ECFDF3] hover:text-[#166534] transition-colors"

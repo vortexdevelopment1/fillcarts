@@ -201,6 +201,75 @@ export function CartProvider({ children }) {
     return total + savingsPerItem * item.quantity;
   }, 0);
 
+  // Global Wishlist State
+  const getWishlistKey = (u) => {
+    if (!u) return "fillcarts_guest_wishlist";
+    return `fillcarts_wishlist_${u.id || u.phone || u.email || 'user'}`;
+  };
+
+  const [wishlist, setWishlist] = useState(() => {
+    try {
+      const key = getWishlistKey(user);
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch (e) {}
+    return [];
+  });
+
+  // Re-sync wishlist when user changes
+  useEffect(() => {
+    try {
+      const key = getWishlistKey(user);
+      const saved = localStorage.getItem(key);
+      if (saved !== null) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) {
+          setWishlist(parsed);
+          return;
+        }
+      }
+    } catch (e) {}
+    setWishlist([]);
+  }, [user]);
+
+  // Persist wishlist changes
+  useEffect(() => {
+    try {
+      const key = getWishlistKey(user);
+      localStorage.setItem(key, JSON.stringify(wishlist));
+    } catch (e) {}
+  }, [wishlist, user]);
+
+  const isInWishlist = (productId) => {
+    return wishlist.some(item => String(item.id) === String(productId));
+  };
+
+  const toggleWishlist = (product) => {
+    if (!user) {
+      setShowLoginModal(true);
+      return false;
+    }
+    let isAdded = false;
+    setWishlist(prev => {
+      const exists = prev.some(item => String(item.id) === String(product.id));
+      if (exists) {
+        isAdded = false;
+        return prev.filter(item => String(item.id) !== String(product.id));
+      } else {
+        isAdded = true;
+        return [...prev, product];
+      }
+    });
+    return isAdded;
+  };
+
+  const removeFromWishlist = (productId) => {
+    setWishlist(prev => prev.filter(item => String(item.id) !== String(productId)));
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -212,6 +281,10 @@ export function CartProvider({ children }) {
         cartCount,
         cartTotal,
         cartSavings,
+        wishlist,
+        toggleWishlist,
+        isInWishlist,
+        removeFromWishlist,
         user,
         setUser,
         loadingUser,

@@ -2,18 +2,19 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import {
   User, ShoppingBag, MapPin, Gift, ShieldAlert,
-  ArrowLeft, Edit3, Trash2, Plus, Check, Loader2, Sparkles, AlertCircle, Eye, Repeat, PlayCircle, PauseCircle, LifeBuoy, ExternalLink
+  ArrowLeft, Edit3, Trash2, Plus, Check, Loader2, Sparkles, AlertCircle, Eye, Repeat, PlayCircle, PauseCircle, LifeBuoy, ExternalLink, Heart, ShoppingCart
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../api";
 import { SupportContent } from "./SupportPage";
+import { getProductImage } from "../utils/productImages";
 
 export default function UserProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, setUser, logoutUser, addToCart } = useCart();
+  const { user, setUser, logoutUser, addToCart, wishlist = [], removeFromWishlist = () => {} } = useCart();
   const currentTab = searchParams.get("tab") || "profile";
 
   // Tab change handler
@@ -577,6 +578,23 @@ export default function UserProfilePage() {
             </button>
 
             <button
+              onClick={() => handleTabChange("wishlist")}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "wishlist"
+                ? "bg-rose-50 text-rose-600"
+                : "text-slate-600 hover:bg-slate-50"
+                }`}
+            >
+              <span className="flex items-center gap-2.5">
+                <Heart size={15} className={currentTab === "wishlist" ? "fill-rose-600 text-rose-600" : ""} /> My Wishlist
+              </span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+                currentTab === "wishlist" ? "bg-rose-200 text-rose-800" : "bg-slate-100 text-slate-500"
+              }`}>
+                {wishlist.length}
+              </span>
+            </button>
+
+            <button
               onClick={() => handleTabChange("addresses")}
               className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "addresses"
                 ? "bg-blue-50 text-blue-600"
@@ -828,7 +846,101 @@ export default function UserProfilePage() {
               </div>
             )}
 
-            {/* TAB 3: SAVED ADDRESSES */}
+            {/* TAB 3: MY WISHLIST */}
+            {currentTab === "wishlist" && (
+              <div>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+                  <div>
+                    <h1 className="text-xl font-extrabold text-[#17231A] flex items-center gap-2">
+                      <Heart size={20} className="text-rose-600 fill-rose-600" /> My Saved Wishlist
+                    </h1>
+                    <p className="text-[11px] text-slate-500 font-semibold mt-0.5">Bookmarked items saved for quick re-ordering.</p>
+                  </div>
+                  <span className="bg-rose-50 text-rose-700 text-[11px] font-black px-3 py-1 rounded-full border border-rose-200 self-start sm:self-auto">
+                    {wishlist.length} {wishlist.length === 1 ? "Item" : "Items"}
+                  </span>
+                </div>
+
+                {wishlist.length === 0 ? (
+                  <div className="bg-[#FFFCF5] border border-slate-200 rounded-3xl p-8 text-center max-w-sm mx-auto space-y-3 shadow-2xs my-4">
+                    <div className="w-12 h-12 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto">
+                      <Heart size={24} />
+                    </div>
+                    <div>
+                      <h3 className="text-base font-extrabold text-[#17231A]">Your Wishlist is empty</h3>
+                      <p className="text-[11px] text-slate-500 font-medium mt-1">
+                        Explore our daily essential categories and bookmark your favorite products.
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate("/categories")}
+                      className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs px-5 py-2.5 rounded-full shadow-sm transition-all cursor-pointer"
+                    >
+                      Browse Products
+                    </button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {wishlist.map((item) => (
+                      <div
+                        key={item.id}
+                        className="bg-white border border-slate-200 hover:border-rose-300 rounded-2xl p-2.5 transition-all shadow-2xs hover:shadow-md flex flex-col justify-between relative group"
+                      >
+                        <div>
+                          {/* Item Image & Delete Button */}
+                          <div className="h-28 sm:h-32 bg-slate-50 rounded-xl overflow-hidden mb-2 relative w-full flex items-center justify-center p-1.5">
+                            <img
+                              src={getProductImage(item.name, item.categoryKey || "dairy")}
+                              alt={item.name}
+                              className="max-h-full max-w-full object-contain group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                removeFromWishlist(item.id);
+                                showMessage("Removed from Wishlist");
+                              }}
+                              className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-rose-500 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"
+                              title="Remove from Wishlist"
+                            >
+                              <Trash2 size={12} />
+                            </button>
+                          </div>
+
+                          <div className="text-[11px] font-extrabold text-[#17231A] line-clamp-1 leading-tight">{item.name}</div>
+                          <div className="text-[10px] text-slate-400 font-semibold mt-0.5 flex items-center gap-1">
+                            <span>{item.unit || "1 Pack"}</span>
+                            <span>•</span>
+                            <span className="text-amber-600 font-bold">⭐ {item.rating || "4.8"}</span>
+                          </div>
+
+                          <div className="flex items-baseline gap-1.5 mt-1.5">
+                            <span className="font-mono text-xs font-black text-[#166534]">₹{item.price}</span>
+                            {item.mrp && item.mrp > item.price && (
+                              <span className="font-mono text-[10px] text-slate-400 line-through">₹{item.mrp}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            addToCart(item);
+                            showMessage(`${item.name} added to Cart! 🛒`);
+                          }}
+                          className="w-full py-1.5 px-2 rounded-xl text-[11px] font-extrabold bg-[#16A34A] hover:bg-[#15803D] text-white shadow-2xs transition-all flex items-center justify-center gap-1 cursor-pointer mt-2"
+                        >
+                          <ShoppingCart size={12} />
+                          <span>Move to Cart</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* TAB 4: SAVED ADDRESSES */}
             {currentTab === "addresses" && (
               <div>
                 <div className="flex justify-between items-start gap-4 mb-1.5">
