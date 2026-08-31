@@ -115,6 +115,122 @@ const subscriptionFaqs = [
   }
 ];
 
+// Dummy Presets for Visual Flow Simulator & Testing
+const DUMMY_PRESETS = {
+  daily_milk: {
+    key: "daily_milk",
+    title: "Daily Milk Pack",
+    productName: "Amul Toned Milk 1L Pack",
+    categoryKey: "dairy",
+    price: 56,
+    subPrice: 50,
+    mrp: 62,
+    unit: "1 Litre",
+    rating: "4.9",
+    frequency: "Daily",
+    selectedDays: ["Every Monday", "Every Tuesday", "Every Wednesday", "Every Thursday", "Every Friday", "Every Saturday", "Every Sunday"],
+    quantity: 2,
+    timeSlot: "Morning (6 AM - 12 PM)",
+    duration: "Until Cancelled",
+    estimatedMonthlySavings: 360,
+    badge: "Most Popular Daily Essential",
+    tagline: "Fresh milk at your doorstep every morning before 8:00 AM"
+  },
+  weekly_bakery: {
+    key: "weekly_bakery",
+    title: "Weekly Bakery Drop",
+    productName: "Whole Wheat Brown Bread + Butter Croissants",
+    categoryKey: "bakery",
+    price: 135,
+    subPrice: 120,
+    mrp: 150,
+    unit: "1 Breakfast Pack",
+    rating: "4.8",
+    frequency: "Weekly",
+    selectedDays: ["Every Tuesday", "Every Friday"],
+    quantity: 1,
+    timeSlot: "Morning (6 AM - 12 PM)",
+    duration: "1 Month (30 Days Plan)",
+    estimatedMonthlySavings: 180,
+    badge: "Bakery & Breakfast Combo",
+    tagline: "Oven fresh bread & muffins delivered twice a week"
+  },
+  alternate_fruits: {
+    key: "alternate_fruits",
+    title: "Alternate Fruits Basket",
+    productName: "Robusta Bananas 1dz & Red Apples 1kg",
+    categoryKey: "fruits",
+    price: 210,
+    subPrice: 189,
+    mrp: 240,
+    unit: "1 Fresh Basket",
+    rating: "4.7",
+    frequency: "Alternate Days",
+    selectedDays: ["Every 2 Days (Mon, Wed, Fri, Sun)"],
+    quantity: 1,
+    timeSlot: "Morning (6 AM - 12 PM)",
+    duration: "Until Cancelled",
+    estimatedMonthlySavings: 315,
+    badge: "Organic Farm Harvest",
+    tagline: "Hand-picked fresh fruits delivered every 2 days"
+  },
+  monthly_grocery: {
+    key: "monthly_grocery",
+    title: "Monthly Pantry Staples",
+    productName: "Basmati Rice 5kg & Chakki Fresh Atta 5kg",
+    categoryKey: "grocery",
+    price: 950,
+    subPrice: 855,
+    mrp: 1050,
+    unit: "1 Staples Bundle",
+    rating: "4.9",
+    frequency: "Monthly",
+    selectedDays: ["1st of every month"],
+    quantity: 1,
+    timeSlot: "Morning (6 AM - 12 PM)",
+    duration: "3 Months Plan",
+    estimatedMonthlySavings: 285,
+    badge: "Bulk Monthly Savings",
+    tagline: "Heavy grocery items auto-delivered on the 1st of every month"
+  }
+};
+
+// 4-Stage Daily Delivery Lifecycle Timeline
+const DELIVERY_TIMELINE = [
+  {
+    step: "01",
+    time: "08:00 PM (Night Before)",
+    title: "Automated Batch Generation",
+    desc: "System compiles active subscriptions, updates inventory & assigns nearest rider batch.",
+    status: "Auto-Scheduled",
+    color: "bg-[#ECFDF3] text-[#166534] border-emerald-200"
+  },
+  {
+    step: "02",
+    time: "02:00 AM (Overnight)",
+    title: "Farm & Dairy Sourcing",
+    desc: "Fresh milk & produce received directly from local dairy farms and temperature-checked.",
+    status: "Quality Checked",
+    color: "bg-blue-50 text-blue-700 border-blue-200"
+  },
+  {
+    step: "03",
+    time: "06:15 AM (Early Morning)",
+    title: "Cold-Chain Express Dispatch",
+    desc: "Insulated rider bags loaded; optimized morning route active for doorstep delivery.",
+    status: "Out for Delivery",
+    color: "bg-amber-50 text-amber-800 border-amber-200"
+  },
+  {
+    step: "04",
+    time: "Before 07:30 AM",
+    title: "Silent Doorstep Drop",
+    desc: "Package left silently at doorstep. Instant App notification & WhatsApp receipt dispatched.",
+    status: "Delivered Guaranteed",
+    color: "bg-emerald-50 text-[#166534] border-emerald-300"
+  }
+];
+
 export default function SubscriptionPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -208,6 +324,10 @@ export default function SubscriptionPage() {
   // Filter & Search for My Subscriptions Tab
   const [orderFilter, setOrderFilter] = useState("All");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
+
+  // Interactive Visual Flow Inspector & Preset Dummy Data State
+  const [inspectStep, setInspectStep] = useState(1);
+  const [activePresetKey, setActivePresetKey] = useState("daily_milk");
 
   const toggleFaq = (idx) => {
     setOpenFaq(openFaq === idx ? null : idx);
@@ -528,9 +648,9 @@ export default function SubscriptionPage() {
       <Navbar />
 
       {/* HERO SECTION WITH VIEW SWITCHER */}
-      <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4]/80 to-[#FFFCF5] border-b border-emerald-200/50 py-8 sm:py-12 px-4 sm:px-6 text-left">
+      <section className="bg-gradient-to-b from-[#ECFDF3] via-[#F0FDF4]/80 to-[#FFFCF5] border-b border-emerald-200/50 py-8 sm:py-12 px-4 sm:px-8 md:px-12 lg:px-16 text-left">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-          <div className="space-y-2 max-w-3xl">
+          <div className="space-y-3 max-w-3xl pl-2 sm:pl-6 md:pl-8 lg:pl-10">
             <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-[#166534] bg-white px-3.5 py-1 rounded-full border border-emerald-200 shadow-2xs">
               <Sparkles size={13} className="text-[#16A34A]" /> FILLCARTS SUBSCRIPTION FLOW
             </span>
@@ -555,20 +675,10 @@ export default function SubscriptionPage() {
               <Repeat size={14} /> Step-by-Step Flow Wizard
             </button>
             <button
-              onClick={() => setViewTab("visual_flow")}
-              className={`px-4 py-2.5 rounded-xl text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer ${
-                viewTab === "visual_flow"
-                  ? "bg-[#16A34A] text-white shadow-sm"
-                  : "text-[#166534] hover:bg-[#ECFDF3]"
-              }`}
-            >
-              <Layers size={14} /> Visual Flow Overview
-            </button>
-            <button
               onClick={() => {
                 if (!user) {
                   alert("My Subscriptions dashboard view karne ke liye Log In hona zaroori hai.");
-                  navigate("/login", { state: { from: "/subscription" } });
+                  navigate("/login", { state: { from: "/subscriptions" } });
                   return;
                 }
                 setViewTab("my_subscriptions");
@@ -1478,74 +1588,7 @@ export default function SubscriptionPage() {
           </div>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* VIEW 2: VISUAL FLOW OVERVIEW DIAGRAM (MATCHING REFERENCE IMAGE) */}
-        {/* ------------------------------------------------------------- */}
-        {viewTab === "visual_flow" && (
-          <div className="space-y-8 w-full">
-            <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 space-y-3 shadow-2xs w-full">
-              <span className="inline-flex items-center gap-1.5 text-xs font-extrabold text-[#166534] bg-[#ECFDF3] px-3.5 py-1 rounded-full border border-emerald-200">
-                <Layers size={14} /> Interactive Reference Diagram
-              </span>
-              <h2 className="text-2xl font-extrabold text-[#17231A]">Fillcart Subscription Model Flow</h2>
-              <p className="text-xs text-slate-500 font-medium max-w-2xl">
-                Explore the complete 6-step workflow shown in the reference design. Click any card below to launch that step in the wizard.
-              </p>
-            </div>
 
-            {/* Grid of 6 Flow Cards matching reference image UI layout */}
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-              {[
-                { stepNum: 1, title: "1. Product Card", sub: "Subscription Available badge", imgKey: "dairy", detail: "Browse essentials with 10% subscriber discount tag." },
-                { stepNum: 2, title: "2. Product Detail", sub: "Choose Purchase Type", imgKey: "dairy", detail: "Toggle between One-time Purchase (₹56) vs Subscribe & Save (₹50.40)." },
-                { stepNum: 3, title: "3. Select Subscription Plan", sub: "Choose Frequency", imgKey: "dairy", detail: "Pick Daily, Weekly, Monthly, or Alternate Days frequency." },
-                { stepNum: 4, title: "4. Choose Delivery Day", sub: "Select Days & Start Date", imgKey: "dairy", detail: "Set weekly delivery days (Mon-Sun) and initial start date." },
-                { stepNum: 5, title: "5. Set Quantity & Time", sub: "Set Quantity & Morning Slot", imgKey: "dairy", detail: "Adjust quantity count and pick express morning slot (6 AM - 12 PM)." },
-                { stepNum: 6, title: "6. Review Subscription", sub: "Review & Confirm Details", imgKey: "dairy", detail: "Verify itemized plan summary before proceeding to App Checkout." }
-              ].map((card) => (
-                <div
-                  key={card.stepNum}
-                  onClick={() => {
-                    setCurrentStep(card.stepNum);
-                    setViewTab("wizard");
-                  }}
-                  className="bg-white border border-slate-200 hover:border-emerald-400 rounded-3xl p-5 shadow-2xs hover:shadow-md transition-all space-y-4 cursor-pointer group"
-                >
-                  <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                    <span className="text-xs font-mono font-extrabold text-[#166534] bg-[#ECFDF3] px-2.5 py-1 rounded-lg border border-emerald-200">
-                      Step {card.stepNum}
-                    </span>
-                    <span className="text-[11px] font-bold text-slate-400 group-hover:text-[#16A34A] transition-colors flex items-center gap-1">
-                      Configure <ArrowUpRight size={13} />
-                    </span>
-                  </div>
-
-                  {/* Mock Wireframe Representation */}
-                  <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-4 space-y-2.5">
-                    <div className="h-2.5 bg-emerald-200/60 rounded-full w-2/3" />
-                    <div className="h-16 bg-white rounded-xl border border-slate-200 p-2 flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-emerald-100 shrink-0 flex items-center justify-center font-black text-xs text-[#166534]">
-                        🥛
-                      </div>
-                      <div className="space-y-1 min-w-0 flex-1">
-                        <div className="h-2 bg-slate-200 rounded-full w-3/4" />
-                        <div className="h-2 bg-emerald-300 rounded-full w-1/2" />
-                      </div>
-                    </div>
-                    <div className="h-8 bg-[#16A34A] text-white text-[10px] font-extrabold rounded-xl flex items-center justify-center">
-                      {card.sub}
-                    </div>
-                  </div>
-
-                  <div>
-                    <h3 className="text-sm font-extrabold text-[#17231A]">{card.title}</h3>
-                    <p className="text-xs text-slate-500 mt-1 leading-relaxed">{card.detail}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* ------------------------------------------------------------- */}
         {/* VIEW 3: MY SUBSCRIPTIONS DASHBOARD & ORDER TRACKING           */}
