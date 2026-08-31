@@ -129,7 +129,7 @@ const DUMMY_PRESETS = {
     rating: "4.9",
     frequency: "Daily",
     selectedDays: ["Every Monday", "Every Tuesday", "Every Wednesday", "Every Thursday", "Every Friday", "Every Saturday", "Every Sunday"],
-    quantity: 2,
+    quantity: 1,
     timeSlot: "Morning (6 AM - 12 PM)",
     duration: "Until Cancelled",
     estimatedMonthlySavings: 360,
@@ -306,7 +306,7 @@ export default function SubscriptionPage() {
   const [startDate, setStartDate] = useState(tomorrowStrDate);
   const [durationType, setDurationType] = useState("until_cancelled"); // "until_cancelled", "1_month", "7_days", "3_months"
 
-  const [quantity, setQuantity] = useState(2);
+  const [quantity, setQuantity] = useState(1);
   const [timeSlot, setTimeSlot] = useState("Morning (6 AM - 12 PM)"); // "Morning (6 AM - 12 PM)", "Afternoon (12 PM - 4 PM)", "Evening (4 PM - 8 PM)"
 
   const [customCardTitle, setCustomCardTitle] = useState("");
@@ -387,7 +387,7 @@ export default function SubscriptionPage() {
         timeSlot: "Morning (6 AM - 12 PM)",
         duration: "Until Cancelled",
         startDate: "30 Jul 2024",
-        status: "Active Schedule",
+        status: "App Setup Pending",
         orderDate: "Created recently",
         address: "Vijay Nagar, Indore (452010)",
         total: 100.80,
@@ -473,7 +473,6 @@ export default function SubscriptionPage() {
     setSelectedProduct(prod);
     setCompletedSteps(prev => Array.from(new Set([...prev, 1])));
     setCurrentStep(2);
-    window.scrollTo({ top: 120, behavior: "smooth" });
   };
 
   // Step Navigation Handlers
@@ -485,7 +484,6 @@ export default function SubscriptionPage() {
       }
       setCompletedSteps(prev => Array.from(new Set([...prev, 1])));
       setCurrentStep(2);
-      window.scrollTo({ top: 120, behavior: "smooth" });
       return;
     }
 
@@ -516,7 +514,6 @@ export default function SubscriptionPage() {
     if (currentStep < 6) {
       setCompletedSteps(prev => Array.from(new Set([...prev, currentStep])));
       setCurrentStep(prev => prev + 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
     } else {
       setCompletedSteps(prev => Array.from(new Set([...prev, 6])));
       handleCompleteWebFlow();
@@ -526,7 +523,6 @@ export default function SubscriptionPage() {
   const handlePrevStep = () => {
     if (currentStep > 1) {
       setCurrentStep(prev => prev - 1);
-      window.scrollTo({ top: 120, behavior: "smooth" });
     }
   };
 
@@ -539,7 +535,6 @@ export default function SubscriptionPage() {
     }
     if (targetStepId === 1 || completedSteps.includes(targetStepId - 1) || targetStepId === currentStep) {
       setCurrentStep(targetStepId);
-      window.scrollTo({ top: 120, behavior: "smooth" });
     }
   };
 
@@ -592,17 +587,20 @@ export default function SubscriptionPage() {
   };
 
   // Toggle Subscription Status (Pause / Activate)
-  const handleToggleStatus = (orderId) => {
-    setMyOrders(prev => prev.map(ord => {
-      if (ord.orderId === orderId) {
-        let newStatus = "Active Schedule";
-        if (ord.status === "Active Schedule") newStatus = "Paused";
-        else if (ord.status === "Paused") newStatus = "Active Schedule";
-        else if (ord.status === "App Setup Pending") newStatus = "Active Schedule";
-        return { ...ord, status: newStatus };
-      }
-      return ord;
-    }));
+  const handleToggleStatus = (ord) => {
+    if (!ord) return;
+    if (ord.status === "Active Schedule") {
+      setMyOrders(prev => prev.map(item => {
+        if (item.orderId === ord.orderId) {
+          return { ...item, status: "Paused" };
+        }
+        return item;
+      }));
+    } else {
+      // Must download/checkout in App for subscription activation!
+      setActiveCardForAppCheckout(ord);
+      setShowAppCheckoutModal(true);
+    }
   };
 
   // Delete / Cancel Subscription Card
@@ -1706,10 +1704,14 @@ export default function SubscriptionPage() {
                         )}
 
                         <button
-                          onClick={() => handleToggleStatus(ord.orderId)}
-                          className="text-xs font-bold text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 px-3 py-1.5 rounded-full transition-colors cursor-pointer"
+                          onClick={() => handleToggleStatus(ord)}
+                          className={`text-xs font-extrabold px-3.5 py-1.5 rounded-full transition-all cursor-pointer flex items-center gap-1 ${
+                            ord.status === "Active Schedule"
+                              ? "text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200"
+                              : "text-white bg-[#16A34A] hover:bg-[#15803D] shadow-2xs"
+                          }`}
                         >
-                          {ord.status === "Active Schedule" ? "Pause" : "Activate"}
+                          {ord.status === "Active Schedule" ? "Pause" : "Activate in App 📱"}
                         </button>
 
                         <button
