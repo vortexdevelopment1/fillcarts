@@ -65,13 +65,43 @@ export default function VendorSupportPage() {
     category: "General Inquiry",
     message: ""
   });
+  const [phoneError, setPhoneError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [ticketSubmitted, setTicketSubmitted] = useState(false);
   const [ticketId, setTicketId] = useState("");
 
+  const validatePhone = (phoneNum) => {
+    const cleaned = String(phoneNum || "").replace(/\D/g, "");
+    if (!cleaned) {
+      return "Mobile number is required";
+    }
+    if (cleaned.length !== 10) {
+      return "Enter a valid 10-digit mobile number";
+    }
+    if (!/^[6-9]/.test(cleaned)) {
+      return "Mobile number must start with 6, 7, 8, or 9";
+    }
+    return "";
+  };
+
+  const handlePhoneChange = (e) => {
+    const val = e.target.value.replace(/\D/g, "").slice(0, 10);
+    setFormData((prev) => ({ ...prev, phone: val }));
+    if (phoneError) {
+      setPhoneError(validatePhone(val));
+    }
+  };
+
   const handleSubmitTicket = (e) => {
     e.preventDefault();
-    if (!formData.storeName || !formData.phone || !formData.message) return;
+    const err = validatePhone(formData.phone);
+    if (err) {
+      setPhoneError(err);
+      return;
+    }
+    setPhoneError("");
+
+    if (!formData.storeName || !formData.message) return;
 
     setIsSubmitting(true);
     setTimeout(() => {
@@ -211,14 +241,28 @@ export default function VendorSupportPage() {
                     <label className="block text-sm font-semibold text-slate-700 mb-1">
                       Mobile Number *
                     </label>
-                    <input
-                      type="tel"
-                      required
-                      placeholder="e.g. 9876543210"
-                      value={formData.phone}
-                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className={inputStyle}
-                    />
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-extrabold text-slate-400 select-none">
+                        +91
+                      </span>
+                      <input
+                        type="tel"
+                        required
+                        maxLength={10}
+                        placeholder="9876543210"
+                        value={formData.phone}
+                        onChange={handlePhoneChange}
+                        onBlur={() => setPhoneError(validatePhone(formData.phone))}
+                        className={`${inputStyle} pl-11 ${
+                          phoneError ? "border-red-500 bg-red-50/20 focus:border-red-600 focus:ring-red-500/20" : ""
+                        }`}
+                      />
+                    </div>
+                    {phoneError && (
+                      <p className="text-xs text-red-500 font-semibold mt-1 flex items-center gap-1">
+                        ⚠️ {phoneError}
+                      </p>
+                    )}
                   </div>
                 </div>
 
