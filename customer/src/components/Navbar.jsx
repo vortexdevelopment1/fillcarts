@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Zap, Gift, CreditCard, Sparkles, MapPin, Search, User,
   ShoppingCart, ChevronRight, ChevronDown, QrCode, X, Navigation,
-  Compass, Loader2, CheckCircle2, Building2, Check, Store, Bike
+  Compass, Loader2, CheckCircle2, Building2, Check, Store, Bike, Edit3, Plus
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import api from "../api";
@@ -483,133 +483,153 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               </p>
             )}
 
-            {/* Saved Profile Addresses if available */}
-            {user && (
-              <div className="mb-4">
-                <div className="text-xs font-black text-[#17231A] mb-2 flex items-center gap-1.5">
-                  <Building2 size={13} className="text-[#16A34A]" /> Your Saved Addresses
-                </div>
-                {loadingSavedAddresses ? (
-                  <div className="text-xs text-slate-400 font-bold py-2 flex items-center gap-2">
-                    <Loader2 size={14} className="animate-spin text-[#16A34A]" /> Loading addresses...
-                  </div>
-                ) : savedAddresses.length === 0 && !user.address ? (
-                  <div className="text-xs text-slate-400 font-semibold bg-[#FFFCF5] p-3 rounded-xl border border-slate-100">
-                    No saved addresses found. Enter one below or add in your profile.
-                  </div>
-                ) : (
-                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
-                    {user.address && (
-                      <button
-                        onClick={() => {
-                          changeLocation({
-                            city: "Home",
-                            area: user.address,
-                            pincode: user.pincode || "452010",
-                            state: "Primary",
-                            formatted: user.address,
-                            isGps: false
-                          });
-                          setShowLocationModal(false);
-                        }}
-                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-colors flex items-center justify-between cursor-pointer group"
-                      >
-                        <div className="min-w-0 pr-2">
-                          <div className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534]">Primary Profile Address</div>
-                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{user.address}</div>
-                        </div>
-                        <ChevronRight size={14} className="text-slate-400 shrink-0" />
-                      </button>
-                    )}
-                    {savedAddresses.map((addr) => (
-                      <button
-                        key={addr.id}
-                        onClick={() => {
-                          changeLocation({
-                            city: addr.type || "Address",
-                            area: addr.address_line,
-                            pincode: addr.pincode || "452010",
-                            state: addr.type,
-                            formatted: `${addr.address_line} (${addr.pincode || ''})`,
-                            isGps: false
-                          });
-                          setShowLocationModal(false);
-                        }}
-                        className="w-full text-left p-2.5 rounded-xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-colors flex items-center justify-between cursor-pointer group"
-                      >
-                        <div className="min-w-0 pr-2">
-                          <div className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534]">{addr.type} Address</div>
-                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{addr.address_line}</div>
-                        </div>
-                        <ChevronRight size={14} className="text-slate-400 shrink-0" />
-                      </button>
-                    ))}
-                  </div>
+            {/* Section 2: Saved Profile Locations */}
+            <div>
+              <div className="text-xs font-black text-[#17231A] mb-2 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <Building2 size={14} className="text-[#16A34A]" /> Your Saved Locations
+                </span>
+                {user && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLocationModal(false);
+                      navigate("/profile?tab=addresses");
+                    }}
+                    className="text-[11px] text-blue-600 hover:text-blue-800 font-extrabold flex items-center gap-0.5 transition-colors cursor-pointer"
+                  >
+                    <span>Manage</span> <ChevronRight size={12} />
+                  </button>
                 )}
               </div>
-            )}
 
-            {/* Popular Cities Quick Select */}
-            <div className="mb-4">
-              <div className="text-xs font-black text-[#17231A] mb-2 flex items-center gap-1.5">
-                <Compass size={13} className="text-[#16A34A]" /> Popular Cities
-              </div>
-              <div className="flex flex-wrap gap-1.5">
-                {popularCities.map((item) => {
-                  const isSelected = userLocation?.city === item.city;
-                  return (
-                    <button
-                      key={item.city}
+              {loadingSavedAddresses ? (
+                <div className="text-xs text-slate-400 font-bold py-4 flex items-center justify-center gap-2">
+                  <Loader2 size={14} className="animate-spin text-[#16A34A]" /> Loading saved locations...
+                </div>
+              ) : !user ? (
+                <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
+                  <p className="text-xs text-slate-600 font-semibold">Log in to select or manage your saved delivery addresses.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLocationModal(false);
+                      setShowLoginModal(true);
+                    }}
+                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-block"
+                  >
+                    Login Now
+                  </button>
+                </div>
+              ) : savedAddresses.length === 0 && !user.address ? (
+                <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
+                  <p className="text-xs text-slate-600 font-semibold">No saved addresses found in your profile.</p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLocationModal(false);
+                      navigate("/profile?tab=addresses");
+                    }}
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                  >
+                    <Plus size={13} /> Add Address in Profile
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                  {user.address && (
+                    <div
                       onClick={() => {
                         changeLocation({
-                          city: item.city,
-                          area: item.area,
-                          pincode: item.pincode,
-                          state: item.state,
-                          formatted: `${item.area}, ${item.city} (${item.pincode})`,
+                          city: "Home",
+                          area: user.address,
+                          pincode: user.pincode || "452010",
+                          state: "Primary",
+                          formatted: user.address,
                           isGps: false
                         });
                         setShowLocationModal(false);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                        isSelected
-                          ? "bg-[#16A34A] text-white border-[#16A34A] shadow-xs"
-                          : "bg-[#FFFCF5] text-slate-700 border-slate-200 hover:bg-[#ECFDF3] hover:border-emerald-300"
-                      }`}
+                      className="w-full text-left p-3 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
                     >
-                      {item.city}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                            PRIMARY
+                          </span>
+                          <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
+                            {user.name || "Primary Profile Address"}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium truncate mt-1">{user.address}</div>
+                      </div>
 
-            {/* Manual Custom Locality Form */}
-            <form onSubmit={handleSaveCustomLocation} className="border-t border-slate-100 pt-3 space-y-2.5">
-              <div className="text-xs font-black text-[#17231A]">Or Enter City / Area / Pincode Manually</div>
-              <div className="grid grid-cols-2 gap-2">
-                <input
-                  type="text"
-                  placeholder="City / Area"
-                  value={customCity}
-                  onChange={(e) => setCustomCity(e.target.value)}
-                  className="px-3 py-2 text-xs font-semibold bg-[#FFFCF5] border border-slate-200 rounded-xl outline-none focus:border-[#16A34A]"
-                />
-                <input
-                  type="text"
-                  placeholder="6-digit Pincode"
-                  value={customPincode}
-                  onChange={(e) => setCustomPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  className="px-3 py-2 text-xs font-semibold bg-[#FFFCF5] border border-slate-200 rounded-xl outline-none focus:border-[#16A34A]"
-                />
-              </div>
-              <button
-                type="submit"
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-sm"
-              >
-                Set Delivery Location
-              </button>
-            </form>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowLocationModal(false);
+                          navigate("/profile?tab=addresses");
+                        }}
+                        className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                        title="Edit address in Profile"
+                      >
+                        <Edit3 size={12} />
+                        <span>Edit</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {savedAddresses.map((addr) => (
+                    <div
+                      key={addr.id}
+                      onClick={() => {
+                        changeLocation({
+                          city: addr.city || addr.type || "Address",
+                          area: addr.street || addr.address_line,
+                          pincode: addr.pincode || "452010",
+                          state: addr.state || addr.type,
+                          formatted: `${addr.street || addr.address_line}${addr.pincode ? ' (' + addr.pincode + ')' : ''}`,
+                          isGps: false
+                        });
+                        setShowLocationModal(false);
+                      }}
+                      className="w-full text-left p-3 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
+                    >
+                      <div className="min-w-0 pr-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-black uppercase bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
+                            {addr.type || "HOME"}
+                          </span>
+                          <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
+                            {addr.name || user?.name || "Saved Address"}
+                          </span>
+                        </div>
+                        <div className="text-[11px] text-slate-500 font-medium truncate mt-1">
+                          {addr.street || addr.address_line}
+                          {addr.pincode ? ` - ${addr.pincode}` : ''}
+                        </div>
+                      </div>
+
+                      {/* EDIT BUTTON -> REDIRECTS TO /profile?tab=addresses */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowLocationModal(false);
+                          navigate("/profile?tab=addresses");
+                        }}
+                        className="px-2.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                        title="Edit address in Profile"
+                      >
+                        <Edit3 size={12} />
+                        <span>Edit</span>
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
