@@ -80,20 +80,26 @@ const createRequiredTables = () => {
         id INT AUTO_INCREMENT PRIMARY KEY,
         customer_id INT NOT NULL,
         type VARCHAR(50) NOT NULL,
-        address_line TEXT NOT NULL,
+        name VARCHAR(100) DEFAULT '',
         phone VARCHAR(20) NOT NULL,
         pincode VARCHAR(10) DEFAULT '',
+        locality VARCHAR(150) DEFAULT '',
+        address_line TEXT NOT NULL,
+        city VARCHAR(100) DEFAULT '',
+        state VARCHAR(100) DEFAULT '',
+        landmark VARCHAR(150) DEFAULT '',
+        alt_phone VARCHAR(20) DEFAULT '',
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE
       )
     `);
 
-    db.query(`
-      ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''
-    `, (err) => {
-      if (err && err.errno !== 1060) {
-        console.error("Error adding pincode column to saved_addresses:", err.message);
-      }
+    ["name", "pincode", "locality", "city", "state", "landmark", "alt_phone"].forEach((col) => {
+      db.query(`ALTER TABLE saved_addresses ADD COLUMN ${col} VARCHAR(150) DEFAULT ''`, (err) => {
+        if (err && err.errno !== 1060 && err.errno !== 1054) {
+          // column already exists or table alter check
+        }
+      });
     });
 
     db.query(`

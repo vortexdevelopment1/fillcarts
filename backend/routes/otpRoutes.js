@@ -686,7 +686,7 @@ router.post("/orders", authMiddleware, (req, res) => {
 router.get("/addresses", authMiddleware, (req, res) => {
   const customerId = req.user.id;
   db.query(
-    "SELECT id, type, address_line, phone, pincode FROM saved_addresses WHERE customer_id = ? ORDER BY id DESC",
+    "SELECT id, type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone FROM saved_addresses WHERE customer_id = ? ORDER BY id DESC",
     [customerId],
     (err, results) => {
       if (err || !results) {
@@ -699,40 +699,68 @@ router.get("/addresses", authMiddleware, (req, res) => {
 
 // POST /addresses
 router.post("/addresses", authMiddleware, (req, res) => {
-  const { type, address_line, phone, pincode } = req.body;
-  if (!type || !address_line || !phone || !pincode) {
-    return res.status(400).send("Missing address details");
-  }
+  const { type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone } = req.body;
 
   const cleanPincode = (pincode || "").trim();
-  if (!/^\d{6}$/.test(cleanPincode)) {
+  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
     return res.status(400).send("Pincode must be exactly 6 digits");
   }
+
+  const cleanName = (name || "").trim();
+  const cleanPhone = (phone || "").trim();
+  const cleanLocality = (locality || "").trim();
+  const cleanStreet = (street || address_line || "").trim();
+  const cleanCity = (city || "").trim();
+  const cleanState = (state || "").trim();
+  const cleanLandmark = (landmark || "").trim();
+  const cleanAltPhone = (alt_phone || "").trim();
+  const cleanType = (type || "HOME").trim().toUpperCase();
+
+  const formattedLine = cleanStreet
+    ? `${cleanStreet}${cleanLocality ? ', ' + cleanLocality : ''}${cleanLandmark ? ', ' + cleanLandmark : ''}${cleanCity ? ', ' + cleanCity : ''}${cleanState ? ', ' + cleanState : ''} - ${cleanPincode}`
+    : address_line || "";
 
   const customerId = req.user.id;
   const newAddr = {
     id: Date.now(),
-    type: type.trim(),
-    address_line: address_line.trim(),
-    phone: phone.trim(),
+    type: cleanType,
+    name: cleanName,
+    phone: cleanPhone,
     pincode: cleanPincode,
+    locality: cleanLocality,
+    street: cleanStreet,
+    address_line: formattedLine,
+    city: cleanCity,
+    state: cleanState,
+    landmark: cleanLandmark,
+    alt_phone: cleanAltPhone
   };
 
   const userAddrs = getCustomerAddresses(customerId);
   userAddrs.unshift(newAddr);
 
   db.query(
-    "INSERT INTO saved_addresses (customer_id, type, address_line, phone, pincode) VALUES (?, ?, ?, ?, ?)",
-    [customerId, type.trim(), address_line.trim(), phone.trim(), cleanPincode],
+    "INSERT INTO saved_addresses (customer_id, type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+    [customerId, cleanType, cleanName, cleanPhone, cleanPincode, cleanLocality, formattedLine, cleanStreet, cleanCity, cleanState, cleanLandmark, cleanAltPhone],
     (err, result) => {
       if (err) {
-        console.warn("MySQL POST address warning (using fallback store):", err.message);
+        // Fallback for older table schema without extra columns
+        db.query(
+          "INSERT INTO saved_addresses (customer_id, type, address_line, phone, pincode) VALUES (?, ?, ?, ?, ?)",
+          [customerId, cleanType, formattedLine, cleanPhone, cleanPincode],
+          (fallbackErr, fallbackRes) => {
+            if (fallbackRes && fallbackRes.insertId) {
+              newAddr.id = fallbackRes.insertId;
+            }
+          }
+        );
       } else if (result && result.insertId) {
         newAddr.id = result.insertId;
       }
       return res.status(201).send({
         message: "Address added successfully",
         addressId: newAddr.id,
+        address: newAddr
       });
     }
   );
@@ -740,39 +768,63 @@ router.post("/addresses", authMiddleware, (req, res) => {
 
 // PUT /addresses/:id
 router.put("/addresses/:id", authMiddleware, (req, res) => {
-  const { type, address_line, phone, pincode } = req.body;
+  const { type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone } = req.body;
   const addressId = req.params.id;
   const customerId = req.user.id;
 
-  if (!type || !address_line || !phone || !pincode) {
-    return res.status(400).send("Missing address details");
-  }
-
   const cleanPincode = (pincode || "").trim();
-  if (!/^\d{6}$/.test(cleanPincode)) {
+  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
     return res.status(400).send("Pincode must be exactly 6 digits");
   }
+
+  const cleanName = (name || "").trim();
+  const cleanPhone = (phone || "").trim();
+  const cleanLocality = (locality || "").trim();
+  const cleanStreet = (street || address_line || "").trim();
+  const cleanCity = (city || "").trim();
+  const cleanState = (state || "").trim();
+  const cleanLandmark = (landmark || "").trim();
+  const cleanAltPhone = (alt_phone || "").trim();
+  const cleanType = (type || "HOME").trim().toUpperCase();
+
+  const formattedLine = cleanStreet
+    ? `${cleanStreet}${cleanLocality ? ', ' + cleanLocality : ''}${cleanLandmark ? ', ' + cleanLandmark : ''}${cleanCity ? ', ' + cleanCity : ''}${cleanState ? ', ' + cleanState : ''} - ${cleanPincode}`
+    : address_line || "";
+
+  const updatedObj = {
+    id: addressId,
+    type: cleanType,
+    name: cleanName,
+    phone: cleanPhone,
+    pincode: cleanPincode,
+    locality: cleanLocality,
+    street: cleanStreet,
+    address_line: formattedLine,
+    city: cleanCity,
+    state: cleanState,
+    landmark: cleanLandmark,
+    alt_phone: cleanAltPhone
+  };
 
   const userAddrs = getCustomerAddresses(customerId);
   const idx = userAddrs.findIndex((a) => String(a.id) === String(addressId));
   if (idx !== -1) {
-    userAddrs[idx] = {
-      id: userAddrs[idx].id,
-      type: type.trim(),
-      address_line: address_line.trim(),
-      phone: phone.trim(),
-      pincode: cleanPincode,
-    };
+    userAddrs[idx] = updatedObj;
   }
 
   db.query(
-    "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
-    [type.trim(), address_line.trim(), phone.trim(), cleanPincode, addressId, customerId],
+    "UPDATE saved_addresses SET type = ?, name = ?, phone = ?, pincode = ?, locality = ?, address_line = ?, street = ?, city = ?, state = ?, landmark = ?, alt_phone = ? WHERE id = ? AND customer_id = ?",
+    [cleanType, cleanName, cleanPhone, cleanPincode, cleanLocality, formattedLine, cleanStreet, cleanCity, cleanState, cleanLandmark, cleanAltPhone, addressId, customerId],
     (err) => {
       if (err) {
-        console.warn("MySQL PUT address warning (updated in fallback store):", err.message);
+        // Fallback for older table schema
+        db.query(
+          "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
+          [cleanType, formattedLine, cleanPhone, cleanPincode, addressId, customerId],
+          () => {}
+        );
       }
-      return res.send({ message: "Address updated successfully" });
+      return res.send({ message: "Address updated successfully", address: updatedObj });
     }
   );
 });
