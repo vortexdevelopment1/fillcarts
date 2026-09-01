@@ -1,6 +1,6 @@
-const express = require("express");
-const mysql = require("mysql2");
-require("dotenv").config();
+import express from "express";
+import mysql from "mysql2";
+import "dotenv/config";
 
 const app = express();
 app.use(express.json());
@@ -213,4 +213,4 @@ db.connect((err) => {
   }
 });
 
-module.exports = db;
+export default db;

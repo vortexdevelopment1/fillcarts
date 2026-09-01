@@ -1,4 +1,4 @@
-const axios = require("axios");
+import axios from "axios";
 
 async function sendSMS(phone, otp) {
   const authKey = process.env.FAST2SMS_API;
@@ -26,4 +26,4 @@ async function sendSMS(phone, otp) {
   }
 }
 
-module.exports = sendSMS;
+export default sendSMS;

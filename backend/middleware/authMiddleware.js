@@ -1,5 +1,5 @@
-const jwt = require("jsonwebtoken");
-const db = require("../db");
+import jwt from "jsonwebtoken";
+import db from "../db.js";
 
 const authMiddleware = (req, res, next) => {
   const token = req.cookies?.token;
@@ -37,5 +37,5 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
-module.exports = authMiddleware;
+export default authMiddleware;
 

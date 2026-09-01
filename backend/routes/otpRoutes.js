@@ -1,8 +1,12 @@
-const express = require("express");
-const jwt = require("jsonwebtoken");
-const router = express.Router();
+import express from "express";
+import jwt from "jsonwebtoken";
+import db from "../db.js";
+import generateOTP from "../utils/otpGenerator.js";
+import sendEmail from "../services/emailService.js";
+import sendSMS from "../services/smsService.js";
+import authMiddleware from "../middleware/authMiddleware.js";
 
-const db = require("../db");
+const router = express.Router();
 
 // Proactive database column check to ensure columns exist
 db.query("SHOW COLUMNS FROM customers LIKE 'pincode'", (err, results) => {
@@ -22,11 +26,6 @@ db.query("SHOW COLUMNS FROM saved_addresses LIKE 'pincode'", (err, results) => {
     });
   }
 });
-
-const generateOTP = require("../utils/otpGenerator");
-const sendEmail = require("../services/emailService");
-const sendSMS = require("../services/smsService");
-const authMiddleware = require("../middleware/authMiddleware");
 
 const JWT_SECRET = process.env.JWT_SECRET || "fillcarts-dev-secret";
 
@@ -1026,4 +1025,4 @@ router.post("/giftcard/buy", authMiddleware, (req, res) => {
   });
 });
 
-module.exports = router;
+export default router;

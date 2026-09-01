@@ -1,14 +1,14 @@
 
-require("dotenv").config();
+import "dotenv/config";
 
-const express = require("express");
-const cors = require("cors");
-const cookieParser = require("cookie-parser");
+import express from "express";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
-const otpRoutes = require("./routes/otpRoutes");
-const vendorRoutes = require("./routes/vendorRoutes");
-const riderRoutes = require("./routes/riderRoutes");
-const googleAuthRoutes = require("./routes/googleAuthRoutes");
+import otpRoutes from "./routes/otpRoutes.js";
+import vendorRoutes from "./routes/vendorRoutes.js";
+import riderRoutes from "./routes/riderRoutes.js";
+import googleAuthRoutes from "./routes/googleAuthRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
