@@ -1,7 +1,7 @@
 import express from "express";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
-import db from "../db.js";
+import db from "../config/db.js";
 
 const router = express.Router();
 

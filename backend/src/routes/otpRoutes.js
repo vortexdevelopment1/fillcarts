@@ -1,10 +1,10 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import db from "../db.js";
+import db from "../config/db.js";
 import generateOTP from "../utils/otpGenerator.js";
 import sendEmail from "../services/emailService.js";
 import sendSMS from "../services/smsService.js";
-import authMiddleware from "../middleware/authMiddleware.js";
+import authMiddleware from "../../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -473,7 +473,7 @@ router.post("/forgot-password/reset", (req, res) => {
     db.query(
       "UPDATE customers SET password = ? WHERE phone = ? OR email = ?",
       [newPassword, targetContact, targetContact],
-      () => {}
+      () => { }
     );
     const customer = getFallbackCustomer(targetContact);
     return finishPasswordReset(customer);
@@ -502,7 +502,7 @@ router.post("/forgot-password/reset", (req, res) => {
       db.query(
         "UPDATE customers SET password = ? WHERE phone = ? OR email = ?",
         [newPassword, targetContact, targetContact],
-        () => {}
+        () => { }
       );
 
       const customer = getFallbackCustomer(targetContact);
@@ -572,7 +572,7 @@ router.put("/profile", authMiddleware, (req, res) => {
 router.delete("/profile", authMiddleware, (req, res) => {
   const customerId = req.user.id;
   inMemoryCustomers.delete(customerId);
-  db.query("DELETE FROM customers WHERE id = ?", [customerId], () => {});
+  db.query("DELETE FROM customers WHERE id = ?", [customerId], () => { });
   res.clearCookie("token");
   return res.send({ message: "Account deleted successfully" });
 });
@@ -671,7 +671,7 @@ router.post("/orders", authMiddleware, (req, res) => {
         newOrder.id = result.insertId;
       }
 
-      db.query("DELETE FROM customer_carts WHERE customer_id = ?", [customerId], () => {});
+      db.query("DELETE FROM customer_carts WHERE customer_id = ?", [customerId], () => { });
 
       return res.status(201).send({
         message: "Order placed successfully",
@@ -820,7 +820,7 @@ router.put("/addresses/:id", authMiddleware, (req, res) => {
         db.query(
           "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
           [cleanType, formattedLine, cleanPhone, cleanPincode, addressId, customerId],
-          () => {}
+          () => { }
         );
       }
       return res.send({ message: "Address updated successfully", address: updatedObj });
@@ -991,7 +991,7 @@ router.post("/giftcard/redeem", authMiddleware, (req, res) => {
   db.query(
     "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
     [amount, customerId],
-    () => {}
+    () => { }
   );
 
   return res.send({
@@ -1016,7 +1016,7 @@ router.post("/giftcard/buy", authMiddleware, (req, res) => {
   db.query(
     "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
     [numAmount, customerId],
-    () => {}
+    () => { }
   );
 
   return res.send({

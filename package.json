@@ -7,5 +7,8 @@
     "dev:customer": "npm --prefix customer run dev",
     "dev:vendor": "npm --prefix vendor run dev",
     "dev:rider": "npm --prefix rider run dev"
+  },
+  "dependencies": {
+    "mongoose": "^9.9.4"
   }
 }
