@@ -8,9 +8,11 @@ const cookieParser = require("cookie-parser");
 const otpRoutes = require("./routes/otpRoutes");
 const vendorRoutes = require("./routes/vendorRoutes");
 const riderRoutes = require("./routes/riderRoutes");
+const googleAuthRoutes = require("./routes/googleAuthRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
 
 app.use((req, res, next) => {
   console.log(req.method, req.url);
@@ -23,6 +25,7 @@ app.use(cookieParser());
 app.use("/api/vendor", vendorRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api", otpRoutes);
+app.use("/api/auth", googleAuthRoutes);
 app.get("/", (req, res) => {
   res.send("Server is running 🚀");
 });
