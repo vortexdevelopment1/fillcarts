@@ -16,6 +16,7 @@ import vendorRoutes from "./src/routes/vendorRoutes.js";
 import riderRoutes from "./src/routes/riderRoutes.js";
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import productRoutes from "./src/routes/productRoutes.js";
+import wishlistRoutes from "./src/routes/wishlistRoutes.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -142,6 +143,7 @@ app.get("/", (req, res) => {
 
 // 8. API Routes
 app.use("/api/products", productRoutes);
+app.use("/api/wishlist", wishlistRoutes);
 app.use("/api/vendor", vendorRoutes);
 app.use("/api/rider", riderRoutes);
 app.use("/api", otpRoutes);

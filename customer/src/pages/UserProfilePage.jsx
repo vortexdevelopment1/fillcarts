@@ -5,6 +5,7 @@ import {
   ArrowLeft, Edit3, Trash2, Plus, Check, Loader2, Sparkles, AlertCircle, Eye, Repeat, PlayCircle, PauseCircle, LifeBuoy, ExternalLink, Heart, ShoppingCart, MoreVertical, Navigation, Compass
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import api from "../api";
@@ -14,8 +15,16 @@ import { getProductImage } from "../utils/productImages";
 export default function UserProfilePage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { user, setUser, logoutUser, addToCart, wishlist = [], removeFromWishlist = () => {} } = useCart();
+  const { user, setUser, logoutUser, addToCart } = useCart();
+  const { wishlist = [], removeFromWishlist = () => {}, fetchWishlist } = useWishlist();
   const currentTab = searchParams.get("tab") || "profile";
+
+  // Re-fetch fresh wishlist when wishlist tab is active
+  useEffect(() => {
+    if (user && currentTab === "wishlist" && typeof fetchWishlist === "function") {
+      fetchWishlist();
+    }
+  }, [user, currentTab, fetchWishlist]);
 
   // Tab change handler
   const handleTabChange = (tabName) => {
@@ -977,7 +986,7 @@ export default function UserProfilePage() {
                             <button
                               type="button"
                               onClick={() => {
-                                removeFromWishlist(item.id);
+                                removeFromWishlist(item.productId || item.id || item._id);
                                 showMessage("Removed from Wishlist");
                               }}
                               className="absolute top-1.5 right-1.5 w-6 h-6 rounded-full bg-white/90 hover:bg-rose-50 border border-slate-200 hover:border-rose-300 text-rose-500 flex items-center justify-center transition-colors cursor-pointer shadow-2xs"

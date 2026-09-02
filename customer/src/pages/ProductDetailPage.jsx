@@ -8,6 +8,7 @@ import {
   ShieldCheck, Truck, Clock, Sparkles, MapPin, Store, Check, ThumbsUp, RefreshCw, AlertCircle, Repeat, Loader2
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { getProductImage } from "../utils/productImages";
 import productService from "../services/productService";
 
@@ -15,7 +16,8 @@ export default function ProductDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const cartContext = useCart() || {};
-  const { cart = [], addToCart = () => { }, removeFromCart = () => { }, user, userLocation, toggleWishlist, isInWishlist } = cartContext;
+  const { cart = [], addToCart = () => { }, removeFromCart = () => { }, user, userLocation } = cartContext;
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [loadingProduct, setLoadingProduct] = useState(true);
@@ -73,7 +75,7 @@ export default function ProductDetailPage() {
 
   const isWishlisted =
     product && isInWishlist
-      ? isInWishlist(product.productId || product._id)
+      ? isInWishlist(product.productId || product._id || product.id)
       : false;
   const [appModalOpen, setAppModalOpen] = useState(false);
   const [isProductInfoModalOpen, setIsProductInfoModalOpen] = useState(false);
@@ -404,21 +406,21 @@ export default function ProductDetailPage() {
 
                   {/* Wishlist Button */}
                   <button
-                    onClick={() => {
+                    onClick={async () => {
                       if (toggleWishlist) {
-                        const added = toggleWishlist(product);
+                        const added = await toggleWishlist(product);
                         if (user) {
                           triggerToast(added ? "Added to Wishlist! ❤️" : "Removed from Wishlist");
                         }
                       }
                     }}
                     className={`absolute top-4 right-4 w-9 h-9 rounded-full border flex items-center justify-center transition-colors cursor-pointer z-10 ${isWishlisted
-                      ? "bg-rose-50 border-rose-200 text-rose-600"
+                      ? "bg-rose-50 border-rose-200 text-rose-600 shadow-2xs"
                       : "bg-white border-slate-200 hover:border-rose-300 text-slate-400 hover:text-rose-500"
                       }`}
-                    title="Wishlist"
+                    title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
                   >
-                    <Heart size={18} className={isWishlisted ? "fill-rose-600" : ""} />
+                    <Heart size={18} className={isWishlisted ? "fill-rose-600 text-rose-600" : ""} />
                   </button>
 
                   {/* Main Product Image */}
@@ -703,6 +705,7 @@ export default function ProductDetailPage() {
                   const relInCart = safeCart.find((item) => item?.id === relId || item?.productId === relId || item?._id === relId);
                   const catStr = (rel.categoryKey || rel.category || "").toLowerCase();
                   const isRelSubEligible = catStr.includes("dairy") || catStr.includes("bakery") || String(relId || "").startsWith("dairy") || String(relId || "").startsWith("bakery");
+                  const isRelWishlisted = isInWishlist ? isInWishlist(relId) : false;
 
                   return (
                     <Link
@@ -717,7 +720,30 @@ export default function ProductDetailPage() {
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           loading="lazy"
                         />
-                        <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs flex items-center gap-0.5">
+                        {/* Wishlist Button */}
+                        <button
+                          type="button"
+                          onClick={async (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (toggleWishlist) {
+                              const added = await toggleWishlist(rel);
+                              if (user) {
+                                triggerToast(added ? "Added to Wishlist! ❤️" : "Removed from Wishlist");
+                              }
+                            }
+                          }}
+                          className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs z-10 ${
+                            isRelWishlisted
+                              ? "bg-rose-50 text-rose-600 border border-rose-200"
+                              : "bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 border border-slate-200/80"
+                          }`}
+                          title={isRelWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                          <Heart size={12} className={isRelWishlisted ? "fill-rose-600 text-rose-600" : ""} />
+                        </button>
+                        {/* Rating Badge */}
+                        <span className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs flex items-center gap-0.5">
                           <Star size={10} className="fill-amber-400 text-amber-400" />
                           {rel.rating || "4.8"}
                         </span>

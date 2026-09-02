@@ -5,9 +5,10 @@ import Navbar from "../components/Navbar";
 import {
   Search, MapPin, Star, Plus, Minus, ChevronRight, Zap,
   RotateCcw, CreditCard, Sparkles, CheckCircle2, ArrowRight,
-  Clock, Compass, Smartphone, Download, QrCode, ShoppingBag, Loader2
+  Clock, Compass, Smartphone, Download, QrCode, ShoppingBag, Loader2, Heart
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import {
   getProductImage, CATEGORY_IMAGE_MAP, STORE_IMAGE_MAP, SUBSCRIPTION_IMAGE_MAP
 } from "../utils/productImages";
@@ -52,6 +53,7 @@ const whyFillCartsCards = [
 
 export default function AppKartHome() {
   const { cart, addToCart, removeFromCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
   const [offerProducts, setOfferProducts] = useState([]);
   const [loadingOffers, setLoadingOffers] = useState(true);
@@ -265,6 +267,7 @@ export default function AppKartHome() {
               {offerProducts.map((prod) => {
                 const inCart = cart.find((item) => item.id === prod.id);
                 const imgUrl = prod.img || getProductImage(prod.name, prod.categoryKey);
+                const isWishlisted = isInWishlist(prod.id || prod.productId || prod._id);
 
               return (
                 <Link
@@ -278,9 +281,26 @@ export default function AppKartHome() {
                     <span className="absolute top-2 left-2 bg-[#F59E0B] text-white text-xs font-extrabold px-2 py-0.5 rounded-full shadow-xs">
                       {prod.off}
                     </span>
+                    {/* Wishlist Button */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleWishlist(prod);
+                      }}
+                      className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs z-10 ${
+                        isWishlisted
+                          ? "bg-rose-50 text-rose-600 border border-rose-200"
+                          : "bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 border border-slate-200/80"
+                      }`}
+                      title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                    >
+                      <Heart size={13} className={isWishlisted ? "fill-rose-600 text-rose-600" : ""} />
+                    </button>
                     {/* Rating Badge */}
-                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-xs font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
-                      <Star size={11} className="fill-amber-400 text-amber-400" />
+                    <span className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
+                      <Star size={10} className="fill-amber-400 text-amber-400" />
                       {prod.rating}
                     </span>
                   </div>

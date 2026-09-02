@@ -3,14 +3,16 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   Zap, Gift, CreditCard, Sparkles, MapPin, Search, User,
   ShoppingCart, ChevronRight, ChevronDown, QrCode, X, Navigation,
-  Compass, Loader2, CheckCircle2, Building2, Check, Store, Bike, Edit3, Plus
+  Compass, Loader2, CheckCircle2, Building2, Check, Store, Bike, Edit3, Plus, Heart
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import api from "../api";
 import SearchDropdown from "./SearchDropdown";
 
 export default function Navbar({ searchPlaceholder = "Search products, stores...", onSearchChange }) {
   const { cartCount, user, logoutUser, setShowLoginModal, userLocation, changeLocation } = useCart();
+  const { wishlistCount = 0 } = useWishlist();
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchValue, setSearchValue] = useState("");
   const location = useLocation();
@@ -246,12 +248,21 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                         My Orders
                       </Link>
                       <Link
-                        to="/profile?tab=wishlist"
+                        to="/wishlist"
                         onClick={() => setProfileOpen(false)}
                         className="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-rose-50 hover:text-rose-600 transition-colors"
                       >
-                        <span>My Wishlist</span>
-                        <span className="text-rose-600 font-bold text-[10px]">❤️</span>
+                        <span className="flex items-center gap-1.5">
+                          <Heart size={13} className="text-rose-500" />
+                          <span>My Wishlist</span>
+                        </span>
+                        {wishlistCount > 0 ? (
+                          <span className="bg-rose-100 text-rose-700 font-extrabold text-[10px] px-1.5 py-0.5 rounded-full">
+                            {wishlistCount}
+                          </span>
+                        ) : (
+                          <span className="text-rose-600 font-bold text-[10px]">❤️</span>
+                        )}
                       </Link>
                       <Link
                         to="/profile?tab=subscriptions"
@@ -288,6 +299,20 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                 <span>Login</span>
               </Link>
             )}
+
+            {/* Wishlist Button */}
+            <Link
+              to="/wishlist"
+              className="w-9 h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-rose-300 hover:bg-rose-50 flex items-center justify-center relative text-slate-700 hover:text-rose-600 transition-all cursor-pointer shadow-2xs group"
+              title="Wishlist"
+            >
+              <Heart size={17} className={wishlistCount > 0 ? "text-rose-600 fill-rose-600" : "group-hover:text-rose-500"} />
+              {wishlistCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-black flex items-center justify-center shadow-sm">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
 
             {/* Cart Button */}
             <Link

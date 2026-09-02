@@ -5,9 +5,10 @@ import Navbar from "../components/Navbar";
 import {
   Carrot, Apple, Milk, Croissant, Pill, UtensilsCrossed, PawPrint, Home,
   Sparkles, Smartphone, Star, Plus, Minus, SlidersHorizontal,
-  ChevronDown, ArrowUpDown, X, ArrowRight, RefreshCw, AlertCircle, ShoppingBag, Repeat
+  ChevronDown, ArrowUpDown, X, ArrowRight, RefreshCw, AlertCircle, ShoppingBag, Repeat, Heart
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
 
 import productService, { CATEGORIES as defaultCategories } from "../services/productService";
@@ -133,6 +134,7 @@ export default function CategoriesPage() {
   const catParam = searchParams.get("cat");
   const queryParam = searchParams.get("q");
   const { cart, addToCart, removeFromCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const productsSectionRef = useRef(null);
 
   const [categories, setCategories] = useState(defaultCategories);
@@ -439,6 +441,7 @@ export default function CategoriesPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {products.map((p) => {
                     const inCart = cart.find((item) => item.id === p.id);
+                    const isWishlisted = isInWishlist(p.id || p.productId || p._id);
                     return (
                       <Link
                         key={p.id}
@@ -452,7 +455,25 @@ export default function CategoriesPage() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                             loading="lazy"
                           />
-                          <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
+                          {/* Wishlist Button */}
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              toggleWishlist(p);
+                            }}
+                            className={`absolute top-2 right-2 w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs z-10 ${
+                              isWishlisted
+                                ? "bg-rose-50 text-rose-600 border border-rose-200"
+                                : "bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 border border-slate-200/80"
+                            }`}
+                            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                          >
+                            <Heart size={13} className={isWishlisted ? "fill-rose-600 text-rose-600" : ""} />
+                          </button>
+                          {/* Rating Badge */}
+                          <span className="absolute bottom-2 left-2 bg-white/90 backdrop-blur-xs text-slate-800 text-[10px] font-bold px-1.5 py-0.5 rounded-md shadow-xs flex items-center gap-0.5">
                             <Star size={10} className="fill-amber-400 text-amber-400" />
                             {p.rating}
                           </span>

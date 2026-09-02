@@ -2,8 +2,9 @@ import React, { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { Star, Plus, Minus, ChevronRight, Sparkles, ShoppingBag, Layers, ArrowRight, Loader2 } from "lucide-react";
+import { Star, Plus, Minus, ChevronRight, Sparkles, ShoppingBag, Layers, ArrowRight, Loader2, Heart } from "lucide-react";
 import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 import productService, { CATEGORIES } from "../services/productService";
 import { searchCatalog, filterAndSortProducts, getSimilarProducts } from "../utils/searchUtils";
 
@@ -13,6 +14,7 @@ export default function SearchResultsPage() {
   const categoryFilter = searchParams.get("cat") || "all";
 
   const { cart, addToCart, removeFromCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const navigate = useNavigate();
 
   const [allProducts, setAllProducts] = useState([]);
@@ -145,6 +147,7 @@ export default function SearchResultsPage() {
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
               {matchingProducts.map((p) => {
                 const inCart = cart.find((item) => item.id === p.id);
+                const isWishlisted = isInWishlist(p.id || p.productId || p._id);
                 const discountPercent = p.mrp > p.price ? Math.round(((p.mrp - p.price) / p.mrp) * 100) : 0;
 
                 return (
@@ -154,23 +157,42 @@ export default function SearchResultsPage() {
                   >
                     <div>
                       {/* Product Image */}
-                      <Link to={`/product/${p.id}`} className="block relative aspect-square bg-slate-50 rounded-xl overflow-hidden mb-2.5">
-                        <img
-                          src={p.img}
-                          alt={p.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          loading="lazy"
-                        />
+                      <div className="relative aspect-square bg-slate-50 rounded-xl overflow-hidden mb-2.5">
+                        <Link to={`/product/${p.id}`} className="block w-full h-full">
+                          <img
+                            src={p.img}
+                            alt={p.name}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            loading="lazy"
+                          />
+                        </Link>
                         {discountPercent > 0 && (
                           <span className="absolute top-1.5 left-1.5 bg-[#16A34A] text-white text-[9px] font-black px-1.5 py-0.5 rounded shadow-xs">
                             {discountPercent}% OFF
                           </span>
                         )}
+                        {/* Wishlist Button */}
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            toggleWishlist(p);
+                          }}
+                          className={`absolute top-1.5 right-1.5 w-6 h-6 rounded-full flex items-center justify-center transition-all cursor-pointer shadow-2xs z-10 ${
+                            isWishlisted
+                              ? "bg-rose-50 text-rose-600 border border-rose-200"
+                              : "bg-white/90 hover:bg-white text-slate-400 hover:text-rose-500 border border-slate-200/80"
+                          }`}
+                          title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+                        >
+                          <Heart size={11} className={isWishlisted ? "fill-rose-600 text-rose-600" : ""} />
+                        </button>
                         <span className="absolute bottom-1.5 right-1.5 bg-white/90 backdrop-blur-xs text-slate-800 text-[9px] font-bold px-1 py-0.2 rounded shadow-2xs flex items-center gap-0.5">
                           <Star size={9} className="fill-amber-400 text-amber-400" />
                           {p.rating}
                         </span>
-                      </Link>
+                      </div>
 
                       {/* Store & Title */}
                       <span className="text-[10px] font-semibold text-slate-400 block truncate mb-0.5">{p.store}</span>

@@ -209,81 +209,6 @@ export function CartProvider({ children }) {
     return total + savingsPerItem * (item?.quantity || 0);
   }, 0);
 
-  // Global Wishlist State
-  const getWishlistKey = (u) => {
-    if (!u) return "fillcarts_guest_wishlist";
-    return `fillcarts_wishlist_${u.id || u._id || u.phone || u.email || 'user'}`;
-  };
-
-  const [wishlist, setWishlist] = useState(() => {
-    try {
-      const key = getWishlistKey(user);
-      const saved = localStorage.getItem(key);
-      if (saved !== null) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) return parsed;
-      }
-    } catch (e) {}
-    return [];
-  });
-
-  // Re-sync wishlist when user changes
-  useEffect(() => {
-    try {
-      const key = getWishlistKey(user);
-      const saved = localStorage.getItem(key);
-      if (saved !== null) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed)) {
-          setWishlist(parsed);
-          return;
-        }
-      }
-    } catch (e) {}
-    setWishlist([]);
-  }, [user]);
-
-  // Persist wishlist changes
-  useEffect(() => {
-    try {
-      const key = getWishlistKey(user);
-      localStorage.setItem(key, JSON.stringify(wishlist));
-    } catch (e) {}
-  }, [wishlist, user]);
-
-  const isInWishlist = (productId) => {
-    if (!productId) return false;
-    return wishlist.some(item => item && String(item.id || item.productId || item._id) === String(productId));
-  };
-
-  const toggleWishlist = (product) => {
-    if (!product) return false;
-    if (!user) {
-      setShowLoginModal(true);
-      return false;
-    }
-    const prodId = product.id || product.productId || product._id;
-    if (!prodId) return false;
-
-    let isAdded = false;
-    setWishlist(prev => {
-      const exists = prev.some(item => item && String(item.id || item.productId || item._id) === String(prodId));
-      if (exists) {
-        isAdded = false;
-        return prev.filter(item => item && String(item.id || item.productId || item._id) !== String(prodId));
-      } else {
-        isAdded = true;
-        return [...prev, { ...product, id: prodId }];
-      }
-    });
-    return isAdded;
-  };
-
-  const removeFromWishlist = (productId) => {
-    if (!productId) return;
-    setWishlist(prev => prev.filter(item => item && String(item.id || item.productId || item._id) !== String(productId)));
-  };
-
   return (
     <CartContext.Provider
       value={{
@@ -295,10 +220,6 @@ export function CartProvider({ children }) {
         cartCount,
         cartTotal,
         cartSavings,
-        wishlist,
-        toggleWishlist,
-        isInWishlist,
-        removeFromWishlist,
         user,
         setUser,
         loadingUser,
