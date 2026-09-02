@@ -371,37 +371,34 @@ export default function CustomerLoginPage() {
 
     <div className="w-full flex justify-center">
       <GoogleLogin
-  onSuccess={async (credentialResponse) => {
-    try {
-      const res = await axios.post(
-        "http://localhost:3000/api/auth/google-login",
-        {
-          token: credentialResponse.credential,
-        },
-        {
-          withCredentials: true,
-        }
-      );
+        onSuccess={async (credentialResponse) => {
+          try {
+            const res = await api.post("/auth/google-login", {
+              token: credentialResponse.credential,
+            });
 
-      console.log("LOGIN RESPONSE", res.data);
+            if (res.data?.token) {
+              localStorage.setItem("token", res.data.token);
+            }
 
-      localStorage.setItem("token", res.data.token);
+            if (res.data?.user || res.data?.customer) {
+              setUser(res.data.user || res.data.customer);
+            }
 
-      console.log(
-        "TOKEN SAVED",
-        localStorage.getItem("token")
-      );
+            if (typeof checkUserProfile === "function") {
+              await checkUserProfile();
+            }
 
-      setUser(res.data.user);
-
-      navigate("/");
-    } catch (err) {
-      console.log("LOGIN ERROR", err.response?.data);
-
-      setError("Google login failed");
-    }
-  }}
-/>
+            navigate("/");
+          } catch (err) {
+            console.error("LOGIN ERROR", err.response?.data || err.message);
+            setError("Google login failed. Please try again.");
+          }
+        }}
+        onError={() => {
+          setError("Google login was cancelled or failed.");
+        }}
+      />
     </div>
   </div>
 )}
