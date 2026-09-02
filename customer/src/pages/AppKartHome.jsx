@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
 import {
   Search, MapPin, Star, Plus, Minus, ChevronRight, Zap,
   RotateCcw, CreditCard, Sparkles, CheckCircle2, ArrowRight,
-  Clock, Compass, Smartphone, Download, QrCode, ShoppingBag
+  Clock, Compass, Smartphone, Download, QrCode, ShoppingBag, Loader2
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import {
   getProductImage, CATEGORY_IMAGE_MAP, STORE_IMAGE_MAP, SUBSCRIPTION_IMAGE_MAP
 } from "../utils/productImages";
 import SearchDropdown from "../components/SearchDropdown";
+import productService, { CATEGORIES, STORES } from "../services/productService";
 
 const categoryList = [
   { key: "grocery", name: "Grocery", sub: "Atta, Dal, Oils & Staples", img: CATEGORY_IMAGE_MAP.grocery },
@@ -24,61 +25,7 @@ const categoryList = [
   { key: "home", name: "Home Essentials", sub: "Cleaning & Daily Needs", img: CATEGORY_IMAGE_MAP.home }
 ];
 
-const offerProducts = [
-  { id: "deal-fruits-combo", name: "Fresh Fruits Combo Pack", categoryKey: "fruits", off: "25% OFF", price: 149, mrp: 199, rating: "4.8", store: "Green Leaf Organics" },
-  { id: "deal-dairy-pack", name: "Daily Dairy Essentials Bundle", categoryKey: "dairy", off: "Flat ₹40 OFF", price: 189, mrp: 229, rating: "4.9", store: "Fresh Mart" },
-  { id: "deal-bakery-bread", name: "Fresh Whole Wheat Bread & Butter", categoryKey: "bakery", off: "15% OFF", price: 85, mrp: 100, rating: "4.7", store: "City Bakery" },
-  { id: "deal-snacks-beverage", name: "Organic Honey & Green Tea Set", categoryKey: "grocery", off: "Buy 1 Get 1", price: 199, mrp: 350, rating: "4.9", store: "Daily Needs" },
-  { id: "deal-farm-eggs", name: "Farm Fresh Brown Eggs (12 pcs)", categoryKey: "dairy", off: "20% OFF", price: 110, mrp: 138, rating: "4.8", store: "Fresh Mart" },
-  { id: "deal-home-cleaner", name: "Eco Surface Cleaner & Dishwash", categoryKey: "home", off: "18% OFF", price: 165, mrp: 200, rating: "4.6", store: "Daily Needs" },
-];
-
-const localStores = [
-  {
-    id: "store-fresh-mart",
-    name: "Fresh Mart Supermarket",
-    category: "Groceries & Dairy",
-    rating: "4.8",
-    reviews: "340+",
-    distance: "1.2 km",
-    deliveryTime: "20–30 min",
-    img: STORE_IMAGE_MAP.freshMart,
-    tag: "Popular Store"
-  },
-  {
-    id: "store-daily-needs",
-    name: "Daily Needs Express",
-    category: "Daily Staples & Household",
-    rating: "4.7",
-    reviews: "520+",
-    distance: "800 m",
-    deliveryTime: "15–20 min",
-    img: STORE_IMAGE_MAP.dailyNeeds,
-    tag: "Fastest Delivery"
-  },
-  {
-    id: "store-city-bakery",
-    name: "City Artisan Bakery",
-    category: "Fresh Breads & Pastries",
-    rating: "4.9",
-    reviews: "210+",
-    distance: "1.5 km",
-    deliveryTime: "25 min",
-    img: STORE_IMAGE_MAP.cityBakery,
-    tag: "Top Rated"
-  },
-  {
-    id: "store-green-organics",
-    name: "Green Leaf Farm Organics",
-    category: "Fresh Fruits & Veggies",
-    rating: "4.8",
-    reviews: "180+",
-    distance: "900 m",
-    deliveryTime: "15–25 min",
-    img: STORE_IMAGE_MAP.greenOrganics,
-    tag: "100% Organic"
-  }
-];
+const localStores = STORES;
 
 const whyFillCartsCards = [
   {
@@ -106,6 +53,26 @@ const whyFillCartsCards = [
 export default function AppKartHome() {
   const { cart, addToCart, removeFromCart } = useCart();
   const navigate = useNavigate();
+  const [offerProducts, setOfferProducts] = useState([]);
+  const [loadingOffers, setLoadingOffers] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    const loadOffers = async () => {
+      try {
+        const offers = await productService.getOffers(6);
+        if (isMounted) {
+          setOfferProducts(offers);
+        }
+      } catch (err) {
+        console.error("Failed to load offers from MongoDB:", err);
+      } finally {
+        if (isMounted) setLoadingOffers(false);
+      }
+    };
+    loadOffers();
+    return () => { isMounted = false; };
+  }, []);
 
   return (
     <div className="bg-[#FFFCF5] text-[#17231A] min-h-screen flex flex-col font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
@@ -283,10 +250,21 @@ export default function AppKartHome() {
           </div>
 
           {/* Product Cards Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {offerProducts.map((prod) => {
-              const inCart = cart.find((item) => item.id === prod.id);
-              const imgUrl = getProductImage(prod.name, prod.categoryKey);
+          {loadingOffers ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-3 animate-pulse space-y-3">
+                  <div className="aspect-square bg-slate-100 rounded-xl" />
+                  <div className="h-3 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              {offerProducts.map((prod) => {
+                const inCart = cart.find((item) => item.id === prod.id);
+                const imgUrl = prod.img || getProductImage(prod.name, prod.categoryKey);
 
               return (
                 <Link
@@ -355,6 +333,7 @@ export default function AppKartHome() {
               );
             })}
           </div>
+          )}
         </div>
       </section>
 

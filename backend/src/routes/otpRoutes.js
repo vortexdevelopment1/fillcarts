@@ -1,44 +1,43 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import db from "../config/db.js";
+import bcrypt from "bcrypt";
+import User from "../models/User.js";
+import Otp from "../models/Otp.js";
+import Address from "../models/Address.js";
+import Order from "../models/Order.js";
+import Subscription from "../models/Subscription.js";
+import Cart from "../models/Cart.js";
 import generateOTP from "../utils/otpGenerator.js";
 import sendEmail from "../services/emailService.js";
 import sendSMS from "../services/smsService.js";
-import authMiddleware from "../../middleware/authMiddleware.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import {
+  registerCustomerSchema,
+  loginCustomerSchema,
+  sendOtpSchema,
+  verifyOtpSchema,
+} from "../utils/validationSchemas.js";
 
 const router = express.Router();
 
-// Proactive database column check to ensure columns exist
-db.query("SHOW COLUMNS FROM customers LIKE 'pincode'", (err, results) => {
-  if (!err && results && results.length === 0) {
-    db.query("ALTER TABLE customers ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
-      if (alterErr) console.error("Proactive alter customers failed:", alterErr.message);
-      else console.log("Proactive check: added pincode column to customers table");
-    });
+const getJwtSecret = () => {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
+    throw new Error("JWT_SECRET environment variable is missing");
   }
-});
-
-db.query("SHOW COLUMNS FROM saved_addresses LIKE 'pincode'", (err, results) => {
-  if (!err && results && results.length === 0) {
-    db.query("ALTER TABLE saved_addresses ADD COLUMN pincode VARCHAR(10) DEFAULT ''", (alterErr) => {
-      if (alterErr) console.error("Proactive alter saved_addresses failed:", alterErr.message);
-      else console.log("Proactive check: added pincode column to saved_addresses table");
-    });
-  }
-});
-
-const JWT_SECRET = process.env.JWT_SECRET || "fillcarts-dev-secret";
+  return secret;
+};
 
 const buildAuthToken = (customer) =>
   jwt.sign(
     {
-      id: customer.id,
+      id: String(customer._id || customer.id),
       phone: customer.phone,
       email: customer.email,
       name: customer.name,
     },
-    JWT_SECRET,
-    { expiresIn: "1h" }
+    getJwtSecret(),
+    { expiresIn: "7d" }
   );
 
 const setAuthCookie = (res, customer) => {
@@ -47,8 +46,8 @@ const setAuthCookie = (res, customer) => {
   res.cookie("token", token, {
     httpOnly: true,
     sameSite: "lax",
-    secure: false,
-    maxAge: 60 * 60 * 1000,
+    secure: process.env.NODE_ENV === "production",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
   return token;
@@ -56,181 +55,105 @@ const setAuthCookie = (res, customer) => {
 
 const normalizeIdentifier = (value) => (value || "").trim();
 
-const inMemoryOtps = new Map();
-const inMemoryCustomers = new Map();
-const inMemoryUserCarts = new Map();
-const inMemoryAddresses = new Map();
-const inMemoryOrders = new Map();
-const inMemorySubscriptions = new Map();
-
-const getFallbackCustomer = (targetContact) => {
-  const cleanContact = normalizeIdentifier(targetContact);
-  const existing = Array.from(inMemoryCustomers.values()).find(
-    (c) => c.phone === cleanContact || c.email === cleanContact
-  );
-  if (existing) return existing;
-
-  const isEmail = cleanContact.includes("@");
-  const phoneVal = isEmail ? cleanContact.replace(/\D/g, "") || "9876543210" : cleanContact;
-  const emailVal = isEmail ? cleanContact : `user_${cleanContact}@fillcarts.local`;
-  const defaultName = isEmail ? cleanContact.split("@")[0] : `User ${cleanContact.slice(-4)}`;
-
-  const newCust = {
-    id: inMemoryCustomers.size + 100,
-    name: defaultName,
-    phone: phoneVal,
-    email: emailVal,
-    password: "otp-user-pass",
-    address: "Delivery Address",
-    pincode: "110001",
-    gift_card_balance: "0.00",
-    created_at: new Date().toISOString(),
-  };
-  inMemoryCustomers.set(newCust.id, newCust);
-  return newCust;
-};
-
-const getCustomerAddresses = (customerId) => {
-  if (!inMemoryAddresses.has(customerId)) {
-    inMemoryAddresses.set(customerId, []);
-  }
-  return inMemoryAddresses.get(customerId);
-};
-
-const getCustomerOrders = (customerId) => {
-  if (!inMemoryOrders.has(customerId)) {
-    inMemoryOrders.set(customerId, []);
-  }
-  return inMemoryOrders.get(customerId);
-};
-
-const getCustomerSubscriptions = (customerId) => {
-  if (!inMemorySubscriptions.has(customerId)) {
-    inMemorySubscriptions.set(customerId, []);
-  }
-  return inMemorySubscriptions.get(customerId);
-};
+const formatCustomerResponse = (user) => ({
+  id: String(user._id || user.id),
+  _id: user._id,
+  name: user.name,
+  phone: user.phone,
+  email: user.email,
+  address: user.address,
+  pincode: user.pincode,
+  gift_card_balance: Number(user.gift_card_balance || 0).toFixed(2),
+  google_id: user.google_id || null,
+  profile_picture: user.profile_picture || "",
+  created_at: user.createdAt,
+});
 
 // REGISTER CUSTOMER PROFILE
-router.post("/register-customer", (req, res) => {
-  const { name, phone, email, password, address, pincode } = req.body;
-
-  const cleanName = (name || "").trim();
-  const cleanPhone = (phone || "").trim();
-  const cleanEmail = (email || "").trim();
-  const cleanPincode = (pincode || "").trim();
-
-  if (!cleanName || !cleanPhone || !cleanEmail || !password || !address || !cleanPincode) {
-    return res.status(400).send("Please fill all required fields, including address and pincode");
-  }
-
-  if (cleanName.length < 2) {
-    return res.status(400).send("Name must contain at least 2 letters");
-  }
-
-  if (!/^\d{10}$/.test(cleanPhone)) {
-    return res.status(400).send("Mobile number must be exactly 10 digits (digits only)");
-  }
-
-  const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-  if (!emailRegex.test(cleanEmail)) {
-    return res.status(400).send("Please enter a valid email format (e.g. name@gmail.com)");
-  }
-
-  if (!/^\d{6}$/.test(cleanPincode)) {
-    return res.status(400).send("Pincode must be exactly 6 digits");
-  }
-
-  const checkInMemoryExists = () => {
-    for (const cust of inMemoryCustomers.values()) {
-      if (cust.phone === cleanPhone || cust.email === cleanEmail) {
-        return true;
-      }
+router.post("/register-customer", async (req, res) => {
+  try {
+    const parseResult = registerCustomerSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errorMsg = parseResult.error.errors[0]?.message || "Invalid input data";
+      return res.status(400).send(errorMsg);
     }
-    return false;
-  };
 
-  if (checkInMemoryExists()) {
-    return res.status(409).send("A customer with this phone or email already exists");
-  }
+    const { name, phone, email, password, address, pincode } = parseResult.data;
 
-  const newCust = {
-    id: Date.now(),
-    name: cleanName,
-    phone: cleanPhone,
-    email: cleanEmail,
-    password: password,
-    address: address.trim(),
-    pincode: cleanPincode,
-    gift_card_balance: "0.00",
-    created_at: new Date().toISOString(),
-  };
-  inMemoryCustomers.set(newCust.id, newCust);
+    const existingUser = await User.findOne({
+      $or: [{ phone }, { email }],
+    });
 
-  db.query(
-    "SELECT id FROM customers WHERE phone = ? OR email = ?",
-    [cleanPhone, cleanEmail],
-    (err, results) => {
-      if (err || !results) {
-        return res.status(201).send("Customer registered successfully");
-      }
-
-      if (results.length > 0) {
-        return res.status(409).send("A customer with this phone or email already exists");
-      }
-
-      db.query(
-        "INSERT INTO customers (name, phone, email, password, address, pincode) VALUES (?, ?, ?, ?, ?, ?)",
-        [cleanName, cleanPhone, cleanEmail, password, address.trim(), cleanPincode],
-        () => {
-          return res.status(201).send("Customer registered successfully");
-        }
-      );
+    if (existingUser) {
+      return res.status(409).send("A customer with this phone or email already exists");
     }
-  );
+
+    // Hash password with bcrypt
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await User.create({
+      name,
+      phone,
+      email,
+      password: hashedPassword,
+      address,
+      pincode,
+      gift_card_balance: 0.0,
+    });
+
+    return res.status(201).send("Customer registered successfully");
+  } catch (error) {
+    console.error("Register Customer Error:", error.message);
+    return res.status(500).send("Internal server error during registration");
+  }
 });
 
 // LOGIN CUSTOMER WITH SAVED PROFILE
-router.post(["/login-customer", "/customer/login"], (req, res) => {
-  const { phone, email, password } = req.body;
-  const identifier = normalizeIdentifier(phone || email);
-
-  if (!identifier || !password) {
-    return res.status(400).send("Phone/email and password are required");
-  }
-
-  for (const cust of inMemoryCustomers.values()) {
-    if ((cust.phone === identifier || cust.email === identifier) && cust.password === password) {
-      setAuthCookie(res, cust);
-      return res.send({
-        message: "Login successful",
-        customer: cust,
-      });
+router.post(["/login-customer", "/customer/login"], async (req, res) => {
+  try {
+    const parseResult = loginCustomerSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      const errorMsg = parseResult.error.errors[0]?.message || "Invalid credentials provided";
+      return res.status(400).send(errorMsg);
     }
-  }
 
-  db.query(
-    "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE (phone = ? OR email = ?) AND password = ?",
-    [identifier, identifier, password],
-    (err, results) => {
-      if (err || !results || results.length === 0) {
-        const fallbackCust = getFallbackCustomer(identifier);
-        setAuthCookie(res, fallbackCust);
-        return res.send({
-          message: "Login successful",
-          customer: fallbackCust,
-        });
+    const { phone, email, password } = req.body;
+    const identifier = normalizeIdentifier(phone || email);
+
+    const user = await User.findOne({
+      $or: [{ phone: identifier }, { email: identifier.toLowerCase() }],
+    });
+
+    if (!user) {
+      return res.status(401).send("Invalid phone/email or password");
+    }
+
+    // Compare bcrypt password (with graceful legacy fallback if password wasn't hashed yet)
+    let isPasswordValid = false;
+    if (user.password.startsWith("$2b$") || user.password.startsWith("$2a$")) {
+      isPasswordValid = await bcrypt.compare(password, user.password);
+    } else {
+      isPasswordValid = user.password === password;
+      if (isPasswordValid) {
+        // Upgrade legacy plaintext password to bcrypt hash
+        user.password = await bcrypt.hash(password, 10);
+        await user.save();
       }
-
-      const customer = results[0];
-      setAuthCookie(res, customer);
-
-      return res.send({
-        message: "Login successful",
-        customer,
-      });
     }
-  );
+
+    if (!isPasswordValid) {
+      return res.status(401).send("Invalid phone/email or password");
+    }
+
+    setAuthCookie(res, user);
+    return res.send({
+      message: "Login successful",
+      customer: formatCustomerResponse(user),
+    });
+  } catch (error) {
+    console.error("Login Customer Error:", error.message);
+    return res.status(500).send("Internal server error during login");
+  }
 });
 
 // FETCH AUTHENTICATED PROFILE
@@ -241,6 +164,7 @@ router.get("/profile", authMiddleware, (req, res) => {
   });
 });
 
+// LOGOUT
 router.post("/logout", (req, res) => {
   res.clearCookie("token");
   return res.send({ message: "Logged out successfully" });
@@ -248,781 +172,773 @@ router.post("/logout", (req, res) => {
 
 // SEND OTP
 router.post("/send-otp", async (req, res) => {
-  const { contact, phone, email, type = "sms" } = req.body;
-  const targetContact = normalizeIdentifier(contact || phone || email);
+  try {
+    const parseResult = sendOtpSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).send(parseResult.error.errors[0]?.message || "Contact is required");
+    }
 
-  if (!targetContact) {
-    return res.status(400).send("Contact is required");
-  }
+    const { contact, phone, email, type = "sms" } = req.body;
+    const targetContact = normalizeIdentifier(contact || phone || email);
 
-  const processOtpGeneration = (targetContact, type, res) => {
     const otp = generateOTP();
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    console.log("==================================");
-    console.log("📱 Contact:", targetContact);
-    console.log("🔐 OTP:", otp);
-    console.log("==================================");
+    // Save OTP to MongoDB (expires automatically via TTL index)
+    await Otp.create({
+      contact: targetContact,
+      otp,
+      expiresAt: expiry,
+    });
 
-    const expiry = Date.now() + 5 * 60 * 1000;
-    inMemoryOtps.set(targetContact, { otp, expiresAt: expiry });
+    // Ensure customer exists in database
+    const existingCust = await User.findOne({
+      $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }],
+    });
 
-    db.query(
-      "INSERT INTO otp_verification (contact, otp, expires_at) VALUES (?, ?, ?)",
-      [targetContact, otp, expiry],
-      (err) => {
-        if (err) {
-          console.warn("MySQL OTP storage warning (using in-memory fallback):", err.message);
-        }
-      }
-    );
+    if (!existingCust) {
+      const isEmail = targetContact.includes("@");
+      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
+      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
+      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+      const defaultHashedPass = await bcrypt.hash("otp-user-pass", 10);
+
+      await User.create({
+        name: defaultName,
+        phone: phoneVal,
+        email: emailVal,
+        password: defaultHashedPass,
+        address: "Delivery Address",
+        pincode: "110001",
+        gift_card_balance: 0.0,
+      });
+    }
 
     if (type === "email") {
-      sendEmail(targetContact, otp).catch((emailErr) => console.error("Email send error:", emailErr));
+      sendEmail(targetContact, otp).catch((emailErr) =>
+        console.error("Email delivery warning:", emailErr.message)
+      );
     } else {
-      sendSMS(targetContact, otp).catch((smsErr) => console.error("SMS send error:", smsErr));
+      sendSMS(targetContact, otp).catch((smsErr) =>
+        console.error("SMS delivery warning:", smsErr.message)
+      );
     }
 
     return res.send({
       message: "OTP Generated Successfully",
     });
-  };
-
-  db.query(
-    "SELECT id FROM customers WHERE phone = ? OR email = ?",
-    [targetContact, targetContact],
-    (lookupErr, lookupResults) => {
-      if (lookupErr || !lookupResults) {
-        console.warn("MySQL lookup failed, using fallback:", lookupErr?.message || "No results");
-        getFallbackCustomer(targetContact);
-        return processOtpGeneration(targetContact, type, res);
-      }
-
-      if (lookupResults.length === 0) {
-        const isEmail = targetContact.includes("@");
-        const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
-        const emailVal = isEmail ? targetContact : `user_${targetContact}@fillcarts.local`;
-        const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
-
-        db.query(
-          "INSERT INTO customers (name, phone, email, password, address, pincode) VALUES (?, ?, ?, ?, ?, ?)",
-          [defaultName, phoneVal, emailVal, "otp-user-pass", "Delivery Address", "110001"],
-          () => {
-            getFallbackCustomer(targetContact);
-            processOtpGeneration(targetContact, type, res);
-          }
-        );
-      } else {
-        processOtpGeneration(targetContact, type, res);
-      }
-    }
-  );
+  } catch (error) {
+    console.error("Send OTP Error:", error.message);
+    return res.status(500).send("Failed to send OTP");
+  }
 });
 
-// VERIFY OTP
-router.post("/verify-otp", (req, res) => {
-  const { contact, phone, email, otp } = req.body;
-  const targetContact = normalizeIdentifier(contact || phone || email);
+// VERIFY OTP (Master OTP Bypass Completely Removed)
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const parseResult = verifyOtpSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).send(parseResult.error.errors[0]?.message || "Contact and OTP are required");
+    }
 
-  if (!targetContact || !otp) {
-    return res.status(400).send("Contact and OTP are required");
-  }
+    const { contact, phone, email, otp } = req.body;
+    const targetContact = normalizeIdentifier(contact || phone || email);
 
-  const finishLoginWithCustomer = (customer) => {
-    setAuthCookie(res, customer);
+    // Validate real OTP against MongoDB
+    const otpRecord = await Otp.findOne({
+      contact: targetContact,
+      otp: otp.trim(),
+      expiresAt: { $gt: new Date() },
+    }).sort({ _id: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).send("OTP not found, invalid, or expired");
+    }
+
+    // Delete verified OTP to prevent replay attacks
+    await Otp.deleteMany({ contact: targetContact });
+
+    let user = await User.findOne({
+      $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }],
+    });
+
+    if (!user) {
+      const isEmail = targetContact.includes("@");
+      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
+      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
+      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+      const defaultHashedPass = await bcrypt.hash("otp-user-pass", 10);
+
+      user = await User.create({
+        name: defaultName,
+        phone: phoneVal,
+        email: emailVal,
+        password: defaultHashedPass,
+        address: "Delivery Address",
+        pincode: "110001",
+        gift_card_balance: 0.0,
+      });
+    }
+
+    setAuthCookie(res, user);
     return res.send({
       message: "Login successful",
-      customer,
+      customer: formatCustomerResponse(user),
     });
-  };
-
-  const memOtpRecord = inMemoryOtps.get(targetContact);
-  const isMemOtpValid = (memOtpRecord && memOtpRecord.otp === otp && Date.now() <= memOtpRecord.expiresAt) || otp === "123456";
-
-  if (isMemOtpValid) {
-    inMemoryOtps.delete(targetContact);
-    db.query(
-      "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE phone = ? OR email = ?",
-      [targetContact, targetContact],
-      (err, results) => {
-        if (!err && results && results.length > 0) {
-          return finishLoginWithCustomer(results[0]);
-        }
-        return finishLoginWithCustomer(getFallbackCustomer(targetContact));
-      }
-    );
-    return;
+  } catch (error) {
+    console.error("Verify OTP Error:", error.message);
+    return res.status(500).send("Failed to verify OTP");
   }
-
-  db.query(
-    "SELECT * FROM otp_verification WHERE contact=? ORDER BY id DESC LIMIT 1",
-    [targetContact],
-    (err, results) => {
-      if (err || !results || results.length === 0) {
-        return res.status(400).send("OTP not found or invalid");
-      }
-
-      const record = results[0];
-      if (Date.now() > record.expires_at) {
-        return res.status(400).send("OTP expired");
-      }
-
-      if (record.otp !== otp) {
-        return res.status(400).send("Invalid OTP");
-      }
-
-      db.query("DELETE FROM otp_verification WHERE contact=?", [targetContact]);
-
-      db.query(
-        "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE phone = ? OR email = ?",
-        [targetContact, targetContact],
-        (customerErr, customerResults) => {
-          if (!customerErr && customerResults && customerResults.length > 0) {
-            return finishLoginWithCustomer(customerResults[0]);
-          }
-          return finishLoginWithCustomer(getFallbackCustomer(targetContact));
-        }
-      );
-    }
-  );
 });
 
 // FORGOT PASSWORD - SEND OTP
-router.post("/forgot-password/send-otp", (req, res) => {
-  const { contact, phone, email, type = "sms" } = req.body;
-  const targetContact = normalizeIdentifier(contact || phone || email);
+router.post("/forgot-password/send-otp", async (req, res) => {
+  try {
+    const parseResult = sendOtpSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).send("Phone number or email is required");
+    }
 
-  if (!targetContact) {
-    return res.status(400).send("Phone number or email is required");
-  }
+    const { contact, phone, email, type = "sms" } = req.body;
+    const targetContact = normalizeIdentifier(contact || phone || email);
 
-  const processForgotOtp = () => {
     const otp = generateOTP();
-    console.log("==================================");
-    console.log("🔑 Forgot Password Contact:", targetContact);
-    console.log("🔐 Forgot Password OTP:", otp);
-    console.log("==================================");
-
-    const expiry = Date.now() + 5 * 60 * 1000;
-    inMemoryOtps.set(targetContact, { otp, expiresAt: expiry });
-
-    db.query(
-      "INSERT INTO otp_verification (contact, otp, expires_at) VALUES (?, ?, ?)",
-      [targetContact, otp, expiry],
-      (err) => {
-        if (err) console.warn("MySQL OTP storage warning (forgot password fallback):", err.message);
-      }
-    );
+    const expiry = new Date(Date.now() + 5 * 60 * 1000);
+    await Otp.create({
+      contact: targetContact,
+      otp,
+      expiresAt: expiry,
+    });
 
     if (type === "email") {
-      sendEmail(targetContact, otp).catch((emailErr) => console.error("Email send error:", emailErr));
+      sendEmail(targetContact, otp).catch((emailErr) =>
+        console.error("Email reset delivery warning:", emailErr.message)
+      );
     } else {
-      sendSMS(targetContact, otp).catch((smsErr) => console.error("SMS send error:", smsErr));
+      sendSMS(targetContact, otp).catch((smsErr) =>
+        console.error("SMS reset delivery warning:", smsErr.message)
+      );
     }
 
     return res.send({ message: "OTP sent successfully to reset password" });
-  };
-
-  const memCust = Array.from(inMemoryCustomers.values()).find(
-    (c) => c.phone === targetContact || c.email === targetContact
-  );
-  if (memCust) {
-    return processForgotOtp();
+  } catch (error) {
+    console.error("Forgot Password OTP Error:", error.message);
+    return res.status(500).send("Failed to send reset OTP");
   }
-
-  db.query(
-    "SELECT id FROM customers WHERE phone = ? OR email = ?",
-    [targetContact, targetContact],
-    (err, results) => {
-      if (err || !results || results.length === 0) {
-        getFallbackCustomer(targetContact);
-        return processForgotOtp();
-      }
-      return processForgotOtp();
-    }
-  );
 });
 
 // FORGOT PASSWORD - RESET PASSWORD WITH OTP
-router.post("/forgot-password/reset", (req, res) => {
-  const { contact, phone, email, otp, newPassword } = req.body;
-  const targetContact = normalizeIdentifier(contact || phone || email);
+router.post("/forgot-password/reset", async (req, res) => {
+  try {
+    const { contact, phone, email, otp, newPassword } = req.body;
+    const targetContact = normalizeIdentifier(contact || phone || email);
 
-  if (!targetContact || !otp || !newPassword) {
-    return res.status(400).send("Contact, OTP, and new password are required");
-  }
+    if (!targetContact || !otp || !newPassword) {
+      return res.status(400).send("Contact, OTP, and new password are required");
+    }
 
-  if (newPassword.length < 6) {
-    return res.status(400).send("Password must be at least 6 characters long");
-  }
+    if (newPassword.length < 6) {
+      return res.status(400).send("Password must be at least 6 characters long");
+    }
 
-  const finishPasswordReset = (customer) => {
-    customer.password = newPassword;
-    inMemoryCustomers.set(customer.id, customer);
-    setAuthCookie(res, customer);
+    const otpRecord = await Otp.findOne({
+      contact: targetContact,
+      otp: String(otp).trim(),
+      expiresAt: { $gt: new Date() },
+    }).sort({ _id: -1 });
+
+    if (!otpRecord) {
+      return res.status(400).send("Invalid or expired OTP");
+    }
+
+    await Otp.deleteMany({ contact: targetContact });
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    let user = await User.findOneAndUpdate(
+      { $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }] },
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!user) {
+      const isEmail = targetContact.includes("@");
+      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
+      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
+      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+
+      user = await User.create({
+        name: defaultName,
+        phone: phoneVal,
+        email: emailVal,
+        password: hashedPassword,
+        address: "Delivery Address",
+        pincode: "110001",
+        gift_card_balance: 0.0,
+      });
+    }
+
+    setAuthCookie(res, user);
     return res.send({
       message: "Password reset successful! Logging you in...",
-      customer,
+      customer: formatCustomerResponse(user),
     });
-  };
-
-  const memOtpRecord = inMemoryOtps.get(targetContact);
-  const isMemOtpValid = (memOtpRecord && memOtpRecord.otp === otp && Date.now() <= memOtpRecord.expiresAt) || otp === "123456";
-
-  if (isMemOtpValid) {
-    inMemoryOtps.delete(targetContact);
-    db.query(
-      "UPDATE customers SET password = ? WHERE phone = ? OR email = ?",
-      [newPassword, targetContact, targetContact],
-      () => { }
-    );
-    const customer = getFallbackCustomer(targetContact);
-    return finishPasswordReset(customer);
+  } catch (error) {
+    console.error("Password Reset Error:", error.message);
+    return res.status(500).send("Failed to reset password");
   }
-
-  db.query(
-    "SELECT * FROM otp_verification WHERE contact=? ORDER BY id DESC LIMIT 1",
-    [targetContact],
-    (err, results) => {
-      if (err || !results || results.length === 0) {
-        const customer = getFallbackCustomer(targetContact);
-        return finishPasswordReset(customer);
-      }
-
-      const record = results[0];
-      if (Date.now() > record.expires_at) {
-        return res.status(400).send("OTP expired");
-      }
-
-      if (record.otp !== otp) {
-        return res.status(400).send("Invalid OTP");
-      }
-
-      db.query("DELETE FROM otp_verification WHERE contact=?", [targetContact]);
-
-      db.query(
-        "UPDATE customers SET password = ? WHERE phone = ? OR email = ?",
-        [newPassword, targetContact, targetContact],
-        () => { }
-      );
-
-      const customer = getFallbackCustomer(targetContact);
-      return finishPasswordReset(customer);
-    }
-  );
 });
 
 // PUT /profile
-router.put("/profile", authMiddleware, (req, res) => {
-  const { name, phone, email, address, pincode } = req.body;
-  const customerId = req.user.id;
+router.put("/profile", authMiddleware, async (req, res) => {
+  try {
+    const { name, phone, email, address, pincode } = req.body;
+    const customerId = req.user.id;
 
-  if (!name || !phone || !email || !address || !pincode) {
-    return res.status(400).send("Please fill all required fields, including address and pincode");
-  }
+    if (!name || !phone || !email || !address || !pincode) {
+      return res.status(400).send("Please fill all required fields, including address and pincode");
+    }
 
-  const cleanPincode = (pincode || "").trim();
-  if (!/^\d{6}$/.test(cleanPincode)) {
-    return res.status(400).send("Pincode must be exactly 6 digits");
-  }
+    const cleanPincode = (pincode || "").trim();
+    if (!/^\d{6}$/.test(cleanPincode)) {
+      return res.status(400).send("Pincode must be exactly 6 digits");
+    }
 
-  const handleFallbackProfileUpdate = () => {
-    const updatedCust = {
+    const updated = await User.findByIdAndUpdate(
+      customerId,
+      {
+        name: name.trim(),
+        phone: phone.trim(),
+        email: email.trim().toLowerCase(),
+        address: address.trim(),
+        pincode: cleanPincode,
+      },
+      { new: true }
+    );
+
+    const result = updated ? formatCustomerResponse(updated) : {
       ...(req.user || {}),
-      id: customerId,
       name: name.trim(),
       phone: phone.trim(),
       email: email.trim(),
       address: address.trim(),
       pincode: cleanPincode,
     };
-    inMemoryCustomers.set(customerId, updatedCust);
+
     return res.send({
       message: "Profile updated successfully",
-      customer: updatedCust,
+      customer: result,
     });
-  };
-
-  db.query(
-    "UPDATE customers SET name = ?, phone = ?, email = ?, address = ?, pincode = ? WHERE id = ?",
-    [name.trim(), phone.trim(), email.trim(), address.trim(), cleanPincode, customerId],
-    (err) => {
-      if (err) {
-        console.warn("MySQL PUT profile warning (using fallback store):", err.message);
-        return handleFallbackProfileUpdate();
-      }
-
-      db.query(
-        "SELECT id, name, phone, email, address, pincode, gift_card_balance, created_at FROM customers WHERE id = ?",
-        [customerId],
-        (fetchErr, results) => {
-          if (fetchErr || !results || results.length === 0) {
-            return handleFallbackProfileUpdate();
-          }
-          return res.send({
-            message: "Profile updated successfully",
-            customer: results[0],
-          });
-        }
-      );
-    }
-  );
+  } catch (error) {
+    console.error("Update Profile Error:", error.message);
+    return res.status(500).send("Failed to update profile");
+  }
 });
 
 // DELETE /profile (Account deletion)
-router.delete("/profile", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  inMemoryCustomers.delete(customerId);
-  db.query("DELETE FROM customers WHERE id = ?", [customerId], () => { });
-  res.clearCookie("token");
-  return res.send({ message: "Account deleted successfully" });
+router.delete("/profile", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    await User.findByIdAndDelete(customerId);
+    await Address.deleteMany({ customerId });
+    await Cart.deleteOne({ customerId });
+    await Subscription.deleteMany({ customerId });
+
+    res.clearCookie("token");
+    return res.send({ message: "Account deleted successfully" });
+  } catch (error) {
+    console.error("Delete Account Error:", error.message);
+    return res.status(500).send("Failed to delete account");
+  }
 });
 
 // GET /cart
-router.get("/cart", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  db.query("SELECT items FROM customer_carts WHERE customer_id = ?", [customerId], (err, results) => {
-    if (err || !results || results.length === 0) {
-      const savedItems = inMemoryUserCarts.get(customerId) || [];
-      return res.send({ cart: savedItems });
-    }
-    try {
-      const dbCart = JSON.parse(results[0].items);
-      return res.send({ cart: Array.isArray(dbCart) ? dbCart : [] });
-    } catch (e) {
-      const savedItems = inMemoryUserCarts.get(customerId) || [];
-      return res.send({ cart: savedItems });
-    }
-  });
+router.get("/cart", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    const cartDoc = await Cart.findOne({ customerId });
+    return res.send({ cart: cartDoc?.items || [] });
+  } catch (error) {
+    console.error("Get Cart Error:", error.message);
+    return res.send({ cart: [] });
+  }
 });
 
 // POST /cart
-router.post("/cart", authMiddleware, (req, res) => {
-  const { cart } = req.body;
-  const customerId = req.user.id;
-  const safeCart = Array.isArray(cart) ? cart : [];
-  inMemoryUserCarts.set(customerId, safeCart);
+router.post("/cart", authMiddleware, async (req, res) => {
+  try {
+    const { cart } = req.body;
+    const customerId = req.user.id;
+    const safeCart = Array.isArray(cart) ? cart : [];
 
-  const itemsStr = JSON.stringify(safeCart);
-  db.query(
-    "INSERT INTO customer_carts (customer_id, items) VALUES (?, ?) ON DUPLICATE KEY UPDATE items = ?",
-    [customerId, itemsStr, itemsStr],
-    (err) => {
-      if (err) {
-        console.warn("MySQL POST cart warning (saved to in-memory fallback):", err.message);
-      }
-      return res.send({ message: "Cart saved successfully", cart: safeCart });
-    }
-  );
+    await Cart.findOneAndUpdate(
+      { customerId },
+      { items: safeCart },
+      { upsert: true, new: true }
+    );
+
+    return res.send({ message: "Cart saved successfully", cart: safeCart });
+  } catch (error) {
+    console.error("Save Cart Error:", error.message);
+    return res.status(500).send("Failed to save cart");
+  }
 });
 
-// GET /orders
-router.get("/orders", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  db.query(
-    "SELECT id, items, total, status, payment_method, delivery_address, created_at FROM orders WHERE customer_id = ? ORDER BY id DESC",
-    [customerId],
-    (err, results) => {
-      if (err || !results) {
-        return res.send({ orders: getCustomerOrders(customerId) });
-      }
-      const orders = results.map((row) => {
-        try {
-          return { ...row, items: JSON.parse(row.items) };
-        } catch (e) {
-          return { ...row, items: [] };
-        }
-      });
-      return res.send({ orders });
-    }
-  );
+// GET /orders (with Pagination)
+router.get("/orders", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 20));
+    const skip = (page - 1) * limit;
+
+    const total = await Order.countDocuments({ customerId });
+    const orders = await Order.find({ customerId })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const formattedOrders = orders.map((o) => ({
+      id: String(o._id),
+      _id: o._id,
+      items: o.items || [],
+      total: o.total,
+      status: o.status,
+      payment_method: o.paymentMethod,
+      delivery_address: o.deliveryAddress,
+      created_at: o.createdAt,
+    }));
+
+    return res.send({
+      orders: formattedOrders,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Get Orders Error:", error.message);
+    return res.send({ orders: [] });
+  }
 });
 
 // POST /orders
-router.post("/orders", authMiddleware, (req, res) => {
-  const { items, total, payment_method, delivery_address } = req.body;
-  if (!items || !total || !payment_method || !delivery_address) {
-    return res.status(400).send("Missing order details");
-  }
-
-  const customerId = req.user.id;
-  const newOrder = {
-    id: Date.now(),
-    items: Array.isArray(items) ? items : [],
-    total,
-    status: "Delivered",
-    payment_method,
-    delivery_address,
-    created_at: new Date().toISOString(),
-  };
-
-  const userOrders = getCustomerOrders(customerId);
-  userOrders.unshift(newOrder);
-
-  inMemoryUserCarts.set(customerId, []);
-
-  const itemsStr = JSON.stringify(items);
-  db.query(
-    "INSERT INTO orders (customer_id, items, total, payment_method, delivery_address) VALUES (?, ?, ?, ?, ?)",
-    [customerId, itemsStr, total, payment_method, delivery_address],
-    (err, result) => {
-      if (err) {
-        console.warn("MySQL POST order warning (saved in fallback store):", err.message);
-      } else if (result && result.insertId) {
-        newOrder.id = result.insertId;
-      }
-
-      db.query("DELETE FROM customer_carts WHERE customer_id = ?", [customerId], () => { });
-
-      return res.status(201).send({
-        message: "Order placed successfully",
-        orderId: newOrder.id,
-      });
+router.post("/orders", authMiddleware, async (req, res) => {
+  try {
+    const { items, total, payment_method, delivery_address } = req.body;
+    if (!items || !total || !payment_method || !delivery_address) {
+      return res.status(400).send("Missing order details");
     }
-  );
+
+    const customerId = req.user.id;
+    const newOrder = await Order.create({
+      customerId,
+      items: Array.isArray(items) ? items : [],
+      total: Number(total),
+      paymentMethod: payment_method,
+      deliveryAddress: delivery_address,
+      status: "Delivered",
+    });
+
+    // Clear cart
+    await Cart.deleteOne({ customerId });
+
+    return res.status(201).send({
+      message: "Order placed successfully",
+      orderId: String(newOrder._id),
+    });
+  } catch (error) {
+    console.error("Create Order Error:", error.message);
+    return res.status(500).send("Failed to place order");
+  }
 });
 
-// GET /addresses
-router.get("/addresses", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  db.query(
-    "SELECT id, type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone FROM saved_addresses WHERE customer_id = ? ORDER BY id DESC",
-    [customerId],
-    (err, results) => {
-      if (err || !results) {
-        return res.send({ addresses: getCustomerAddresses(customerId) });
-      }
-      return res.send({ addresses: results });
-    }
-  );
+// GET /addresses (with Pagination)
+router.get("/addresses", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+    const skip = (page - 1) * limit;
+
+    const total = await Address.countDocuments({ customerId });
+    const addresses = await Address.find({ customerId })
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const formattedAddresses = addresses.map((a) => ({
+      id: String(a._id),
+      _id: a._id,
+      type: a.type,
+      name: a.name,
+      phone: a.phone,
+      pincode: a.pincode,
+      locality: a.locality,
+      street: a.street,
+      address_line: a.addressLine,
+      city: a.city,
+      state: a.state,
+      landmark: a.landmark,
+      alt_phone: a.altPhone,
+    }));
+
+    return res.send({
+      addresses: formattedAddresses,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+    });
+  } catch (error) {
+    console.error("Get Addresses Error:", error.message);
+    return res.send({ addresses: [] });
+  }
 });
 
 // POST /addresses
-router.post("/addresses", authMiddleware, (req, res) => {
-  const { type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone } = req.body;
+router.post("/addresses", authMiddleware, async (req, res) => {
+  try {
+    const {
+      type,
+      name,
+      phone,
+      pincode,
+      locality,
+      address_line,
+      street,
+      city,
+      state,
+      landmark,
+      alt_phone,
+    } = req.body;
 
-  const cleanPincode = (pincode || "").trim();
-  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
-    return res.status(400).send("Pincode must be exactly 6 digits");
-  }
-
-  const cleanName = (name || "").trim();
-  const cleanPhone = (phone || "").trim();
-  const cleanLocality = (locality || "").trim();
-  const cleanStreet = (street || address_line || "").trim();
-  const cleanCity = (city || "").trim();
-  const cleanState = (state || "").trim();
-  const cleanLandmark = (landmark || "").trim();
-  const cleanAltPhone = (alt_phone || "").trim();
-  const cleanType = (type || "HOME").trim().toUpperCase();
-
-  const formattedLine = cleanStreet
-    ? `${cleanStreet}${cleanLocality ? ', ' + cleanLocality : ''}${cleanLandmark ? ', ' + cleanLandmark : ''}${cleanCity ? ', ' + cleanCity : ''}${cleanState ? ', ' + cleanState : ''} - ${cleanPincode}`
-    : address_line || "";
-
-  const customerId = req.user.id;
-  const newAddr = {
-    id: Date.now(),
-    type: cleanType,
-    name: cleanName,
-    phone: cleanPhone,
-    pincode: cleanPincode,
-    locality: cleanLocality,
-    street: cleanStreet,
-    address_line: formattedLine,
-    city: cleanCity,
-    state: cleanState,
-    landmark: cleanLandmark,
-    alt_phone: cleanAltPhone
-  };
-
-  const userAddrs = getCustomerAddresses(customerId);
-  userAddrs.unshift(newAddr);
-
-  db.query(
-    "INSERT INTO saved_addresses (customer_id, type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-    [customerId, cleanType, cleanName, cleanPhone, cleanPincode, cleanLocality, formattedLine, cleanStreet, cleanCity, cleanState, cleanLandmark, cleanAltPhone],
-    (err, result) => {
-      if (err) {
-        // Fallback for older table schema without extra columns
-        db.query(
-          "INSERT INTO saved_addresses (customer_id, type, address_line, phone, pincode) VALUES (?, ?, ?, ?, ?)",
-          [customerId, cleanType, formattedLine, cleanPhone, cleanPincode],
-          (fallbackErr, fallbackRes) => {
-            if (fallbackRes && fallbackRes.insertId) {
-              newAddr.id = fallbackRes.insertId;
-            }
-          }
-        );
-      } else if (result && result.insertId) {
-        newAddr.id = result.insertId;
-      }
-      return res.status(201).send({
-        message: "Address added successfully",
-        addressId: newAddr.id,
-        address: newAddr
-      });
+    const cleanPincode = (pincode || "").trim();
+    if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
+      return res.status(400).send("Pincode must be exactly 6 digits");
     }
-  );
+
+    const cleanName = (name || "").trim();
+    const cleanPhone = (phone || "").trim();
+    const cleanLocality = (locality || "").trim();
+    const cleanStreet = (street || address_line || "").trim();
+    const cleanCity = (city || "").trim();
+    const cleanState = (state || "").trim();
+    const cleanLandmark = (landmark || "").trim();
+    const cleanAltPhone = (alt_phone || "").trim();
+    const cleanType = (type || "HOME").trim().toUpperCase();
+
+    const formattedLine = cleanStreet
+      ? `${cleanStreet}${cleanLocality ? ", " + cleanLocality : ""}${cleanLandmark ? ", " + cleanLandmark : ""}${cleanCity ? ", " + cleanCity : ""}${cleanState ? ", " + cleanState : ""} - ${cleanPincode}`
+      : address_line || "";
+
+    const customerId = req.user.id;
+
+    const newAddr = await Address.create({
+      customerId,
+      type: cleanType,
+      name: cleanName,
+      phone: cleanPhone,
+      pincode: cleanPincode,
+      locality: cleanLocality,
+      street: cleanStreet,
+      addressLine: formattedLine,
+      city: cleanCity,
+      state: cleanState,
+      landmark: cleanLandmark,
+      altPhone: cleanAltPhone,
+    });
+
+    const responseAddr = {
+      id: String(newAddr._id),
+      _id: newAddr._id,
+      type: cleanType,
+      name: cleanName,
+      phone: cleanPhone,
+      pincode: cleanPincode,
+      locality: cleanLocality,
+      street: cleanStreet,
+      address_line: formattedLine,
+      city: cleanCity,
+      state: cleanState,
+      landmark: cleanLandmark,
+      alt_phone: cleanAltPhone,
+    };
+
+    return res.status(201).send({
+      message: "Address added successfully",
+      addressId: String(newAddr._id),
+      address: responseAddr,
+    });
+  } catch (error) {
+    console.error("Create Address Error:", error.message);
+    return res.status(500).send("Failed to save address");
+  }
 });
 
 // PUT /addresses/:id
-router.put("/addresses/:id", authMiddleware, (req, res) => {
-  const { type, name, phone, pincode, locality, address_line, street, city, state, landmark, alt_phone } = req.body;
-  const addressId = req.params.id;
-  const customerId = req.user.id;
+router.put("/addresses/:id", authMiddleware, async (req, res) => {
+  try {
+    const {
+      type,
+      name,
+      phone,
+      pincode,
+      locality,
+      address_line,
+      street,
+      city,
+      state,
+      landmark,
+      alt_phone,
+    } = req.body;
+    const addressId = req.params.id;
+    const customerId = req.user.id;
 
-  const cleanPincode = (pincode || "").trim();
-  if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
-    return res.status(400).send("Pincode must be exactly 6 digits");
-  }
-
-  const cleanName = (name || "").trim();
-  const cleanPhone = (phone || "").trim();
-  const cleanLocality = (locality || "").trim();
-  const cleanStreet = (street || address_line || "").trim();
-  const cleanCity = (city || "").trim();
-  const cleanState = (state || "").trim();
-  const cleanLandmark = (landmark || "").trim();
-  const cleanAltPhone = (alt_phone || "").trim();
-  const cleanType = (type || "HOME").trim().toUpperCase();
-
-  const formattedLine = cleanStreet
-    ? `${cleanStreet}${cleanLocality ? ', ' + cleanLocality : ''}${cleanLandmark ? ', ' + cleanLandmark : ''}${cleanCity ? ', ' + cleanCity : ''}${cleanState ? ', ' + cleanState : ''} - ${cleanPincode}`
-    : address_line || "";
-
-  const updatedObj = {
-    id: addressId,
-    type: cleanType,
-    name: cleanName,
-    phone: cleanPhone,
-    pincode: cleanPincode,
-    locality: cleanLocality,
-    street: cleanStreet,
-    address_line: formattedLine,
-    city: cleanCity,
-    state: cleanState,
-    landmark: cleanLandmark,
-    alt_phone: cleanAltPhone
-  };
-
-  const userAddrs = getCustomerAddresses(customerId);
-  const idx = userAddrs.findIndex((a) => String(a.id) === String(addressId));
-  if (idx !== -1) {
-    userAddrs[idx] = updatedObj;
-  }
-
-  db.query(
-    "UPDATE saved_addresses SET type = ?, name = ?, phone = ?, pincode = ?, locality = ?, address_line = ?, street = ?, city = ?, state = ?, landmark = ?, alt_phone = ? WHERE id = ? AND customer_id = ?",
-    [cleanType, cleanName, cleanPhone, cleanPincode, cleanLocality, formattedLine, cleanStreet, cleanCity, cleanState, cleanLandmark, cleanAltPhone, addressId, customerId],
-    (err) => {
-      if (err) {
-        // Fallback for older table schema
-        db.query(
-          "UPDATE saved_addresses SET type = ?, address_line = ?, phone = ?, pincode = ? WHERE id = ? AND customer_id = ?",
-          [cleanType, formattedLine, cleanPhone, cleanPincode, addressId, customerId],
-          () => { }
-        );
-      }
-      return res.send({ message: "Address updated successfully", address: updatedObj });
+    const cleanPincode = (pincode || "").trim();
+    if (cleanPincode && !/^\d{6}$/.test(cleanPincode)) {
+      return res.status(400).send("Pincode must be exactly 6 digits");
     }
-  );
+
+    const cleanName = (name || "").trim();
+    const cleanPhone = (phone || "").trim();
+    const cleanLocality = (locality || "").trim();
+    const cleanStreet = (street || address_line || "").trim();
+    const cleanCity = (city || "").trim();
+    const cleanState = (state || "").trim();
+    const cleanLandmark = (landmark || "").trim();
+    const cleanAltPhone = (alt_phone || "").trim();
+    const cleanType = (type || "HOME").trim().toUpperCase();
+
+    const formattedLine = cleanStreet
+      ? `${cleanStreet}${cleanLocality ? ", " + cleanLocality : ""}${cleanLandmark ? ", " + cleanLandmark : ""}${cleanCity ? ", " + cleanCity : ""}${cleanState ? ", " + cleanState : ""} - ${cleanPincode}`
+      : address_line || "";
+
+    await Address.findOneAndUpdate(
+      { _id: addressId, customerId },
+      {
+        type: cleanType,
+        name: cleanName,
+        phone: cleanPhone,
+        pincode: cleanPincode,
+        locality: cleanLocality,
+        street: cleanStreet,
+        addressLine: formattedLine,
+        city: cleanCity,
+        state: cleanState,
+        landmark: cleanLandmark,
+        altPhone: cleanAltPhone,
+      },
+      { new: true }
+    );
+
+    const responseObj = {
+      id: addressId,
+      type: cleanType,
+      name: cleanName,
+      phone: cleanPhone,
+      pincode: cleanPincode,
+      locality: cleanLocality,
+      street: cleanStreet,
+      address_line: formattedLine,
+      city: cleanCity,
+      state: cleanState,
+      landmark: cleanLandmark,
+      alt_phone: cleanAltPhone,
+    };
+
+    return res.send({
+      message: "Address updated successfully",
+      address: responseObj,
+    });
+  } catch (error) {
+    console.error("Update Address Error:", error.message);
+    return res.status(500).send("Failed to update address");
+  }
 });
 
 // DELETE /addresses/:id
-router.delete("/addresses/:id", authMiddleware, (req, res) => {
-  const addressId = req.params.id;
-  const customerId = req.user.id;
+router.delete("/addresses/:id", authMiddleware, async (req, res) => {
+  try {
+    const addressId = req.params.id;
+    const customerId = req.user.id;
 
-  const userAddrs = getCustomerAddresses(customerId);
-  const filtered = userAddrs.filter((a) => String(a.id) !== String(addressId));
-  inMemoryAddresses.set(customerId, filtered);
-
-  db.query(
-    "DELETE FROM saved_addresses WHERE id = ? AND customer_id = ?",
-    [addressId, customerId],
-    (err) => {
-      if (err) {
-        console.warn("MySQL DELETE address warning:", err.message);
-      }
-      return res.send({ message: "Address deleted successfully" });
-    }
-  );
+    await Address.findOneAndDelete({ _id: addressId, customerId });
+    return res.send({ message: "Address deleted successfully" });
+  } catch (error) {
+    console.error("Delete Address Error:", error.message);
+    return res.status(500).send("Failed to delete address");
+  }
 });
 
 // GET /subscriptions
-router.get("/subscriptions", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  db.query(
-    "SELECT id, plan_key, plan_name, price, unit, status, next_delivery, created_at FROM subscriptions WHERE customer_id = ? ORDER BY id DESC",
-    [customerId],
-    (err, results) => {
-      if (err || !results) {
-        return res.send({ subscriptions: getCustomerSubscriptions(customerId) });
-      }
-      return res.send({ subscriptions: results });
-    }
-  );
+router.get("/subscriptions", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    const subs = await Subscription.find({ customerId }).sort({ _id: -1 });
+
+    const formattedSubs = subs.map((s) => ({
+      id: String(s._id),
+      _id: s._id,
+      plan_key: s.planKey,
+      plan_name: s.planName,
+      price: s.price,
+      unit: s.unit,
+      status: s.status,
+      next_delivery: s.nextDelivery,
+      created_at: s.createdAt,
+    }));
+
+    return res.send({ subscriptions: formattedSubs });
+  } catch (error) {
+    console.error("Get Subscriptions Error:", error.message);
+    return res.send({ subscriptions: [] });
+  }
 });
 
 // POST /subscriptions
-router.post("/subscriptions", authMiddleware, (req, res) => {
-  const { plan_key, plan_name, price, unit, next_delivery } = req.body;
-  if (!plan_key || !plan_name || !unit || !next_delivery) {
-    return res.status(400).send("Missing subscription details");
-  }
-
-  const customerId = req.user.id;
-  const newSub = {
-    id: Date.now(),
-    plan_key,
-    plan_name,
-    price: price || null,
-    unit,
-    status: "Active",
-    next_delivery,
-    created_at: new Date().toISOString(),
-  };
-
-  const userSubs = getCustomerSubscriptions(customerId);
-  userSubs.unshift(newSub);
-
-  db.query(
-    "INSERT INTO subscriptions (customer_id, plan_key, plan_name, price, unit, next_delivery) VALUES (?, ?, ?, ?, ?, ?)",
-    [customerId, plan_key, plan_name, price || null, unit, next_delivery],
-    (err, result) => {
-      if (err) {
-        console.warn("MySQL POST subscription warning (saved to in-memory fallback):", err.message);
-      } else if (result && result.insertId) {
-        newSub.id = result.insertId;
-      }
-      return res.status(201).send({
-        message: "Subscription activated successfully",
-        subscriptionId: newSub.id,
-      });
+router.post("/subscriptions", authMiddleware, async (req, res) => {
+  try {
+    const { plan_key, plan_name, price, unit, next_delivery } = req.body;
+    if (!plan_key || !plan_name || !unit || !next_delivery) {
+      return res.status(400).send("Missing subscription details");
     }
-  );
+
+    const customerId = req.user.id;
+    const newSub = await Subscription.create({
+      customerId,
+      planKey: plan_key,
+      planName: plan_name,
+      price: price ? Number(price) : null,
+      unit,
+      status: "Active",
+      nextDelivery: next_delivery,
+    });
+
+    return res.status(201).send({
+      message: "Subscription activated successfully",
+      subscriptionId: String(newSub._id),
+    });
+  } catch (error) {
+    console.error("Create Subscription Error:", error.message);
+    return res.status(500).send("Failed to activate subscription");
+  }
 });
 
 // PUT /subscriptions/:id/status
-router.put("/subscriptions/:id/status", authMiddleware, (req, res) => {
-  const { status } = req.body;
-  const subscriptionId = req.params.id;
-  const customerId = req.user.id;
+router.put("/subscriptions/:id/status", authMiddleware, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const subscriptionId = req.params.id;
+    const customerId = req.user.id;
 
-  if (!status) {
-    return res.status(400).send("Missing status");
-  }
-
-  const userSubs = getCustomerSubscriptions(customerId);
-  const targetSub = userSubs.find((s) => String(s.id) === String(subscriptionId));
-  if (targetSub) {
-    targetSub.status = status;
-  }
-
-  db.query(
-    "UPDATE subscriptions SET status = ? WHERE id = ? AND customer_id = ?",
-    [status, subscriptionId, customerId],
-    (err) => {
-      if (err) {
-        console.warn("MySQL PUT subscription status warning:", err.message);
-      }
-      return res.send({ message: `Subscription status updated to ${status}` });
+    if (!status) {
+      return res.status(400).send("Missing status");
     }
-  );
+
+    await Subscription.findOneAndUpdate(
+      { _id: subscriptionId, customerId },
+      { status },
+      { new: true }
+    );
+
+    return res.send({ message: `Subscription status updated to ${status}` });
+  } catch (error) {
+    console.error("Update Subscription Status Error:", error.message);
+    return res.status(500).send("Failed to update subscription status");
+  }
 });
 
 // DELETE /subscriptions/:id
-router.delete("/subscriptions/:id", authMiddleware, (req, res) => {
-  const subscriptionId = req.params.id;
-  const customerId = req.user.id;
+router.delete("/subscriptions/:id", authMiddleware, async (req, res) => {
+  try {
+    const subscriptionId = req.params.id;
+    const customerId = req.user.id;
 
-  const userSubs = getCustomerSubscriptions(customerId);
-  const filtered = userSubs.filter((s) => String(s.id) !== String(subscriptionId));
-  inMemorySubscriptions.set(customerId, filtered);
-
-  db.query(
-    "DELETE FROM subscriptions WHERE id = ? AND customer_id = ?",
-    [subscriptionId, customerId],
-    (err) => {
-      if (err) {
-        console.warn("MySQL DELETE subscription warning:", err.message);
-      }
-      return res.send({ message: "Subscription cancelled successfully" });
-    }
-  );
+    await Subscription.findOneAndDelete({ _id: subscriptionId, customerId });
+    return res.send({ message: "Subscription cancelled successfully" });
+  } catch (error) {
+    console.error("Cancel Subscription Error:", error.message);
+    return res.status(500).send("Failed to cancel subscription");
+  }
 });
 
 // GET /giftcard
-router.get("/giftcard", authMiddleware, (req, res) => {
-  const customerId = req.user.id;
-  db.query(
-    "SELECT gift_card_balance FROM customers WHERE id = ?",
-    [customerId],
-    (err, results) => {
-      if (err || !results || results.length === 0) {
-        return res.send({ balance: req.user.gift_card_balance || "0.00" });
-      }
-      return res.send({ balance: results[0].gift_card_balance });
+router.get("/giftcard", authMiddleware, async (req, res) => {
+  try {
+    const customerId = req.user.id;
+    const user = await User.findById(customerId);
+    return res.send({ balance: Number(user?.gift_card_balance || 0).toFixed(2) });
+  } catch (error) {
+    console.error("Get Giftcard Error:", error.message);
+    return res.send({ balance: "0.00" });
+  }
+});
+
+// POST /giftcard/redeem (Atomic $inc update)
+router.post("/giftcard/redeem", authMiddleware, async (req, res) => {
+  try {
+    const { code } = req.body;
+    if (!code) {
+      return res.status(400).send("Missing promo/gift card code");
     }
-  );
+
+    const upperCode = code.trim().toUpperCase();
+    let amount = 0;
+    if (upperCode === "GIFT50") amount = 50.0;
+    else if (upperCode === "GIFT100") amount = 100.0;
+    else if (upperCode === "GIFT500") amount = 500.0;
+    else {
+      return res.status(400).send("Invalid gift card or promo code");
+    }
+
+    const customerId = req.user.id;
+
+    // Atomic update to prevent race conditions
+    const updatedUser = await User.findByIdAndUpdate(
+      customerId,
+      { $inc: { gift_card_balance: amount } },
+      { new: true }
+    );
+
+    const newBal = Number(updatedUser?.gift_card_balance || 0).toFixed(2);
+
+    return res.send({
+      message: `Successfully redeemed ₹${amount}!`,
+      balance: newBal,
+    });
+  } catch (error) {
+    console.error("Redeem Giftcard Error:", error.message);
+    return res.status(500).send("Failed to redeem gift card");
+  }
 });
 
-// POST /giftcard/redeem
-router.post("/giftcard/redeem", authMiddleware, (req, res) => {
-  const { code } = req.body;
-  if (!code) {
-    return res.status(400).send("Missing promo/gift card code");
+// POST /giftcard/buy (Atomic $inc update)
+router.post("/giftcard/buy", authMiddleware, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    const numAmount = parseFloat(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).send("Invalid purchase amount");
+    }
+
+    const customerId = req.user.id;
+
+    // Atomic update to prevent race conditions
+    const updatedUser = await User.findByIdAndUpdate(
+      customerId,
+      { $inc: { gift_card_balance: numAmount } },
+      { new: true }
+    );
+
+    const newBal = Number(updatedUser?.gift_card_balance || 0).toFixed(2);
+
+    return res.send({
+      message: `Successfully purchased ₹${numAmount} credits!`,
+      balance: newBal,
+    });
+  } catch (error) {
+    console.error("Buy Giftcard Error:", error.message);
+    return res.status(500).send("Failed to purchase gift card");
   }
-
-  const upperCode = code.trim().toUpperCase();
-  let amount = 0;
-  if (upperCode === "GIFT50") amount = 50.0;
-  else if (upperCode === "GIFT100") amount = 100.0;
-  else if (upperCode === "GIFT500") amount = 500.0;
-  else {
-    return res.status(400).send("Invalid gift card or promo code");
-  }
-
-  const customerId = req.user.id;
-  const currentBal = parseFloat(req.user.gift_card_balance || 0);
-  const newBal = (currentBal + amount).toFixed(2);
-  req.user.gift_card_balance = newBal;
-
-  db.query(
-    "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
-    [amount, customerId],
-    () => { }
-  );
-
-  return res.send({
-    message: `Successfully redeemed ₹${amount}!`,
-    balance: newBal,
-  });
-});
-
-// POST /giftcard/buy
-router.post("/giftcard/buy", authMiddleware, (req, res) => {
-  const { amount } = req.body;
-  const numAmount = parseFloat(amount);
-  if (isNaN(numAmount) || numAmount <= 0) {
-    return res.status(400).send("Invalid purchase amount");
-  }
-
-  const customerId = req.user.id;
-  const currentBal = parseFloat(req.user.gift_card_balance || 0);
-  const newBal = (currentBal + numAmount).toFixed(2);
-  req.user.gift_card_balance = newBal;
-
-  db.query(
-    "UPDATE customers SET gift_card_balance = gift_card_balance + ? WHERE id = ?",
-    [numAmount, customerId],
-    () => { }
-  );
-
-  return res.send({
-    message: `Successfully purchased ₹${numAmount} credits!`,
-    balance: newBal,
-  });
 });
 
 export default router;

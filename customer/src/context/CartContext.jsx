@@ -135,46 +135,54 @@ export function CartProvider({ children }) {
   }, [cart, user]);
 
   const addToCart = (product) => {
+    if (!product) return;
     if (!user) {
       setShowLoginModal(true);
       return;
     }
 
+    const prodId = product.id || product.productId || product._id;
+    if (!prodId) return;
+
     setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === product.id);
+      const existing = prevCart.find((item) => item && (item.id === prodId || item.productId === prodId || item._id === prodId));
       if (existing) {
         return prevCart.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
+          item && (item.id === prodId || item.productId === prodId || item._id === prodId)
+            ? { ...item, quantity: (item.quantity || 1) + 1 }
             : item
         );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      return [...prevCart, { ...product, id: prodId, quantity: 1 }];
     });
   };
 
   const removeFromCart = (id) => {
-    if (!user) return;
+    if (!id || !user) return;
     setCart((prevCart) => {
-      const existing = prevCart.find((item) => item.id === id);
+      const existing = prevCart.find((item) => item && (item.id === id || item.productId === id || item._id === id));
       if (!existing) return prevCart;
-      if (existing.quantity === 1) {
-        return prevCart.filter((item) => item.id !== id);
+      if ((existing.quantity || 1) <= 1) {
+        return prevCart.filter((item) => item && item.id !== id && item.productId !== id && item._id !== id);
       }
       return prevCart.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+        item && (item.id === id || item.productId === id || item._id === id)
+          ? { ...item, quantity: item.quantity - 1 }
+          : item
       );
     });
   };
 
   const updateQuantity = (id, qty) => {
-    if (!user) return;
+    if (!id || !user) return;
     if (qty <= 0) {
-      setCart((prevCart) => prevCart.filter((item) => item.id !== id));
+      setCart((prevCart) => prevCart.filter((item) => item && item.id !== id && item.productId !== id && item._id !== id));
     } else {
       setCart((prevCart) =>
         prevCart.map((item) =>
-          item.id === id ? { ...item, quantity: qty } : item
+          item && (item.id === id || item.productId === id || item._id === id)
+            ? { ...item, quantity: qty }
+            : item
         )
       );
     }
@@ -194,17 +202,17 @@ export function CartProvider({ children }) {
     setCart([]);
   };
 
-  const cartCount = cart.reduce((total, item) => total + item.quantity, 0);
-  const cartTotal = cart.reduce((total, item) => total + item.price * item.quantity, 0);
+  const cartCount = cart.reduce((total, item) => total + (item?.quantity || 0), 0);
+  const cartTotal = cart.reduce((total, item) => total + (item?.price || 0) * (item?.quantity || 0), 0);
   const cartSavings = cart.reduce((total, item) => {
-    const savingsPerItem = Math.max(0, (item.mrp || item.price) - item.price);
-    return total + savingsPerItem * item.quantity;
+    const savingsPerItem = Math.max(0, (item?.mrp || item?.price || 0) - (item?.price || 0));
+    return total + savingsPerItem * (item?.quantity || 0);
   }, 0);
 
   // Global Wishlist State
   const getWishlistKey = (u) => {
     if (!u) return "fillcarts_guest_wishlist";
-    return `fillcarts_wishlist_${u.id || u.phone || u.email || 'user'}`;
+    return `fillcarts_wishlist_${u.id || u._id || u.phone || u.email || 'user'}`;
   };
 
   const [wishlist, setWishlist] = useState(() => {
@@ -244,30 +252,36 @@ export function CartProvider({ children }) {
   }, [wishlist, user]);
 
   const isInWishlist = (productId) => {
-    return wishlist.some(item => String(item.id) === String(productId));
+    if (!productId) return false;
+    return wishlist.some(item => item && String(item.id || item.productId || item._id) === String(productId));
   };
 
   const toggleWishlist = (product) => {
+    if (!product) return false;
     if (!user) {
       setShowLoginModal(true);
       return false;
     }
+    const prodId = product.id || product.productId || product._id;
+    if (!prodId) return false;
+
     let isAdded = false;
     setWishlist(prev => {
-      const exists = prev.some(item => String(item.id) === String(product.id));
+      const exists = prev.some(item => item && String(item.id || item.productId || item._id) === String(prodId));
       if (exists) {
         isAdded = false;
-        return prev.filter(item => String(item.id) !== String(product.id));
+        return prev.filter(item => item && String(item.id || item.productId || item._id) !== String(prodId));
       } else {
         isAdded = true;
-        return [...prev, product];
+        return [...prev, { ...product, id: prodId }];
       }
     });
     return isAdded;
   };
 
   const removeFromWishlist = (productId) => {
-    setWishlist(prev => prev.filter(item => String(item.id) !== String(productId)));
+    if (!productId) return;
+    setWishlist(prev => prev.filter(item => item && String(item.id || item.productId || item._id) !== String(productId)));
   };
 
   return (

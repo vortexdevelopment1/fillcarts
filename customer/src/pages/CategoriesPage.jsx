@@ -10,45 +10,7 @@ import {
 import { useCart } from "../context/CartContext";
 import { getProductImage, CATEGORY_IMAGE_MAP } from "../utils/productImages";
 
-// Default Category Data
-const initialCategories = [
-  { id: "cat-grocery", key: "grocery", name: "Grocery", sub: "Atta, Dal, Oils & Rice", count: 420, icon: Carrot, isPopular: true, img: CATEGORY_IMAGE_MAP.grocery },
-  { id: "cat-fruits", key: "fruits", name: "Fruits & Vegetables", sub: "Fresh Daily Farm Produce", count: 180, icon: Apple, isPopular: true, img: CATEGORY_IMAGE_MAP.fruits },
-  { id: "cat-dairy", key: "dairy", name: "Dairy", sub: "Milk, Paneer & Curd", count: 96, icon: Milk, isPopular: true, img: CATEGORY_IMAGE_MAP.dairy },
-  { id: "cat-bakery", key: "bakery", name: "Bakery", sub: "Breads, Buns & Pastries", count: 74, icon: Croissant, isPopular: true, img: CATEGORY_IMAGE_MAP.bakery },
-  { id: "cat-pharmacy", key: "pharmacy", name: "Pharmacy", sub: "Medicines & Wellness", count: 260, icon: Pill, isPopular: false, img: CATEGORY_IMAGE_MAP.pharmacy },
-  { id: "cat-food", key: "food", name: "Food", sub: "Local Kitchens & Snacks", count: 340, icon: UtensilsCrossed, isPopular: false, img: CATEGORY_IMAGE_MAP.food },
-  { id: "cat-pet", key: "pet", name: "Pet Care", sub: "Pet Food & Supplies", count: 58, icon: PawPrint, isPopular: false, img: CATEGORY_IMAGE_MAP.pet },
-  { id: "cat-home", key: "home", name: "Home Essentials", sub: "Cleaning & Daily Needs", count: 132, icon: Home, isPopular: false, img: CATEGORY_IMAGE_MAP.home },
-  { id: "cat-personal", key: "personal", name: "Personal Care", sub: "Skincare & Hygiene", count: 210, icon: Sparkles, isPopular: false, img: CATEGORY_IMAGE_MAP.personal },
-  { id: "cat-electronics", key: "electronics", name: "Electronics", sub: "Cables, Chargers & Gadgets", count: 64, icon: Smartphone, isPopular: false, img: CATEGORY_IMAGE_MAP.electronics },
-];
-
-const productNames = {
-  grocery: ["Basmati Rice 5kg", "Toor Dal 1kg", "Sunflower Oil 1L", "Sugar 1kg", "Atta 5kg", "Salt 1kg", "Tea Leaves 250g", "Poha 500g"],
-  fruits: ["Fresh Bananas 1dz", "Red Apples 1kg", "Onions 1kg", "Tomatoes 1kg", "Potatoes 1kg", "Green Grapes 500g", "Spinach Bunch", "Carrots 500g"],
-  dairy: ["Toned Milk 1L", "Curd 400g", "Paneer 200g", "Butter 100g", "Cheese Slices", "Ghee 500ml", "Buttermilk 200ml", "Flavoured Yogurt"],
-  bakery: ["Brown Bread", "Butter Croissant", "Chocolate Muffin", "Multigrain Bread", "Bun Pack", "Cookies 200g", "Cup Cakes 4pc", "Rusk 200g"],
-  pharmacy: ["Paracetamol Strip", "Vitamin C Tablets", "Hand Sanitizer", "Digital Thermometer", "Face Masks 10pc", "Cough Syrup", "Antiseptic Cream", "First Aid Kit"],
-  food: ["Veg Burger", "Paneer Roll", "Margherita Pizza", "Chicken Biryani", "Masala Dosa", "Veg Thali", "Cold Coffee", "Chowmein"],
-  pet: ["Dog Food 3kg", "Cat Litter 5kg", "Pet Shampoo", "Chew Toy", "Bird Seed 1kg", "Pet Bowl Set", "Puppy Treats", "Fish Food"],
-  home: ["Dish Wash Liquid", "Floor Cleaner 1L", "Laundry Detergent", "Air Freshener", "Trash Bags 30pc", "Tissue Box", "Broom Set", "Toilet Cleaner"],
-  personal: ["Face Wash 100ml", "Shampoo 340ml", "Toothpaste 150g", "Body Lotion", "Hair Oil 200ml", "Deodorant Spray", "Razor Pack", "Lip Balm"],
-  electronics: ["USB Cable 1m", "Earphones", "Power Bank 10000mAh", "LED Bulb 9W", "Extension Board", "Phone Stand", "Bluetooth Speaker", "Wall Charger"],
-};
-
-function genProducts(catKey) {
-  const names = productNames[catKey] || [];
-  return names.map((name, i) => ({
-    id: `${catKey}-${i}`,
-    name,
-    price: 39 + ((i * 37) % 260),
-    mrp: 39 + ((i * 37) % 260) + 20 + (i % 3) * 10,
-    rating: (3.8 + ((i * 7) % 12) / 10).toFixed(1),
-    img: getProductImage(name, catKey),
-    store: i % 2 === 0 ? "Fresh Mart" : "Daily Needs Express"
-  }));
-}
+import productService, { CATEGORIES as defaultCategories } from "../services/productService";
 
 const sortOptions = ["Popularity", "Price: Low to High", "Price: High to Low", "Rating"];
 
@@ -173,20 +135,50 @@ export default function CategoriesPage() {
   const { cart, addToCart, removeFromCart } = useCart();
   const productsSectionRef = useRef(null);
 
-  const [categories, setCategories] = useState(initialCategories);
+  const [categories, setCategories] = useState(defaultCategories);
   const [active, setActive] = useState(catParam || "grocery");
   const [searchQuery, setSearchQuery] = useState(queryParam || "");
   const [sortBy, setSortBy] = useState("Popularity");
   const [sortOpen, setSortOpen] = useState(false);
-  const [filterMode, setFilterMode] = useState("all");
 
   // Advanced Filters: Rating & Price Range
   const [ratingFilter, setRatingFilter] = useState("all");
   const [priceFilter, setPriceFilter] = useState("all");
 
-  // State handlers for API simulation
-  const [loading, setLoading] = useState(false);
+  // State handlers for API integration
+  const [rawProducts, setRawProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+
+  // Fetch products from backend MongoDB API whenever active category changes
+  useEffect(() => {
+    let isMounted = true;
+    const fetchCategoryProducts = async () => {
+      setLoading(true);
+      setError(false);
+      try {
+        const res = await productService.getProducts({
+          category: active,
+          limit: 100
+        });
+        if (isMounted) {
+          if (res.success && Array.isArray(res.data)) {
+            setRawProducts(res.data);
+          } else {
+            setError(true);
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching category products:", err);
+        if (isMounted) setError(true);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchCategoryProducts();
+    return () => { isMounted = false; };
+  }, [active]);
 
   useEffect(() => {
     if (catParam && categories.some((c) => c.key === catParam)) {
@@ -221,12 +213,15 @@ export default function CategoriesPage() {
     return categories.find((c) => c.key === active) || categories[0];
   }, [categories, active]);
 
-  // Generate and filter products for active category
+  // Filter & sort products for active category from MongoDB
   const products = useMemo(() => {
-    let list = genProducts(active);
+    let list = [...rawProducts];
     if (searchQuery.trim()) {
       const q = searchQuery.toLowerCase();
-      list = list.filter((p) => p.name.toLowerCase().includes(q));
+      list = list.filter((p) =>
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.keywords && p.keywords.some((k) => String(k).toLowerCase().includes(q)))
+      );
     }
     if (ratingFilter === "4.5") {
       list = list.filter((p) => Number(p.rating) >= 4.5);
@@ -242,7 +237,7 @@ export default function CategoriesPage() {
     if (sortBy === "Price: High to Low") list = [...list].sort((a, b) => b.price - a.price);
     if (sortBy === "Rating") list = [...list].sort((a, b) => Number(b.rating) - Number(a.rating));
     return list;
-  }, [active, searchQuery, sortBy, ratingFilter, priceFilter]);
+  }, [rawProducts, searchQuery, sortBy, ratingFilter, priceFilter]);
 
   // Handle Category Selection without unwanted automatic scroll when clicked from sticky filter bar
   const handleSelectCategory = (catKey, shouldScroll = false) => {
@@ -426,7 +421,17 @@ export default function CategoriesPage() {
               </div>
 
               {/* Product Grid */}
-              {products.length === 0 ? (
+              {loading ? (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                  {[...Array(8)].map((_, i) => (
+                    <div key={i} className="bg-white border border-slate-200 rounded-2xl p-3 animate-pulse space-y-3">
+                      <div className="aspect-square bg-slate-100 rounded-xl" />
+                      <div className="h-3 bg-slate-200 rounded w-3/4" />
+                      <div className="h-4 bg-slate-200 rounded w-1/2" />
+                    </div>
+                  ))}
+                </div>
+              ) : products.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-3xl p-10 text-center text-slate-500 font-semibold shadow-xs">
                   No products match your current filters or search query. Try resetting filters.
                 </div>

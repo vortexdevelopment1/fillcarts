@@ -1,11 +1,11 @@
-import { CATEGORIES, PRODUCTS, STORES } from "./catalogData";
+import { CATEGORIES, STORES } from "../services/productService.js";
 
 /**
  * Calculates Damerau-Levenshtein edit distance (insertions, deletions, substitutions, transpositions).
  */
 export function levenshteinDistance(a, b) {
-  const str1 = a.toLowerCase();
-  const str2 = b.toLowerCase();
+  const str1 = String(a || "").toLowerCase();
+  const str2 = String(b || "").toLowerCase();
   const matrix = Array.from({ length: str1.length + 1 }, () =>
     new Array(str2.length + 1).fill(0)
   );
@@ -41,7 +41,7 @@ export function levenshteinDistance(a, b) {
  * Helper to strip common English plurals/suffixes for stemming.
  */
 function stemWord(w) {
-  let word = w.toLowerCase().trim();
+  let word = String(w || "").toLowerCase().trim();
   if (word.length > 4) {
     if (word.endsWith("ies")) return word.slice(0, -3) + "y";
     if (word.endsWith("es")) return word.slice(0, -2);
@@ -54,8 +54,8 @@ function stemWord(w) {
  * Calculates similarity score (0.0 to 1.0) with strong typo tolerance.
  */
 export function calculateWordSimilarity(target, query) {
-  const t = target.toLowerCase().trim();
-  const q = query.toLowerCase().trim();
+  const t = String(target || "").toLowerCase().trim();
+  const q = String(query || "").toLowerCase().trim();
 
   if (!t || !q) return 0;
   if (t === q) return 1.0;
@@ -89,7 +89,7 @@ export function calculateWordSimilarity(target, query) {
  * Checks if query matches any token in target text or list with fuzzy tolerance.
  */
 export function fuzzyScore(targetText, targetArray, query) {
-  const qClean = query.toLowerCase().trim();
+  const qClean = String(query || "").toLowerCase().trim();
   if (!qClean) return 0;
 
   const words = qClean.split(/\s+/);
@@ -98,7 +98,7 @@ export function fuzzyScore(targetText, targetArray, query) {
   const pool = [
     targetText,
     ...(targetArray || [])
-  ].filter(Boolean).map(s => s.toLowerCase());
+  ].filter(Boolean).map(s => String(s).toLowerCase());
 
   for (const qWord of words) {
     let maxWordScore = 0;
@@ -118,17 +118,19 @@ export function fuzzyScore(targetText, targetArray, query) {
 }
 
 /**
- * Universal Catalog Search method
+ * Universal Catalog Search method over dynamic products or static category index
  */
-export function searchCatalog(queryStr) {
-  const query = (queryStr || "").trim().toLowerCase();
+export function searchCatalog(queryStr, productsList = []) {
+  const query = String(queryStr || "").trim().toLowerCase();
+  const products = Array.isArray(productsList) ? productsList : [];
+
   if (!query) {
     return {
       categories: CATEGORIES,
-      products: PRODUCTS,
+      products: products,
       stores: STORES,
       topCategoryMatch: null,
-      topProductMatch: PRODUCTS[0] || null,
+      topProductMatch: products[0] || null,
       didYouMean: null,
       query: ""
     };
@@ -167,9 +169,9 @@ export function searchCatalog(queryStr) {
     .sort((a, b) => b.score - a.score);
 
   // 2. Score Products
-  const scoredProducts = PRODUCTS.map((prod) => {
+  const scoredProducts = products.map((prod) => {
     let score = 0;
-    const pName = prod.name.toLowerCase();
+    const pName = (prod.name || "").toLowerCase();
     const tags = prod.tags || [];
     const keywords = prod.keywords || [];
 
@@ -177,7 +179,7 @@ export function searchCatalog(queryStr) {
     else if (pName.includes(query)) score += 160;
 
     for (const kw of keywords) {
-      const kwLower = kw.toLowerCase();
+      const kwLower = String(kw).toLowerCase();
       if (kwLower === query) score += 220;
       else if (kwLower.includes(query) || query.includes(kwLower)) score += 150;
       else {
@@ -193,7 +195,7 @@ export function searchCatalog(queryStr) {
     }
 
     for (const tag of tags) {
-      const tagSim = calculateWordSimilarity(tag, query);
+      const tagSim = calculateWordSimilarity(String(tag), query);
       if (tagSim >= 0.5) score += Math.round(tagSim * 80);
     }
 
@@ -205,8 +207,8 @@ export function searchCatalog(queryStr) {
   // 3. Score Stores
   const scoredStores = STORES.map((store) => {
     let score = 0;
-    const sName = store.name.toLowerCase();
-    const sCat = store.category.toLowerCase();
+    const sName = (store.name || "").toLowerCase();
+    const sCat = (store.category || "").toLowerCase();
 
     if (sName.includes(query)) score += 80;
     else if (sCat.includes(query)) score += 50;
@@ -223,11 +225,11 @@ export function searchCatalog(queryStr) {
   const topProductMatch = scoredProducts.length > 0 ? scoredProducts[0] : null;
 
   let didYouMean = null;
-  if (topProductMatch && topProductMatch.score >= 50 && !topProductMatch.name.toLowerCase().includes(query)) {
-    const words = topProductMatch.name.split(" ");
+  if (topProductMatch && topProductMatch.score >= 50 && !(topProductMatch.name || "").toLowerCase().includes(query)) {
+    const words = (topProductMatch.name || "").split(" ");
     const cleanWord = words.find(w => w.length > 3 && !["Fresh", "Ripe", "Local", "Crispy", "Pack", "Pure"].includes(w)) || words[0];
     didYouMean = cleanWord;
-  } else if (topCategoryMatch && topCategoryMatch.score >= 40 && !topCategoryMatch.name.toLowerCase().includes(query)) {
+  } else if (topCategoryMatch && topCategoryMatch.score >= 40 && !(topCategoryMatch.name || "").toLowerCase().includes(query)) {
     didYouMean = topCategoryMatch.name;
   }
 
@@ -245,30 +247,30 @@ export function searchCatalog(queryStr) {
 /**
  * Finds similar / related products for a search result
  */
-export function getSimilarProducts(primaryProducts, queryStr = "") {
+export function getSimilarProducts(primaryProducts = [], allProducts = [], queryStr = "") {
   if (!primaryProducts || primaryProducts.length === 0) {
-    if (queryStr) {
-      return PRODUCTS.slice(0, 6);
+    if (queryStr && Array.isArray(allProducts)) {
+      return allProducts.slice(0, 6);
     }
     return [];
   }
 
-  const primaryIds = new Set(primaryProducts.map((p) => p.id));
+  const primaryIds = new Set(primaryProducts.map((p) => String(p.id)));
   const matchedCatKeys = new Set(primaryProducts.map((p) => p.categoryKey));
 
-  const similar = PRODUCTS.filter(
-    (p) => !primaryIds.has(p.id) && matchedCatKeys.has(p.categoryKey)
+  const similar = allProducts.filter(
+    (p) => !primaryIds.has(String(p.id)) && matchedCatKeys.has(p.categoryKey)
   );
 
   if (similar.length > 0) return similar.slice(0, 6);
-  return PRODUCTS.filter((p) => !primaryIds.has(p.id)).slice(0, 6);
+  return allProducts.filter((p) => !primaryIds.has(String(p.id))).slice(0, 6);
 }
 
 /**
  * Filter & Sort products list based on active options
  */
-export function filterAndSortProducts(productList, filters = {}) {
-  let list = [...productList];
+export function filterAndSortProducts(productList = [], filters = {}) {
+  let list = Array.isArray(productList) ? [...productList] : [];
 
   const {
     searchQuery = "",
@@ -282,7 +284,7 @@ export function filterAndSortProducts(productList, filters = {}) {
   let searchScoreMap = new Map();
 
   if (searchQuery.trim()) {
-    const searchRes = searchCatalog(searchQuery);
+    const searchRes = searchCatalog(searchQuery, list);
 
     searchRes.products.forEach((p) => {
       searchScoreMap.set(p.id, p.score);
@@ -294,8 +296,8 @@ export function filterAndSortProducts(productList, filters = {}) {
     } else {
       const q = searchQuery.toLowerCase();
       list = list.filter((p) =>
-        p.name.toLowerCase().includes(q) ||
-        (p.keywords && p.keywords.some((k) => k.toLowerCase().includes(q)))
+        (p.name || "").toLowerCase().includes(q) ||
+        (p.keywords && p.keywords.some((k) => String(k).toLowerCase().includes(q)))
       );
     }
   }
@@ -305,8 +307,8 @@ export function filterAndSortProducts(productList, filters = {}) {
   }
 
   if (priceRange && priceRange !== "all") {
-    if (priceRange === "under-100") list = list.filter((p) => p.price < 100);
-    else if (priceRange === "100-300") list = list.filter((p) => p.price >= 100 && p.price <= 300);
+    if (priceRange === "under-100" || priceRange === "under100") list = list.filter((p) => p.price <= 100);
+    else if (priceRange === "100-300" || priceRange === "100to300") list = list.filter((p) => p.price >= 100 && p.price <= 300);
     else if (priceRange === "300-500") list = list.filter((p) => p.price >= 300 && p.price <= 500);
     else if (priceRange === "above-500") list = list.filter((p) => p.price > 500);
   }
@@ -333,8 +335,8 @@ export function filterAndSortProducts(productList, filters = {}) {
     list.sort((a, b) => parseFloat(b.rating) - parseFloat(a.rating));
   } else if (sortBy === "Discount") {
     list.sort((a, b) => {
-      const discA = ((a.mrp - a.price) / a.mrp);
-      const discB = ((b.mrp - b.price) / b.mrp);
+      const discA = a.mrp > a.price ? (a.mrp - a.price) / a.mrp : 0;
+      const discB = b.mrp > b.price ? (b.mrp - b.price) / b.mrp : 0;
       return discB - discA;
     });
   }

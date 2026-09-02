@@ -1,10 +1,10 @@
-import React, { useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Link, useSearchParams, useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import Navbar from "../components/Navbar";
-import { Star, Plus, Minus, ChevronRight, Sparkles, ShoppingBag, Layers, ArrowRight } from "lucide-react";
+import { Star, Plus, Minus, ChevronRight, Sparkles, ShoppingBag, Layers, ArrowRight, Loader2 } from "lucide-react";
 import { useCart } from "../context/CartContext";
-import { CATEGORIES, PRODUCTS } from "../utils/catalogData";
+import productService, { CATEGORIES } from "../services/productService";
 import { searchCatalog, filterAndSortProducts, getSimilarProducts } from "../utils/searchUtils";
 
 export default function SearchResultsPage() {
@@ -15,24 +15,50 @@ export default function SearchResultsPage() {
   const { cart, addToCart, removeFromCart } = useCart();
   const navigate = useNavigate();
 
-  // Perform instant fuzzy catalog search
-  const searchResults = useMemo(() => {
-    return searchCatalog(query);
-  }, [query]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [matchingProducts, setMatchingProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Primary Direct Matching Products sorted by relevance
-  const matchingProducts = useMemo(() => {
-    return filterAndSortProducts(PRODUCTS, {
-      searchQuery: query,
-      category: categoryFilter,
-      sortBy: "Popularity"
-    });
+  // Fetch search products from backend MongoDB API
+  useEffect(() => {
+    let isMounted = true;
+    const fetchSearchData = async () => {
+      setLoading(true);
+      try {
+        const [searchRes, generalRes] = await Promise.all([
+          productService.getProducts({
+            search: query,
+            category: categoryFilter,
+            limit: 100
+          }),
+          productService.getProducts({ limit: 50 })
+        ]);
+
+        if (isMounted) {
+          const matched = searchRes.data || [];
+          setMatchingProducts(matched);
+          setAllProducts(generalRes.data || []);
+        }
+      } catch (err) {
+        console.error("Error fetching search results:", err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchSearchData();
+    return () => { isMounted = false; };
   }, [query, categoryFilter]);
+
+  // Perform instant fuzzy catalog search for category suggestions
+  const searchResults = useMemo(() => {
+    return searchCatalog(query, allProducts);
+  }, [query, allProducts]);
 
   // Similar Products Recommendations
   const similarProducts = useMemo(() => {
-    return getSimilarProducts(matchingProducts, query);
-  }, [matchingProducts, query]);
+    return getSimilarProducts(matchingProducts, allProducts, query);
+  }, [matchingProducts, allProducts, query]);
 
   // Matching or Similar Categories for search query
   const relatedCategories = useMemo(() => {
@@ -89,7 +115,17 @@ export default function SearchResultsPage() {
             )}
           </div>
 
-          {matchingProducts.length === 0 ? (
+          {loading ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3.5 sm:gap-4">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="bg-white border border-slate-200 rounded-2xl p-3 animate-pulse space-y-3">
+                  <div className="aspect-square bg-slate-100 rounded-xl" />
+                  <div className="h-3 bg-slate-200 rounded w-3/4" />
+                  <div className="h-4 bg-slate-200 rounded w-1/2" />
+                </div>
+              ))}
+            </div>
+          ) : matchingProducts.length === 0 ? (
             <div className="bg-white border border-emerald-100 rounded-3xl p-10 text-center max-w-md mx-auto my-6 space-y-3 shadow-xs">
               <div className="w-14 h-14 bg-[#ECFDF3] text-[#16A34A] rounded-full flex items-center justify-center mx-auto">
                 <ShoppingBag size={24} />

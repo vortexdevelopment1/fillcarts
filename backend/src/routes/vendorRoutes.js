@@ -1,10 +1,8 @@
 import express from "express";
-import db from "../db.js";
+import Vendor from "../models/Vendor.js";
+import { vendorRegisterSchema } from "../utils/validationSchemas.js";
 
 const router = express.Router();
-
-// In-memory fallback storage when DB is offline
-const inMemoryVendors = new Map();
 
 // Helper to generate unique Vendor ID (e.g. FC-849201)
 const generateVendorId = () => {
@@ -16,8 +14,16 @@ const generateVendorId = () => {
  * @desc    Submit Merchant Registration Form
  * @access  Public
  */
-router.post("/register", (req, res) => {
+router.post("/register", async (req, res) => {
   try {
+    const parseResult = vendorRegisterSchema.safeParse(req.body);
+    if (!parseResult.success) {
+      return res.status(400).json({
+        success: false,
+        message: parseResult.error.errors[0]?.message || "Invalid vendor registration data",
+      });
+    }
+
     const {
       storeName,
       category,
@@ -28,119 +34,56 @@ router.post("/register", (req, res) => {
       phone,
       email = "",
       gstNumber = "",
-      panNumber = ""
-    } = req.body;
-
-    // 1. Input Validation
-    if (!storeName || !storeName.trim()) {
-      return res.status(400).json({ success: false, message: "Store name is required." });
-    }
-    if (!category || !category.trim()) {
-      return res.status(400).json({ success: false, message: "Business category is required." });
-    }
-    if (!address || !address.trim()) {
-      return res.status(400).json({ success: false, message: "Store address is required." });
-    }
-    if (!city || !city.trim()) {
-      return res.status(400).json({ success: false, message: "City is required." });
-    }
-    if (!pincode || !/^\d{6}$/.test(pincode.trim())) {
-      return res.status(400).json({ success: false, message: "A valid 6-digit pincode is required." });
-    }
-    if (!ownerName || !ownerName.trim()) {
-      return res.status(400).json({ success: false, message: "Owner full name is required." });
-    }
-    if (!phone || !/^[6-9]\d{9}$/.test(phone.replace(/\D/g, ""))) {
-      return res.status(400).json({ success: false, message: "A valid 10-digit Indian mobile number is required." });
-    }
+      panNumber = "",
+    } = parseResult.data;
 
     const cleanPhone = phone.replace(/\D/g, "");
-    const cleanStoreName = storeName.trim();
-    const cleanOwnerName = ownerName.trim();
-    const cleanAddress = address.trim();
-    const cleanCity = city.trim();
-    const cleanPincode = pincode.trim();
-    const cleanEmail = (email || "").trim();
-    const cleanGst = (gstNumber || "").trim().toUpperCase();
-    const cleanPan = (panNumber || "").trim().toUpperCase();
-
     const vendorId = generateVendorId();
     const status = "Pending";
 
-    // 2. Query Database (or use in-memory fallback)
-    const sqlCheck = "SELECT * FROM vendors WHERE phone = ?";
-    db.query(sqlCheck, [cleanPhone], (checkErr, results) => {
-      if (!checkErr && results && results.length > 0) {
-        return res.status(400).json({
-          success: false,
-          message: `Phone number +91 ${cleanPhone} is already registered as a merchant.`
-        });
-      }
+    const existingVendor = await Vendor.findOne({ phone: cleanPhone });
+    if (existingVendor) {
+      return res.status(400).json({
+        success: false,
+        message: `Phone number +91 ${cleanPhone} is already registered as a merchant.`,
+      });
+    }
 
-      // Check in-memory fallback if DB error/offline
-      if (checkErr) {
-        const existingInMemory = Array.from(inMemoryVendors.values()).find(
-          (v) => v.phone === cleanPhone
-        );
-        if (existingInMemory) {
-          return res.status(400).json({
-            success: false,
-            message: `Phone number +91 ${cleanPhone} is already registered as a merchant.`
-          });
-        }
-      }
+    await Vendor.create({
+      vendorId,
+      storeName,
+      category,
+      address,
+      city,
+      pincode,
+      ownerName,
+      phone: cleanPhone,
+      email: (email || "").trim(),
+      gstNumber: (gstNumber || "").trim().toUpperCase(),
+      panNumber: (panNumber || "").trim().toUpperCase(),
+      status,
+    });
 
-      const sqlInsert = `
-        INSERT INTO vendors (vendor_id, store_name, category, address, city, pincode, owner_name, phone, email, gst_number, pan_number, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `;
-
-      db.query(
-        sqlInsert,
-        [vendorId, cleanStoreName, category, cleanAddress, cleanCity, cleanPincode, cleanOwnerName, cleanPhone, cleanEmail, cleanGst, cleanPan, status],
-        (insertErr, result) => {
-          // Store in-memory fallback
-          const newVendor = {
-            id: result ? result.insertId : inMemoryVendors.size + 1,
-            vendorId,
-            storeName: cleanStoreName,
-            category,
-            address: cleanAddress,
-            city: cleanCity,
-            pincode: cleanPincode,
-            ownerName: cleanOwnerName,
-            phone: cleanPhone,
-            email: cleanEmail,
-            gstNumber: cleanGst,
-            panNumber: cleanPan,
-            status,
-            createdAt: new Date().toISOString()
-          };
-          inMemoryVendors.set(vendorId, newVendor);
-
-          return res.status(201).json({
-            success: true,
-            message: "Merchant store application registered successfully!",
-            vendorId: vendorId,
-            status: status,
-            data: {
-              vendorId,
-              storeName: cleanStoreName,
-              ownerName: cleanOwnerName,
-              phone: cleanPhone,
-              category,
-              city: cleanCity,
-              status
-            }
-          });
-        }
-      );
+    return res.status(201).json({
+      success: true,
+      message: "Merchant store application registered successfully!",
+      vendorId: vendorId,
+      status: status,
+      data: {
+        vendorId,
+        storeName,
+        ownerName,
+        phone: cleanPhone,
+        category,
+        city,
+        status,
+      },
     });
   } catch (error) {
-    console.error("Vendor Registration API Error:", error);
+    console.error("Vendor Registration API Error:", error.message);
     return res.status(500).json({
       success: false,
-      message: "Internal server error during merchant registration."
+      message: "Internal server error during merchant registration.",
     });
   }
 });
@@ -150,75 +93,79 @@ router.post("/register", (req, res) => {
  * @desc    Get Merchant Registration Status by Vendor ID or Phone
  * @access  Public
  */
-router.get("/status/:identifier", (req, res) => {
-  const { identifier } = req.params;
-  if (!identifier) {
-    return res.status(400).json({ success: false, message: "Vendor ID or phone is required." });
-  }
+router.get("/status/:identifier", async (req, res) => {
+  try {
+    const { identifier } = req.params;
+    if (!identifier) {
+      return res.status(400).json({ success: false, message: "Vendor ID or phone is required." });
+    }
 
-  const cleanQuery = identifier.trim();
+    const cleanQuery = identifier.trim();
 
-  // Database query
-  const sql = "SELECT vendor_id, store_name, owner_name, phone, category, status, created_at FROM vendors WHERE vendor_id = ? OR phone = ?";
-  db.query(sql, [cleanQuery, cleanQuery], (err, results) => {
-    if (!err && results && results.length > 0) {
-      const v = results[0];
+    const v = await Vendor.findOne({
+      $or: [{ vendorId: cleanQuery }, { phone: cleanQuery }],
+    });
+
+    if (v) {
       return res.json({
         success: true,
         data: {
-          vendorId: v.vendor_id,
-          storeName: v.store_name,
-          ownerName: v.owner_name,
+          vendorId: v.vendorId,
+          storeName: v.storeName,
+          ownerName: v.ownerName,
           phone: v.phone,
           category: v.category,
           status: v.status,
-          createdAt: v.created_at
-        }
-      });
-    }
-
-    // In-memory fallback search
-    const inMem = Array.from(inMemoryVendors.values()).find(
-      (v) => v.vendorId === cleanQuery || v.phone === cleanQuery
-    );
-
-    if (inMem) {
-      return res.json({
-        success: true,
-        data: {
-          vendorId: inMem.vendorId,
-          storeName: inMem.storeName,
-          ownerName: inMem.ownerName,
-          phone: inMem.phone,
-          category: inMem.category,
-          status: inMem.status,
-          createdAt: inMem.createdAt
-        }
+          createdAt: v.createdAt,
+        },
       });
     }
 
     return res.status(404).json({
       success: false,
-      message: "Merchant registration application not found."
+      message: "Merchant registration application not found.",
     });
-  });
+  } catch (error) {
+    console.error("Vendor Status API Error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error querying merchant status.",
+    });
+  }
 });
 
 /**
  * @route   GET /api/vendor/list
- * @desc    List All Registered Vendors (Admin View)
+ * @desc    List All Registered Vendors with Pagination (Admin View)
  * @access  Public
  */
-router.get("/list", (req, res) => {
-  const sql = "SELECT vendor_id, store_name, category, owner_name, phone, city, status, created_at FROM vendors ORDER BY id DESC";
-  db.query(sql, (err, results) => {
-    if (!err && results && results.length > 0) {
-      return res.json({ success: true, count: results.length, data: results });
-    }
+router.get("/list", async (req, res) => {
+  try {
+    const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+    const limit = Math.max(1, Math.min(100, parseInt(req.query.limit, 10) || 50));
+    const skip = (page - 1) * limit;
 
-    const memoryList = Array.from(inMemoryVendors.values());
-    return res.json({ success: true, count: memoryList.length, data: memoryList });
-  });
+    const total = await Vendor.countDocuments();
+    const vendors = await Vendor.find()
+      .sort({ _id: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    return res.json({
+      success: true,
+      count: vendors.length,
+      total,
+      page,
+      pages: Math.ceil(total / limit),
+      data: vendors,
+    });
+  } catch (error) {
+    console.error("Vendor List API Error:", error.message);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error retrieving vendor list.",
+    });
+  }
 });
 
 export default router;

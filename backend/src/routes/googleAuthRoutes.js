@@ -1,7 +1,7 @@
 import express from "express";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
-import db from "../config/db.js";
+import User from "../models/User.js";
 
 const router = express.Router();
 
@@ -18,6 +18,15 @@ router.post("/google-login", async (req, res) => {
       });
     }
 
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret) {
+      console.error("FATAL: JWT_SECRET environment variable is missing");
+      return res.status(500).json({
+        success: false,
+        message: "Server authentication error",
+      });
+    }
+
     const ticket = await client.verifyIdToken({
       idToken: token,
       audience: process.env.GOOGLE_CLIENT_ID,
@@ -27,122 +36,91 @@ router.post("/google-login", async (req, res) => {
 
     const googleId = payload.sub;
     const name = payload.name;
-    const email = payload.email;
+    const email = payload.email.toLowerCase();
     const picture = payload.picture;
 
-    db.query(
-      "SELECT * FROM customers WHERE email = ?",
-      [email],
-      (err, results) => {
-        if (err) {
-          console.log("DB ERROR:", err);
+    // Look for existing user by email
+    let user = await User.findOne({ email });
 
-          return res.status(500).json({
-            success: false,
-            message: "Database error",
-          });
+    if (user) {
+      // Update google_id or profile_picture if missing
+      if (!user.google_id || !user.profile_picture) {
+        user.google_id = user.google_id || googleId;
+        user.profile_picture = user.profile_picture || picture;
+        await user.save();
+      }
+
+      const authToken = jwt.sign(
+        {
+          id: String(user._id),
+          email: user.email,
+        },
+        jwtSecret,
+        {
+          expiresIn: "7d",
         }
+      );
 
-        // Existing User
-        if (results.length > 0) {
-          const user = results[0];
+      res.cookie("token", authToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
-          const authToken = jwt.sign(
-            {
-              id: user.id,
-              email: user.email,
-            },
-            process.env.JWT_SECRET,
-            {
-              expiresIn: "7d",
-            }
-          );
+      return res.json({
+        success: true,
+        token: authToken,
+        user: {
+          id: String(user._id),
+          name: user.name,
+          email: user.email,
+          profile_picture: user.profile_picture,
+        },
+      });
+    }
 
-          // IMPORTANT
-          res.cookie("token", authToken, {
-            httpOnly: true,
-            secure: false,
-            sameSite: "lax",
-            maxAge: 7 * 24 * 60 * 60 * 1000,
-          });
+    // Create New Google User
+    const newUser = await User.create({
+      name,
+      email,
+      google_id: googleId,
+      profile_picture: picture,
+      address: "Delivery Address",
+      pincode: "110001",
+      gift_card_balance: 0.0,
+    });
 
-          return res.json({
-            success: true,
-            token: authToken,
-            user: {
-              id: user.id,
-              name: user.name,
-              email: user.email,
-              profile_picture: user.profile_picture,
-            },
-          });
-        }
-
-        // New Google User
-        db.query(
-          `
-          INSERT INTO customers
-          (
-            name,
-            email,
-            password,
-            google_id,
-            profile_picture
-          )
-          VALUES (?, ?, ?, ?, ?)
-          `,
-          [
-            name,
-            email,
-            null,
-            googleId,
-            picture,
-          ],
-          (insertErr, result) => {
-            if (insertErr) {
-              console.log("INSERT ERROR:", insertErr);
-
-              return res.status(500).json({
-                success: false,
-                message: "Insert failed",
-              });
-            }
-
-            const authToken = jwt.sign(
-              {
-                id: result.insertId,
-                email,
-              },
-              process.env.JWT_SECRET,
-              {
-                expiresIn: "7d",
-              }
-            );
-
-            // IMPORTANT
-            res.cookie("token", authToken, {
-              httpOnly: true,
-              secure: false,
-              sameSite: "lax",
-              maxAge: 7 * 24 * 60 * 60 * 1000,
-            });
-
-            return res.json({
-              success: true,
-              token: authToken,
-              user: {
-                id: result.insertId,
-                name,
-                email,
-                profile_picture: picture,
-              },
-            });
-          }
-        );
+    const authToken = jwt.sign(
+      {
+        id: String(newUser._id),
+        email: newUser.email,
+      },
+      jwtSecret,
+      {
+        expiresIn: "7d",
       }
     );
+
+    res.cookie("token", authToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.json({
+      success: true,
+      token: authToken,
+      user: {
+        id: String(newUser._id),
+        name: newUser.name,
+        email: newUser.email,
+        profile_picture: newUser.profile_picture,
+      },
+    });
   } catch (error) {
-    console.error("GOOGLE LOGIN ERROR:", error);
+    console.error("GOOGLE LOGIN ERROR:", error.message);
 
     return res.status(401).json({
       success: false,

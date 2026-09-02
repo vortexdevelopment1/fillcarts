@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, X, Star, Plus, Minus, ArrowRight, Store, Sparkles, ChevronRight, Tag } from "lucide-react";
+import { Search, X, Star, Plus, Minus, ArrowRight, Store, Sparkles, ChevronRight, Tag, Loader2 } from "lucide-react";
 import { searchCatalog } from "../utils/searchUtils";
 import { useCart } from "../context/CartContext";
+import productService from "../services/productService";
 
 export default function SearchDropdown({
   placeholder = "Search products, categories, stores...",
@@ -15,6 +16,7 @@ export default function SearchDropdown({
 }) {
   const [query, setQuery] = useState(defaultValue);
   const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [searchResult, setSearchResult] = useState({
     categories: [],
     products: [],
@@ -34,18 +36,34 @@ export default function SearchDropdown({
   }, [defaultValue]);
 
   useEffect(() => {
-    const handler = setTimeout(() => {
-      if (query.trim().length >= 1) {
-        const res = searchCatalog(query.trim());
-        setSearchResult(res);
-        setIsOpen(true);
+    let isMounted = true;
+    const handler = setTimeout(async () => {
+      const q = query.trim();
+      if (q.length >= 1) {
+        setLoading(true);
+        try {
+          const res = await productService.getProducts({ search: q, limit: 12 });
+          if (isMounted) {
+            const apiProducts = res.data || [];
+            const searchRes = searchCatalog(q, apiProducts);
+            setSearchResult(searchRes);
+            setIsOpen(true);
+          }
+        } catch (err) {
+          console.error("Live search dropdown error:", err);
+        } finally {
+          if (isMounted) setLoading(false);
+        }
       } else {
         setSearchResult({ categories: [], products: [], stores: [], topCategoryMatch: null, didYouMean: null });
         setIsOpen(false);
       }
-    }, 120);
+    }, 150);
 
-    return () => clearTimeout(handler);
+    return () => {
+      isMounted = false;
+      clearTimeout(handler);
+    };
   }, [query]);
 
   useEffect(() => {
