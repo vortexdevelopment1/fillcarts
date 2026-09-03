@@ -1,6 +1,18 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+const VENDOR_URL =
+  import.meta.env.VITE_VENDOR_URL ||
+  (import.meta.env.PROD
+    ? "https://fillcarts-vendor.vercel.app"
+    : "http://localhost:5174");
+
+const RIDER_URL =
+  import.meta.env.VITE_RIDER_URL ||
+  (import.meta.env.PROD
+    ? "https://fillcarts-rider.vercel.app"
+    : "http://localhost:5175");
+
 const footerColumns = [
   {
     h: "Shopping",
@@ -23,8 +35,8 @@ const footerColumns = [
   {
     h: "Partner With Us",
     links: [
-      { l: "Become a Local Vendor", href: "http://localhost:5174" },
-      { l: "Become a Delivery Rider", href: "http://localhost:5175" },
+      { l: "Become a Local Vendor", href: VENDOR_URL },
+      { l: "Become a Delivery Rider", href: RIDER_URL },
     ],
   },
   {

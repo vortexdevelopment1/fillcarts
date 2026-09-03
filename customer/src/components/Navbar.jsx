@@ -10,6 +10,18 @@ import { useWishlist } from "../context/WishlistContext";
 import api from "../api";
 import SearchDropdown from "./SearchDropdown";
 
+const VENDOR_URL =
+  import.meta.env.VITE_VENDOR_URL ||
+  (import.meta.env.PROD
+    ? "https://fillcarts-vendor.vercel.app"
+    : "http://localhost:5174");
+
+const RIDER_URL =
+  import.meta.env.VITE_RIDER_URL ||
+  (import.meta.env.PROD
+    ? "https://fillcarts-rider.vercel.app"
+    : "http://localhost:5175");
+
 export default function Navbar({ searchPlaceholder = "Search products, stores...", onSearchChange }) {
   const { cartCount, user, logoutUser, setShowLoginModal, userLocation, changeLocation } = useCart();
   const { wishlistCount = 0 } = useWishlist();
@@ -374,14 +386,14 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             {!user && (
               <div className="ml-auto flex items-center gap-2 sm:gap-3 text-xs font-bold whitespace-nowrap">
                 <a
-                  href="http://localhost:5174"
+                  href={VENDOR_URL}
                   className="flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
                 >
                   <Store size={13} className="text-[#16A34A]" />
                   <span>Become a Vendor</span>
                 </a>
                 <a
-                  href="http://localhost:5175"
+                  href={RIDER_URL}
                   className="flex items-center gap-1.5 px-3 py-1 rounded-full border transition-all text-slate-700 border-slate-200/80 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3]/50"
                 >
                   <Bike size={13} className="text-[#16A34A]" />
