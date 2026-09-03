@@ -1,30 +1,71 @@
 import nodemailer from "nodemailer";
 
 /**
- * Creates and returns a configured Nodemailer transporter
+ * Creates and returns a configured Nodemailer transporter using Port 587 with STARTTLS
  */
 const getTransporter = () => {
-  const user = (process.env.EMAIL || process.env.EMAIL_USER || "")
+  const user = (
+    process.env.EMAIL_USER ||
+    process.env.EMAIL ||
+    ""
+  )
     .trim()
     .replace(/^["']|["']$/g, "");
-  const pass = (process.env.EMAIL_PASS || process.env.EMAIL_PASSWORD || "")
+
+  const pass = (
+    process.env.EMAIL_PASSWORD ||
+    process.env.EMAIL_PASS ||
+    ""
+  )
     .trim()
     .replace(/^["']|["']$/g, "");
 
   if (!user || !pass) {
     throw new Error(
-      "Email credentials missing in environment variables. Please set EMAIL and EMAIL_PASS."
+      "Email credentials missing in environment variables. Please set EMAIL_USER (or EMAIL) and EMAIL_PASSWORD (or EMAIL_PASS)."
     );
   }
 
   return nodemailer.createTransport({
-    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // STARTTLS
+    requireTLS: true,
     auth: {
       user,
       pass,
     },
+    tls: {
+      rejectUnauthorized: false,
+    },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
   });
 };
+
+/**
+ * Safe transporter connection verifier (does not expose credentials or secrets)
+ */
+export async function verifyEmailTransporter() {
+  try {
+    const user = (process.env.EMAIL_USER || process.env.EMAIL || "").trim();
+    const pass = (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").trim();
+
+    if (!user || !pass) {
+      console.warn("⚠️ Email service: EMAIL_USER / EMAIL_PASSWORD not fully set in environment.");
+      return false;
+    }
+
+    const transporter = getTransporter();
+    await transporter.verify();
+    console.log("✅ Gmail SMTP (Port 587 STARTTLS) connected successfully.");
+    return true;
+  } catch (error) {
+    console.warn("⚠️ Gmail SMTP verification notice:", error.message);
+    return false;
+  }
+}
 
 /**
  * Send 6-digit OTP to the specified recipient email address
@@ -38,7 +79,12 @@ export async function sendEmail(to, otp, purpose = "login") {
     throw new Error("Recipient email address is required");
   }
 
-  const senderEmail = (process.env.EMAIL || process.env.EMAIL_USER || "").trim();
+  const senderEmail = (
+    process.env.EMAIL_USER ||
+    process.env.EMAIL ||
+    ""
+  ).trim();
+
   const transporter = getTransporter();
 
   const isReset = purpose === "password_reset";

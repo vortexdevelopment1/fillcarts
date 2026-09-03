@@ -43,6 +43,13 @@ export function CartProvider({ children }) {
 
   // Fetch authenticated user profile on mount
   const checkUserProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      setUser(null);
+      setLoadingUser(false);
+      return;
+    }
+
     try {
       const res = await api.get("/profile");
       if (res.data && res.data.customer) {
