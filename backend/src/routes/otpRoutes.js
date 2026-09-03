@@ -9,7 +9,6 @@ import Subscription from "../models/Subscription.js";
 import Cart from "../models/Cart.js";
 import generateOTP from "../utils/otpGenerator.js";
 import sendEmail from "../services/emailService.js";
-import sendSMS from "../services/smsService.js";
 import authMiddleware from "../middleware/authMiddleware.js";
 import {
   registerCustomerSchema,
@@ -170,43 +169,75 @@ router.post("/logout", (req, res) => {
   return res.send({ message: "Logged out successfully" });
 });
 
-// SEND OTP
+// SEND OTP (EMAIL ONLY)
 router.post("/send-otp", async (req, res) => {
   try {
     const parseResult = sendOtpSchema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).send(parseResult.error.errors[0]?.message || "Contact is required");
+      return res.status(400).send(parseResult.error.errors[0]?.message || "Email address is required");
     }
 
-    const { contact, phone, email, type = "sms" } = req.body;
-    const targetContact = normalizeIdentifier(contact || phone || email);
+    const { contact, phone, email } = req.body;
+    const rawInput = normalizeIdentifier(email || contact || phone);
+
+    if (!rawInput) {
+      return res.status(400).send("Email address is required");
+    }
+
+    let targetEmail = "";
+    if (rawInput.includes("@")) {
+      targetEmail = rawInput.toLowerCase();
+    } else {
+      // If user entered phone number, look up registered customer's email
+      const existingUser = await User.findOne({ phone: rawInput });
+      if (existingUser && existingUser.email && existingUser.email.includes("@")) {
+        targetEmail = existingUser.email.toLowerCase();
+      } else {
+        return res
+          .status(400)
+          .send("Please enter your email address to receive the verification OTP.");
+      }
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(targetEmail)) {
+      return res.status(400).send("Please enter a valid email address format");
+    }
 
     const otp = generateOTP();
     const expiry = new Date(Date.now() + 5 * 60 * 1000);
 
-    // Save OTP to MongoDB (expires automatically via TTL index)
+    // Save OTP to MongoDB (expires automatically in 5 minutes via TTL index)
+    await Otp.deleteMany({ contact: targetEmail });
     await Otp.create({
-      contact: targetContact,
+      contact: targetEmail,
       otp,
       expiresAt: expiry,
     });
 
-    // Ensure customer exists in database
+    if (rawInput !== targetEmail) {
+      await Otp.deleteMany({ contact: rawInput });
+      await Otp.create({
+        contact: rawInput,
+        otp,
+        expiresAt: expiry,
+      });
+    }
+
+    // Ensure customer profile exists in database
     const existingCust = await User.findOne({
-      $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }],
+      $or: [{ email: targetEmail }, { phone: rawInput }],
     });
 
     if (!existingCust) {
-      const isEmail = targetContact.includes("@");
-      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
-      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
-      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+      const defaultName = targetEmail.split("@")[0];
+      const defaultPhone = rawInput.replace(/\D/g, "") || "9876543210";
       const defaultHashedPass = await bcrypt.hash("otp-user-pass", 10);
 
       await User.create({
         name: defaultName,
-        phone: phoneVal,
-        email: emailVal,
+        phone: defaultPhone.slice(0, 10),
+        email: targetEmail,
         password: defaultHashedPass,
         address: "Delivery Address",
         pincode: "110001",
@@ -214,18 +245,17 @@ router.post("/send-otp", async (req, res) => {
       });
     }
 
-    if (type === "email") {
-      sendEmail(targetContact, otp).catch((emailErr) =>
-        console.error("Email delivery warning:", emailErr.message)
-      );
-    } else {
-      sendSMS(targetContact, otp).catch((smsErr) =>
-        console.error("SMS delivery warning:", smsErr.message)
-      );
+    // Send OTP via Nodemailer to the user's specific email
+    try {
+      await sendEmail(targetEmail, otp, "login");
+    } catch (emailErr) {
+      console.error("Email delivery failed:", emailErr.message);
+      return res.status(500).send("Failed to send OTP email. Please check server email configuration.");
     }
 
     return res.send({
-      message: "OTP Generated Successfully",
+      success: true,
+      message: `OTP sent successfully to ${targetEmail}`,
     });
   } catch (error) {
     console.error("Send OTP Error:", error.message);
@@ -233,20 +263,26 @@ router.post("/send-otp", async (req, res) => {
   }
 });
 
-// VERIFY OTP (Master OTP Bypass Completely Removed)
+// VERIFY OTP
 router.post("/verify-otp", async (req, res) => {
   try {
     const parseResult = verifyOtpSchema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).send(parseResult.error.errors[0]?.message || "Contact and OTP are required");
+      return res.status(400).send(parseResult.error.errors[0]?.message || "Email and OTP are required");
     }
 
     const { contact, phone, email, otp } = req.body;
-    const targetContact = normalizeIdentifier(contact || phone || email);
+    const rawInput = normalizeIdentifier(email || contact || phone);
+
+    if (!rawInput || !otp) {
+      return res.status(400).send("Email and OTP are required");
+    }
+
+    const lookupKeys = [rawInput, rawInput.toLowerCase()];
 
     // Validate real OTP against MongoDB
     const otpRecord = await Otp.findOne({
-      contact: targetContact,
+      contact: { $in: lookupKeys },
       otp: otp.trim(),
       expiresAt: { $gt: new Date() },
     }).sort({ _id: -1 });
@@ -256,17 +292,17 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     // Delete verified OTP to prevent replay attacks
-    await Otp.deleteMany({ contact: targetContact });
+    await Otp.deleteMany({ contact: { $in: lookupKeys } });
 
     let user = await User.findOne({
-      $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }],
+      $or: [{ email: rawInput.toLowerCase() }, { phone: rawInput }],
     });
 
     if (!user) {
-      const isEmail = targetContact.includes("@");
-      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
-      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
-      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+      const isEmail = rawInput.includes("@");
+      const defaultName = isEmail ? rawInput.split("@")[0] : `User ${rawInput.slice(-4)}`;
+      const phoneVal = isEmail ? "9876543210" : rawInput;
+      const emailVal = isEmail ? rawInput.toLowerCase() : `user_${rawInput}@fillcarts.local`;
       const defaultHashedPass = await bcrypt.hash("otp-user-pass", 10);
 
       user = await User.create({
@@ -291,36 +327,63 @@ router.post("/verify-otp", async (req, res) => {
   }
 });
 
-// FORGOT PASSWORD - SEND OTP
+// FORGOT PASSWORD - SEND OTP (EMAIL ONLY)
 router.post("/forgot-password/send-otp", async (req, res) => {
   try {
     const parseResult = sendOtpSchema.safeParse(req.body);
     if (!parseResult.success) {
-      return res.status(400).send("Phone number or email is required");
+      return res.status(400).send("Email address is required");
     }
 
-    const { contact, phone, email, type = "sms" } = req.body;
-    const targetContact = normalizeIdentifier(contact || phone || email);
+    const { contact, phone, email } = req.body;
+    const rawInput = normalizeIdentifier(email || contact || phone);
+
+    if (!rawInput) {
+      return res.status(400).send("Email address is required");
+    }
+
+    let targetEmail = "";
+    if (rawInput.includes("@")) {
+      targetEmail = rawInput.toLowerCase();
+    } else {
+      const existingUser = await User.findOne({ phone: rawInput });
+      if (existingUser && existingUser.email) {
+        targetEmail = existingUser.email.toLowerCase();
+      } else {
+        return res.status(404).send("No registered email found for this user");
+      }
+    }
 
     const otp = generateOTP();
     const expiry = new Date(Date.now() + 5 * 60 * 1000);
+
+    await Otp.deleteMany({ contact: targetEmail });
     await Otp.create({
-      contact: targetContact,
+      contact: targetEmail,
       otp,
       expiresAt: expiry,
     });
 
-    if (type === "email") {
-      sendEmail(targetContact, otp).catch((emailErr) =>
-        console.error("Email reset delivery warning:", emailErr.message)
-      );
-    } else {
-      sendSMS(targetContact, otp).catch((smsErr) =>
-        console.error("SMS reset delivery warning:", smsErr.message)
-      );
+    if (rawInput !== targetEmail) {
+      await Otp.deleteMany({ contact: rawInput });
+      await Otp.create({
+        contact: rawInput,
+        otp,
+        expiresAt: expiry,
+      });
     }
 
-    return res.send({ message: "OTP sent successfully to reset password" });
+    try {
+      await sendEmail(targetEmail, otp, "password_reset");
+    } catch (emailErr) {
+      console.error("Forgot Password Email delivery failed:", emailErr.message);
+      return res.status(500).send("Failed to send password reset OTP email");
+    }
+
+    return res.send({
+      success: true,
+      message: `Password reset OTP sent successfully to ${targetEmail}`,
+    });
   } catch (error) {
     console.error("Forgot Password OTP Error:", error.message);
     return res.status(500).send("Failed to send reset OTP");
@@ -331,18 +394,20 @@ router.post("/forgot-password/send-otp", async (req, res) => {
 router.post("/forgot-password/reset", async (req, res) => {
   try {
     const { contact, phone, email, otp, newPassword } = req.body;
-    const targetContact = normalizeIdentifier(contact || phone || email);
+    const rawInput = normalizeIdentifier(email || contact || phone);
 
-    if (!targetContact || !otp || !newPassword) {
-      return res.status(400).send("Contact, OTP, and new password are required");
+    if (!rawInput || !otp || !newPassword) {
+      return res.status(400).send("Email, OTP, and new password are required");
     }
 
     if (newPassword.length < 6) {
       return res.status(400).send("Password must be at least 6 characters long");
     }
 
+    const lookupKeys = [rawInput, rawInput.toLowerCase()];
+
     const otpRecord = await Otp.findOne({
-      contact: targetContact,
+      contact: { $in: lookupKeys },
       otp: String(otp).trim(),
       expiresAt: { $gt: new Date() },
     }).sort({ _id: -1 });
@@ -351,21 +416,21 @@ router.post("/forgot-password/reset", async (req, res) => {
       return res.status(400).send("Invalid or expired OTP");
     }
 
-    await Otp.deleteMany({ contact: targetContact });
+    await Otp.deleteMany({ contact: { $in: lookupKeys } });
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
     let user = await User.findOneAndUpdate(
-      { $or: [{ phone: targetContact }, { email: targetContact.toLowerCase() }] },
+      { $or: [{ email: rawInput.toLowerCase() }, { phone: rawInput }] },
       { password: hashedPassword },
       { new: true }
     );
 
     if (!user) {
-      const isEmail = targetContact.includes("@");
-      const phoneVal = isEmail ? targetContact.replace(/\D/g, "") || "9876543210" : targetContact;
-      const emailVal = isEmail ? targetContact.toLowerCase() : `user_${targetContact}@fillcarts.local`;
-      const defaultName = isEmail ? targetContact.split("@")[0] : `User ${targetContact.slice(-4)}`;
+      const isEmail = rawInput.includes("@");
+      const defaultName = isEmail ? rawInput.split("@")[0] : `User ${rawInput.slice(-4)}`;
+      const phoneVal = isEmail ? "9876543210" : rawInput;
+      const emailVal = isEmail ? rawInput.toLowerCase() : `user_${rawInput}@fillcarts.local`;
 
       user = await User.create({
         name: defaultName,

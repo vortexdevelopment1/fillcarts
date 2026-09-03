@@ -25,10 +25,10 @@ export const sendOtpSchema = z
     contact: z.string().trim().optional(),
     phone: z.string().trim().optional(),
     email: z.string().trim().optional(),
-    type: z.enum(["sms", "email"]).optional().default("sms"),
+    type: z.string().optional().default("email"),
   })
   .refine((data) => Boolean(data.contact || data.phone || data.email), {
-    message: "Contact, phone, or email is required",
+    message: "Email address or contact is required",
   });
 
 export const verifyOtpSchema = z
@@ -39,7 +39,7 @@ export const verifyOtpSchema = z
     otp: z.string().trim().min(4, "A valid numeric OTP is required"),
   })
   .refine((data) => Boolean(data.contact || data.phone || data.email), {
-    message: "Contact, phone, or email is required",
+    message: "Email address and OTP are required",
   });
 
 export const vendorRegisterSchema = z.object({

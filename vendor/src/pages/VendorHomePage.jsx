@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import VendorNavbar from "../components/VendorNavbar";
 import Footer from "../components/Footer";
+import api from "../api";
 import vendorImg from "../assets/vendor.png";
 import {
   Store, Users, LayoutDashboard, Wallet, Bell, PackageCheck,
@@ -183,14 +184,10 @@ export default function VendorHomePage() {
     if (currentStep === 3) {
       setIsSubmitting(true);
       try {
-        const response = await fetch("http://localhost:3000/api/vendor/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData)
-        });
-        const result = await response.json();
+        const response = await api.post("/vendor/register", formData);
+        const result = response.data;
         setIsSubmitting(false);
-        if (result.success && result.vendorId) {
+        if (result?.success && result?.vendorId) {
           setAppId(result.vendorId);
           setIsSubmitted(true);
         } else {

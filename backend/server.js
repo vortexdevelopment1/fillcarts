@@ -21,6 +21,9 @@ import wishlistRoutes from "./src/routes/wishlistRoutes.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Trust proxy for Render / reverse proxy rate limiting
+app.set("trust proxy", 1);
+
 // Initialize MongoDB connection on startup
 connectMongoDB().then(() => {
   seedProductsIfEmpty();

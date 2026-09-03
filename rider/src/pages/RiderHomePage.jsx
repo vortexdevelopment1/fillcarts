@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import RiderNavbar from "../components/RiderNavbar";
 import Footer from "../components/Footer";
+import api from "../api";
 import {
   Bike, Clock, MapPin, Wallet, Headphones, ShieldCheck, Smartphone,
   CheckCircle2, ArrowRight, ChevronDown, FileCheck, Navigation,
@@ -172,17 +173,13 @@ export default function RiderHomePage() {
 
     setHeroSubmitting(true);
     try {
-      const response = await fetch("http://localhost:3000/api/rider/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(heroForm)
-      });
-      const result = await response.json();
+      const response = await api.post("/rider/register", heroForm);
+      const result = response.data;
       setHeroSubmitting(false);
-      if (result.success) {
+      if (result?.success) {
         setHeroSubmitted(true);
       } else {
-        setHeroError(result.message || "Failed to submit rider application.");
+        setHeroError(result?.message || "Failed to submit rider application.");
       }
     } catch (err) {
       console.warn("Backend API unreachable, using rider registration fallback:", err);
@@ -223,17 +220,13 @@ export default function RiderHomePage() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("http://localhost:3000/api/rider/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form)
-      });
-      const result = await response.json();
+      const response = await api.post("/rider/register", form);
+      const result = response.data;
       setIsSubmitting(false);
-      if (result.success) {
+      if (result?.success) {
         setIsSubmitted(true);
       } else {
-        setErrorMessage(result.message || "Failed to submit application.");
+        setErrorMessage(result?.message || "Failed to submit application.");
       }
     } catch (err) {
       console.warn("Backend API unreachable, using rider registration fallback:", err);

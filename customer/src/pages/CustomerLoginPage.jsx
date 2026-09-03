@@ -129,11 +129,12 @@ export default function CustomerLoginPage() {
       return;
     }
 
-    const isEmail = contact.includes("@");
+    const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
 
     try {
       const res = await api.post("/send-otp", {
-        [isEmail ? "email" : "phone"]: contact.trim(),
+        [isEmail ? "email" : "contact"]: contact.trim(),
+        type: "email",
       });
 
       if (res.data.customer) {
@@ -168,11 +169,11 @@ export default function CustomerLoginPage() {
       return;
     }
 
-    const isEmail = contact.includes("@");
+    const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
 
     try {
       const res = await api.post("/verify-otp", {
-        [isEmail ? "email" : "phone"]: contact.trim(),
+        [isEmail ? "email" : "contact"]: contact.trim(),
         otp: entered,
       });
 
@@ -192,11 +193,12 @@ export default function CustomerLoginPage() {
   const handleResend = async () => {
     if (timer > 0) return;
     setError("");
-    const isEmail = contact.includes("@");
+    const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
 
     try {
       await api.post("/send-otp", {
-        [isEmail ? "email" : "phone"]: contact.trim(),
+        [isEmail ? "email" : "contact"]: contact.trim(),
+        type: "email",
       });
       setTimer(30);
       setOtp(["", "", "", "", "", ""]);
@@ -281,19 +283,19 @@ export default function CustomerLoginPage() {
             </div>
           )}
 
-          {/* STEP 1: PHONE / EMAIL INPUT */}
+          {/* STEP 1: EMAIL / PHONE INPUT */}
           {step === "phone" && loginMode === "otp" && (
             <form onSubmit={handleSendOtp} className="space-y-4 text-xs">
               <div>
                 <label className="block font-extrabold text-[#17231A] mb-1.5">
-                  Mobile Number or Email Address
+                  Email Address or Mobile Number
                 </label>
                 <div className="relative flex items-center">
-                  <Smartphone size={16} className="absolute left-3.5 text-slate-400" />
+                  <Mail size={16} className="absolute left-3.5 text-slate-400" />
                   <input
                     required
                     type="text"
-                    placeholder="Enter 10-digit phone or name@email.com"
+                    placeholder="Enter email (e.g. name@gmail.com) or phone"
                     value={contact}
                     onChange={handleContactChange}
                     className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:border-[#16A34A] transition-all"
@@ -305,7 +307,7 @@ export default function CustomerLoginPage() {
                 type="submit"
                 className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Get Instant OTP</span>
+                <span>Get Instant Email OTP</span>
                 <ArrowRight size={15} />
               </button>
             </form>
@@ -453,7 +455,7 @@ export default function CustomerLoginPage() {
                   {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
                 </button>
 
-                <span className="text-slate-400 text-[11px] font-semibold">Demo OTP: 123456</span>
+                <span className="text-slate-400 text-[11px] font-semibold">Check your email inbox / spam</span>
               </div>
 
               <button
