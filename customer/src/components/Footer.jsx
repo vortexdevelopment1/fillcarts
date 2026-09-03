@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const VENDOR_URL =
   import.meta.env.VITE_VENDOR_URL ||
@@ -35,8 +36,8 @@ const footerColumns = [
   {
     h: "Partner With Us",
     links: [
-      { l: "Become a Local Vendor", href: VENDOR_URL },
-      { l: "Become a Delivery Rider", href: RIDER_URL },
+      { l: "Become a Local Vendor", href: VENDOR_URL, type: "vendor" },
+      { l: "Become a Delivery Rider", href: RIDER_URL, type: "rider" },
     ],
   },
   {
@@ -51,6 +52,19 @@ const footerColumns = [
 ];
 
 export default function Footer() {
+  const { user, setShowLoginModal } = useCart();
+
+  const handlePartnerLink = (e, type) => {
+    if (!user) {
+      e.preventDefault();
+      const msg = type === "vendor"
+        ? "Please login first to become a Vendor."
+        : "Please login first to become a Rider.";
+      setShowLoginModal(msg);
+      return false;
+    }
+  };
+
   return (
     <footer className="bg-[#17231A] text-slate-200 pt-16 pb-8 border-t border-emerald-900/40" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
@@ -80,7 +94,12 @@ export default function Footer() {
                     {item.href ? (
                       <a
                         href={item.href}
-                        className="text-[13px] text-slate-300 hover:text-[#16A34A] transition-colors font-medium block"
+                        onClick={(e) => {
+                          if (item.type) {
+                            handlePartnerLink(e, item.type);
+                          }
+                        }}
+                        className="text-[13px] text-slate-300 hover:text-[#16A34A] transition-colors font-medium block cursor-pointer"
                       >
                         {item.l}
                       </a>

@@ -179,6 +179,18 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
     { label: "Features", to: "/features" },
   ];
 
+  const handlePartnerLink = (e, type) => {
+    if (!user) {
+      e.preventDefault();
+      setMobileMenuOpen(false);
+      const msg = type === "vendor"
+        ? "Please login first to become a Vendor."
+        : "Please login first to become a Rider.";
+      setShowLoginModal(msg);
+      return false;
+    }
+  };
+
   const isActiveRoute = (path) => {
     if (path === "/") return location.pathname === "/";
     if (path.startsWith("/#")) return false;
@@ -447,7 +459,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             <div className="flex items-center gap-2.5 text-xs font-bold whitespace-nowrap">
               <a
                 href={VENDOR_URL}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3] bg-white shadow-2xs"
+                onClick={(e) => handlePartnerLink(e, "vendor")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3] bg-white shadow-2xs cursor-pointer"
                 title="Partner with Fillcarts as a Store Vendor"
               >
                 <Store size={13} className="text-[#16A34A]" />
@@ -455,7 +468,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               </a>
               <a
                 href={RIDER_URL}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3] bg-white shadow-2xs"
+                onClick={(e) => handlePartnerLink(e, "rider")}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border transition-all text-slate-700 border-slate-200 hover:border-emerald-300 hover:text-[#166534] hover:bg-[#ECFDF3] bg-white shadow-2xs cursor-pointer"
                 title="Join Fillcarts as a Delivery Partner Rider"
               >
                 <Bike size={13} className="text-[#16A34A]" />
@@ -622,7 +636,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-1">Partner with FillCarts</div>
                 <a
                   href={VENDOR_URL}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFCF5] border border-emerald-200 hover:bg-[#ECFDF3] transition-colors"
+                  onClick={(e) => handlePartnerLink(e, "vendor")}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFCF5] border border-emerald-200 hover:bg-[#ECFDF3] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-emerald-100 text-[#166534] flex items-center justify-center font-bold">
@@ -638,7 +653,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
                 <a
                   href={RIDER_URL}
-                  className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFCF5] border border-emerald-200 hover:bg-[#ECFDF3] transition-colors"
+                  onClick={(e) => handlePartnerLink(e, "rider")}
+                  className="flex items-center justify-between p-3 rounded-2xl bg-[#FFFCF5] border border-emerald-200 hover:bg-[#ECFDF3] transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-2.5">
                     <div className="w-8 h-8 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold">
