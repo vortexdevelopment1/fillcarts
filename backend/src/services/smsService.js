@@ -1,5 +1,4 @@
-// Fast2SMS and SMS OTP functionality has been completely removed in favor of Nodemailer Email OTP.
-// This file is retained as an empty stub for backwards compatibility.
+// SMS OTP has been removed in favor of Resend Email OTP.
 export default async function sendSMS() {
   return false;
 }

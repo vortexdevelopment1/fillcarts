@@ -1,75 +1,34 @@
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 /**
- * Creates and returns a configured Nodemailer transporter using Port 587 with STARTTLS
+ * Creates and returns a configured Resend client instance
  */
-const getTransporter = () => {
-  const user = (
-    process.env.EMAIL_USER ||
-    process.env.EMAIL ||
-    ""
-  )
-    .trim()
-    .replace(/^["']|["']$/g, "");
-
-  const pass = (
-    process.env.EMAIL_PASSWORD ||
-    process.env.EMAIL_PASS ||
-    ""
-  )
-    .trim()
-    .replace(/^["']|["']$/g, "");
-
-  if (!user || !pass) {
+const getResendClient = () => {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim().replace(/^["']|["']$/g, "");
+  if (!apiKey) {
     throw new Error(
-      "Email credentials missing in environment variables. Please set EMAIL_USER (or EMAIL) and EMAIL_PASSWORD (or EMAIL_PASS)."
+      "RESEND_API_KEY is missing or empty in environment variables. Please configure RESEND_API_KEY on Render."
     );
   }
-
-  return nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,
-    secure: false, // STARTTLS
-    requireTLS: true,
-    auth: {
-      user,
-      pass,
-    },
-    tls: {
-      rejectUnauthorized: false,
-    },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-  });
+  return new Resend(apiKey);
 };
 
 /**
- * Safe transporter connection verifier (does not expose credentials or secrets)
+ * Safe Resend configuration verifier (does not log API keys or secrets)
  */
-export async function verifyEmailTransporter() {
-  try {
-    const user = (process.env.EMAIL_USER || process.env.EMAIL || "").trim();
-    const pass = (process.env.EMAIL_PASSWORD || process.env.EMAIL_PASS || "").trim();
-
-    if (!user || !pass) {
-      console.warn("⚠️ Email service: EMAIL_USER / EMAIL_PASSWORD not fully set in environment.");
-      return false;
-    }
-
-    const transporter = getTransporter();
-    await transporter.verify();
-    console.log("✅ Gmail SMTP (Port 587 STARTTLS) connected successfully.");
-    return true;
-  } catch (error) {
-    console.warn("⚠️ Gmail SMTP verification notice:", error.message);
+export async function verifyEmailService() {
+  const apiKey = (process.env.RESEND_API_KEY || "").trim();
+  if (!apiKey) {
+    console.warn("⚠️ Resend Email service: RESEND_API_KEY is not set in environment variables.");
     return false;
   }
+  console.log("✅ Resend Email API initialized and ready to send OTPs over HTTPS.");
+  return true;
 }
 
 /**
- * Send 6-digit OTP to the specified recipient email address
- * @param {string} to - Recipient email address
+ * Send 6-digit OTP to the specified recipient email address using Resend HTTPS API
+ * @param {string} to - Recipient email address entered by user
  * @param {string|number} otp - 6-digit verification code
  * @param {string} purpose - Purpose of OTP ("login" or "password_reset")
  */
@@ -79,13 +38,14 @@ export async function sendEmail(to, otp, purpose = "login") {
     throw new Error("Recipient email address is required");
   }
 
-  const senderEmail = (
-    process.env.EMAIL_USER ||
-    process.env.EMAIL ||
-    ""
-  ).trim();
+  const resend = getResendClient();
 
-  const transporter = getTransporter();
+  // In Resend, default to "Fillcart <onboarding@resend.dev>" or user configured domain in EMAIL_FROM
+  const fromEmail = (
+    process.env.EMAIL_FROM || "Fillcart <onboarding@resend.dev>"
+  )
+    .trim()
+    .replace(/^["']|["']$/g, "");
 
   const isReset = purpose === "password_reset";
   const subject = isReset
@@ -110,7 +70,6 @@ export async function sendEmail(to, otp, purpose = "login") {
         .otp-code { font-size: 36px; font-weight: 900; color: #166534; letter-spacing: 8px; font-family: monospace; }
         .meta { font-size: 13px; color: #64748b; line-height: 1.6; text-align: center; }
         .meta strong { color: #334155; }
-        .warning { font-size: 12px; color: #dc2626; margin-top: 16px; text-align: center; }
         .footer { border-top: 1px solid #f1f5f9; margin-top: 28px; padding-top: 16px; text-align: center; font-size: 12px; color: #94a3b8; }
       </style>
     </head>
@@ -141,13 +100,19 @@ export async function sendEmail(to, otp, purpose = "login") {
 
   const textContent = `Your Fillcart verification code is: ${otp}\n\nThis OTP is valid for 5 minutes. Please do not share it with anyone.`;
 
-  return transporter.sendMail({
-    from: `"Fillcart" <${senderEmail}>`,
-    to: recipient,
+  const response = await resend.emails.send({
+    from: fromEmail,
+    to: [recipient],
     subject,
     text: textContent,
     html: htmlContent,
   });
+
+  if (response.error) {
+    throw new Error(`Resend API delivery failed: ${response.error.message || JSON.stringify(response.error)}`);
+  }
+
+  return response.data;
 }
 
 export default sendEmail;

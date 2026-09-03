@@ -247,7 +247,7 @@ router.post("/send-otp", async (req, res) => {
       });
     }
 
-    // Send OTP via Nodemailer to the user's specific email
+    // Send OTP via Resend Email API to the user's specific email
     try {
       await sendEmail(targetEmail, otp, "login");
     } catch (emailErr) {

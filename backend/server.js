@@ -17,7 +17,7 @@ import riderRoutes from "./src/routes/riderRoutes.js";
 import googleAuthRoutes from "./src/routes/googleAuthRoutes.js";
 import productRoutes from "./src/routes/productRoutes.js";
 import wishlistRoutes from "./src/routes/wishlistRoutes.js";
-import { verifyEmailTransporter } from "./src/services/emailService.js";
+import { verifyEmailService } from "./src/services/emailService.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -28,7 +28,7 @@ app.set("trust proxy", 1);
 // Initialize MongoDB connection on startup
 connectMongoDB().then(() => {
   seedProductsIfEmpty();
-  verifyEmailTransporter();
+  verifyEmailService();
 });
 
 // 1. Security Headers via Helmet
