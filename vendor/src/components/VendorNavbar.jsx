@@ -20,16 +20,42 @@ export default function VendorNavbar() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Robust Body Scroll Locking for Mobile Drawer (iOS & Android friendly)
   useEffect(() => {
     if (mobileMenuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
+
+  // Escape key support
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleNavClick = (e, link) => {
     if (link.path.startsWith("/#")) {
@@ -130,50 +156,54 @@ export default function VendorNavbar() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            aria-label="Toggle menu"
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-colors"
+            aria-label="Open Mobile Menu"
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu size={24} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu with Independent Scrolling */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[9999] lg:hidden flex">
+        <div className="fixed inset-0 z-[99999] lg:hidden flex overflow-hidden">
           {/* Backdrop Overlay */}
           <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-200 animate-fade-in touch-none"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Drawer Container */}
-          <div className="relative w-[85%] max-w-[320px] bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 animate-[slideRight_0.25s_ease-out]">
-            <div>
-              {/* Drawer Top Header */}
-              <div className="p-4 bg-gradient-to-b from-emerald-50 to-white border-b border-slate-100 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold">
-                    <Store size={18} />
-                  </div>
-                  <span className="font-extrabold text-lg text-slate-900">
-                    Filcarts <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Merchant</span>
-                  </span>
+          {/* Drawer Container Panel */}
+          <div 
+            className="relative w-[85%] max-w-[320px] bg-white h-[100dvh] shadow-2xl flex flex-col justify-between z-10 animate-slide-right overscroll-contain touch-pan-y"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Top Header (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 bg-gradient-to-b from-emerald-50 to-white border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-extrabold">
+                  <Store size={18} />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer shadow-2xs"
-                  aria-label="Close Menu"
-                >
-                  <X size={16} />
-                </button>
+                <span className="font-extrabold text-lg text-slate-900">
+                  Filcarts <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded">Merchant</span>
+                </span>
               </div>
 
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer shadow-2xs transition-colors"
+                aria-label="Close Menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Middle Scrollable Section (Independent Scroll) */}
+            <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch py-2">
               {/* Navigation Links */}
               <div className="p-3 space-y-1">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 py-1">Merchant Navigation</div>
@@ -225,12 +255,12 @@ export default function VendorNavbar() {
               </div>
             </div>
 
-            {/* Bottom Registration Button */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50">
+            {/* Bottom Registration Button (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 border-t border-slate-100 bg-slate-50">
               <a
                 href="/#register"
                 onClick={(e) => handleNavClick(e, { path: "/#register" })}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-extrabold py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               >
                 <span>Register Store Now</span>
                 <ArrowRight size={14} />

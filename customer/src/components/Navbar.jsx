@@ -45,23 +45,52 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [loadingSavedAddresses, setLoadingSavedAddresses] = useState(false);
 
-  // Close mobile drawer on route change
+  // Close mobile drawer and dropdowns on route change
   useEffect(() => {
     setMobileMenuOpen(false);
     setProfileOpen(false);
   }, [location.pathname]);
 
-  // Lock body scroll when mobile drawer is open
+  // Robust Body Scroll Locking for Drawer & Modals (iOS Safari & Android friendly)
   useEffect(() => {
-    if (mobileMenuOpen) {
+    const isModalOpen = mobileMenuOpen || showAppModal || showLocationModal;
+    if (isModalOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
     };
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, showAppModal, showLocationModal]);
+
+  // Handle escape key to close drawer/modals
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+        setProfileOpen(false);
+        setShowAppModal(false);
+        setShowLocationModal(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (showLocationModal && user) {
@@ -183,22 +212,22 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
       {/* MAIN NAVBAR */}
       <div className="glass-nav bg-white/95 backdrop-blur-md">
-        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4 md:gap-6">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 md:px-6 py-2 sm:py-3 flex items-center justify-between gap-1 sm:gap-3 md:gap-6">
           
           {/* Left: Mobile Menu Trigger + Logo */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1 sm:gap-2.5 flex-shrink-0">
             {/* Mobile Hamburger Menu Button */}
             <button
               type="button"
               onClick={() => setMobileMenuOpen(true)}
-              className="lg:hidden p-1.5 sm:p-2 rounded-xl text-slate-700 hover:text-[#16A34A] hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-[#16A34A] transition-colors cursor-pointer"
+              className="lg:hidden p-1 sm:p-2 rounded-xl text-slate-700 hover:text-[#16A34A] hover:bg-emerald-50 focus:outline-none focus:ring-2 focus:ring-[#16A34A] transition-colors cursor-pointer"
               aria-label="Open Mobile Menu"
             >
-              <Menu size={22} />
+              <Menu size={20} className="sm:w-[22px] sm:h-[22px]" />
             </button>
 
             {/* Brand Logo */}
-            <Link to="/" className="text-xl sm:text-2xl font-black tracking-tight flex-shrink-0 flex items-center gap-1" style={{ fontFamily: "'Manrope', sans-serif" }}>
+            <Link to="/" className="text-lg sm:text-2xl font-black tracking-tight flex-shrink-0 flex items-center gap-0.5 sm:gap-1" style={{ fontFamily: "'Manrope', sans-serif" }}>
               <span className="text-[#17231A]">Fill</span>
               <span className="text-[#16A34A]">Carts</span>
               <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] inline-block ml-0.5" />
@@ -225,8 +254,8 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             <ChevronDown size={13} className="text-slate-400 group-hover:text-[#16A34A] transition-colors shrink-0" />
           </button>
 
-          {/* Search Input Bar with Auto-Suggestions */}
-          <div className="flex flex-1 max-w-xs sm:max-w-sm md:max-w-md">
+          {/* Search Input Bar with Responsive Width Constraint */}
+          <div className="flex flex-1 min-w-[70px] max-w-[130px] min-[375px]:max-w-[160px] min-[425px]:max-w-[220px] sm:max-w-sm md:max-w-md mx-1 sm:mx-2">
             <SearchDropdown
               placeholder={searchPlaceholder}
               defaultValue={searchValue}
@@ -235,31 +264,31 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                 if (onSearchChange) onSearchChange(val);
                 navigate(`/search?q=${encodeURIComponent(val)}`);
               }}
-              inputClassName="bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-full shadow-2xs text-xs py-2"
+              inputClassName="bg-[#FFFCF5] border border-slate-200 focus:border-[#16A34A] rounded-full shadow-2xs text-[11px] sm:text-xs py-1 sm:py-2 truncate"
             />
           </div>
 
           {/* Right Action Icons & Buttons */}
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
-            {/* Account / User Menu (Desktop) */}
+          <div className="flex items-center gap-1 sm:gap-2 md:gap-3 flex-shrink-0">
+            {/* Account / User Menu */}
             {user ? (
               <div className="relative">
                 <button
                   type="button"
                   onClick={() => setProfileOpen(!profileOpen)}
-                  className="flex items-center gap-1.5 bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full px-2.5 sm:px-3.5 py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
+                  className="flex items-center gap-1 sm:gap-1.5 bg-[#FFFCF5] hover:bg-[#ECFDF3] border border-slate-200 hover:border-emerald-300 rounded-full p-1 sm:px-3 sm:py-1.5 text-xs font-extrabold text-[#17231A] transition-colors cursor-pointer"
                   aria-expanded={profileOpen}
                   aria-haspopup="true"
                 >
-                  <div className="w-5 h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
+                  <div className="w-5 h-5 sm:w-5 sm:h-5 rounded-full bg-[#16A34A] text-white flex items-center justify-center text-[10px] font-black">
                     {user.name ? user.name[0].toUpperCase() : "U"}
                   </div>
-                  <span className="hidden sm:inline">Hi, {user.name?.split(" ")[0]}</span>
-                  <ChevronDown size={12} className="text-slate-400 hidden sm:inline" />
+                  <span className="hidden md:inline">Hi, {user.name?.split(" ")[0]}</span>
+                  <ChevronDown size={12} className="text-slate-400 hidden md:inline" />
                 </button>
 
                 {profileOpen && (
-                  <div className="absolute top-11 right-0 bg-white border border-emerald-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left animate-[fadeIn_0.15s_ease-out]">
+                  <div className="absolute top-11 right-0 bg-white border border-emerald-100 rounded-2xl shadow-xl w-60 p-3.5 z-[999] text-left animate-fade-in">
                     <div className="pb-3 border-b border-slate-100 mb-2 flex items-center justify-between">
                       <div className="min-w-0 pr-2">
                         <h3 className="font-extrabold text-sm text-[#17231A] truncate">{user.name || "Customer"}</h3>
@@ -331,9 +360,10 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             ) : (
               <Link
                 to="/login"
-                className="flex items-center gap-1.5 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs transition-colors shadow-xs"
+                className="flex items-center justify-center gap-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold w-7 h-7 sm:w-auto sm:px-3.5 py-1 sm:py-1.5 rounded-full text-xs transition-colors shadow-xs"
+                title="Login / Sign Up"
               >
-                <User size={14} className="text-white" />
+                <User size={13} className="text-white sm:w-3.5 sm:h-3.5" />
                 <span className="hidden sm:inline">Login</span>
               </Link>
             )}
@@ -341,13 +371,13 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
             {/* Wishlist Button */}
             <Link
               to="/wishlist"
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-rose-300 hover:bg-rose-50 flex items-center justify-center relative text-slate-700 hover:text-rose-600 transition-all cursor-pointer shadow-2xs group"
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-rose-300 hover:bg-rose-50 flex items-center justify-center relative text-slate-700 hover:text-rose-600 transition-all cursor-pointer shadow-2xs group"
               title="Wishlist"
               aria-label="Wishlist"
             >
-              <Heart size={16} className={wishlistCount > 0 ? "text-rose-600 fill-rose-600" : "group-hover:text-rose-500"} />
+              <Heart size={14} className={`sm:w-4 sm:h-4 ${wishlistCount > 0 ? "text-rose-600 fill-rose-600" : "group-hover:text-rose-500"}`} />
               {wishlistCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-black flex items-center justify-center shadow-sm animate-pulse">
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] sm:min-w-[17px] sm:h-[17px] px-0.5 sm:px-1 rounded-full bg-rose-600 text-white text-[8px] sm:text-[9px] font-black flex items-center justify-center shadow-sm animate-pulse">
                   {wishlistCount}
                 </span>
               )}
@@ -362,13 +392,13 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                   setShowLoginModal(true);
                 }
               }}
-              className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] flex items-center justify-center relative text-[#17231A] hover:text-[#166534] transition-all cursor-pointer shadow-2xs"
+              className="w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-full bg-[#FFFCF5] border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] flex items-center justify-center relative text-[#17231A] hover:text-[#166534] transition-all cursor-pointer shadow-2xs"
               title="Shopping Cart"
               aria-label="Shopping Cart"
             >
-              <ShoppingCart size={16} />
+              <ShoppingCart size={14} className="sm:w-4 sm:h-4" />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[17px] h-[17px] px-1 rounded-full bg-[#16A34A] text-white text-[9px] font-black flex items-center justify-center shadow-sm animate-pulse">
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] sm:min-w-[17px] sm:h-[17px] px-0.5 sm:px-1 rounded-full bg-[#16A34A] text-white text-[8px] sm:text-[9px] font-black flex items-center justify-center shadow-sm animate-pulse">
                   {cartCount}
                 </span>
               )}
@@ -436,43 +466,47 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
         </nav>
       </div>
 
-      {/* MOBILE SLIDE-IN DRAWER */}
+      {/* MOBILE SLIDE-IN DRAWER WITH INDEPENDENT SCROLL */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[9999] lg:hidden flex">
+        <div className="fixed inset-0 z-[99999] lg:hidden flex overflow-hidden">
           {/* Backdrop Overlay */}
           <div
-            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs transition-opacity duration-200 animate-fade-in touch-none"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Drawer Container */}
-          <div className="relative w-[85%] max-w-[320px] bg-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 animate-[slideRight_0.25s_ease-out]">
-            {/* Drawer Top Header */}
-            <div>
-              <div className="p-4 bg-gradient-to-b from-[#ECFDF3] to-white border-b border-slate-100 flex items-center justify-between">
-                <Link
-                  to="/"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="text-xl font-black tracking-tight flex items-center gap-1"
-                >
-                  <span className="text-[#17231A]">Fill</span>
-                  <span className="text-[#16A34A]">Carts</span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] inline-block ml-0.5" />
-                </Link>
+          {/* Drawer Panel Container */}
+          <div
+            className="relative w-[85%] max-w-[320px] bg-white h-[100dvh] shadow-2xl flex flex-col justify-between z-10 animate-slide-right overscroll-contain touch-pan-y"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Top Header (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 bg-gradient-to-b from-[#ECFDF3] to-white border-b border-slate-100 flex items-center justify-between">
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="text-xl font-black tracking-tight flex items-center gap-1"
+              >
+                <span className="text-[#17231A]">Fill</span>
+                <span className="text-[#16A34A]">Carts</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-[#F59E0B] inline-block ml-0.5" />
+              </Link>
 
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer shadow-2xs"
-                  aria-label="Close Menu"
-                >
-                  <X size={16} />
-                </button>
-              </div>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-8 h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:text-slate-900 cursor-pointer shadow-2xs transition-colors"
+                aria-label="Close Menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
 
+            {/* Scrollable Middle Content Body (Independent Scroll) */}
+            <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch py-2">
               {/* User Account / Profile Box in Drawer */}
-              <div className="p-4 border-b border-slate-100">
+              <div className="px-4 pb-3 border-b border-slate-100">
                 {user ? (
                   <div className="bg-[#FFFCF5] border border-emerald-200 rounded-2xl p-3.5 space-y-2.5">
                     <div className="flex items-center gap-3">
@@ -508,7 +542,7 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
                     <Link
                       to="/login"
                       onClick={() => setMobileMenuOpen(false)}
-                      className="block w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-2 rounded-xl shadow-xs transition-colors"
+                      className="block w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-2 rounded-xl shadow-xs transition-colors text-center"
                     >
                       Login / Sign Up
                     </Link>
@@ -620,15 +654,15 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               </div>
             </div>
 
-            {/* Drawer Bottom Actions */}
-            <div className="p-4 border-t border-slate-100 bg-slate-50 space-y-2">
+            {/* Drawer Bottom Actions (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 border-t border-slate-100 bg-slate-50 space-y-2">
               <button
                 type="button"
                 onClick={() => {
                   setMobileMenuOpen(false);
                   setShowAppModal(true);
                 }}
-                className="w-full bg-[#16A34A] text-white font-extrabold text-xs py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-2.5 rounded-xl shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               >
                 <QrCode size={14} />
                 <span>Get Mobile App</span>
@@ -651,8 +685,11 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
       {/* Download App Modal */}
       {showAppModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white border border-emerald-100 rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center animate-[scaleUp_0.2s_ease-out]">
+        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+          <div 
+            className="bg-white border border-emerald-100 rounded-3xl w-full max-w-sm p-6 shadow-2xl relative text-center animate-scale-up"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={() => setShowAppModal(false)}
@@ -704,18 +741,21 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
       {/* Location Selector Modal */}
       {showLocationModal && (
-        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-[9999] flex items-center justify-center p-4">
-          <div className="bg-white border border-emerald-100 rounded-[28px] sm:rounded-[32px] w-full max-w-md p-5 sm:p-6 shadow-2xl relative overflow-hidden text-left animate-[scaleUp_0.2s_ease-out]">
+        <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-[99999] flex items-center justify-center p-4 overflow-y-auto">
+          <div 
+            className="bg-white border border-emerald-100 rounded-[28px] sm:rounded-[32px] w-full max-w-md p-5 sm:p-6 shadow-2xl relative overflow-hidden text-left animate-scale-up max-h-[90vh] flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <button
               type="button"
               onClick={() => setShowLocationModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer"
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-900 transition-colors w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer z-10"
               aria-label="Close location modal"
             >
               <X size={16} />
             </button>
 
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 shrink-0 pr-8">
               <div className="w-11 h-11 sm:w-12 sm:h-12 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center shrink-0 border border-emerald-200">
                 <MapPin size={22} />
               </div>
@@ -729,191 +769,193 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
               </div>
             </div>
 
-            {/* Current Active Location Display Pill */}
-            <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-3 mb-3.5 flex items-center justify-between">
-              <div className="min-w-0 pr-2">
-                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Location</div>
-                <div className="text-xs font-extrabold text-[#17231A] flex items-center gap-1.5 mt-0.5 truncate">
-                  <MapPin size={13} className="text-[#16A34A] shrink-0" />
-                  <span className="truncate">{userLocation?.formatted || `${userLocation?.area}, ${userLocation?.city}`}</span>
+            <div className="overflow-y-auto overscroll-contain pr-1 flex-1">
+              {/* Current Active Location Display Pill */}
+              <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-3 mb-3.5 flex items-center justify-between">
+                <div className="min-w-0 pr-2">
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Location</div>
+                  <div className="text-xs font-extrabold text-[#17231A] flex items-center gap-1.5 mt-0.5 truncate">
+                    <MapPin size={13} className="text-[#16A34A] shrink-0" />
+                    <span className="truncate">{userLocation?.formatted || `${userLocation?.area}, ${userLocation?.city}`}</span>
+                  </div>
                 </div>
-              </div>
-              <span className="text-[10px] font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
-                ⚡ Active
-              </span>
-            </div>
-
-            {/* GPS Auto Detection Button */}
-            <button
-              type="button"
-              onClick={handleDetectGps}
-              disabled={isDetectingGps}
-              className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold p-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mb-3.5"
-            >
-              {isDetectingGps ? (
-                <>
-                  <Loader2 size={16} className="animate-spin" />
-                  <span>Detecting your GPS location...</span>
-                </>
-              ) : (
-                <>
-                  <Navigation size={16} />
-                  <span>Use Current Location (GPS)</span>
-                </>
-              )}
-            </button>
-
-            {gpsError && (
-              <p className="text-[11px] font-bold text-rose-600 bg-rose-50 p-2.5 rounded-xl mb-3.5 border border-rose-200">
-                {gpsError}
-              </p>
-            )}
-
-            {/* Section 2: Saved Profile Locations */}
-            <div>
-              <div className="text-xs font-black text-[#17231A] mb-2 flex items-center justify-between">
-                <span className="flex items-center gap-1.5">
-                  <Building2 size={14} className="text-[#16A34A]" /> Your Saved Locations
+                <span className="text-[10px] font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-2.5 py-0.5 rounded-full shrink-0">
+                  ⚡ Active
                 </span>
-                {user && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowLocationModal(false);
-                      navigate("/profile?tab=addresses");
-                    }}
-                    className="text-[11px] text-blue-600 hover:text-blue-800 font-extrabold flex items-center gap-0.5 transition-colors cursor-pointer"
-                  >
-                    <span>Manage</span> <ChevronRight size={12} />
-                  </button>
+              </div>
+
+              {/* GPS Auto Detection Button */}
+              <button
+                type="button"
+                onClick={handleDetectGps}
+                disabled={isDetectingGps}
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold p-3 rounded-2xl text-xs transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer mb-3.5"
+              >
+                {isDetectingGps ? (
+                  <>
+                    <Loader2 size={16} className="animate-spin" />
+                    <span>Detecting your GPS location...</span>
+                  </>
+                ) : (
+                  <>
+                    <Navigation size={16} />
+                    <span>Use Current Location (GPS)</span>
+                  </>
+                )}
+              </button>
+
+              {gpsError && (
+                <p className="text-[11px] font-bold text-rose-600 bg-rose-50 p-2.5 rounded-xl mb-3.5 border border-rose-200">
+                  {gpsError}
+                </p>
+              )}
+
+              {/* Section 2: Saved Profile Locations */}
+              <div>
+                <div className="text-xs font-black text-[#17231A] mb-2 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Building2 size={14} className="text-[#16A34A]" /> Your Saved Locations
+                  </span>
+                  {user && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLocationModal(false);
+                        navigate("/profile?tab=addresses");
+                      }}
+                      className="text-[11px] text-blue-600 hover:text-blue-800 font-extrabold flex items-center gap-0.5 transition-colors cursor-pointer"
+                    >
+                      <span>Manage</span> <ChevronRight size={12} />
+                    </button>
+                  )}
+                </div>
+
+                {loadingSavedAddresses ? (
+                  <div className="text-xs text-slate-400 font-bold py-4 flex items-center justify-center gap-2">
+                    <Loader2 size={14} className="animate-spin text-[#16A34A]" /> Loading saved locations...
+                  </div>
+                ) : !user ? (
+                  <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
+                    <p className="text-xs text-slate-600 font-semibold">Log in to select or manage your saved delivery addresses.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLocationModal(false);
+                        setShowLoginModal(true);
+                      }}
+                      className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-block"
+                    >
+                      Login Now
+                    </button>
+                  </div>
+                ) : savedAddresses.length === 0 && !user.address ? (
+                  <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
+                    <p className="text-xs text-slate-600 font-semibold">No saved addresses found in your profile.</p>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowLocationModal(false);
+                        navigate("/profile?tab=addresses");
+                      }}
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-flex items-center gap-1"
+                    >
+                      <Plus size={13} /> Add Address in Profile
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                    {user.address && (
+                      <div
+                        onClick={() => {
+                          changeLocation({
+                            city: "Home",
+                            area: user.address,
+                            pincode: user.pincode || "452010",
+                            state: "Primary",
+                            formatted: user.address,
+                            isGps: false
+                          });
+                          setShowLocationModal(false);
+                        }}
+                        className="w-full text-left p-2.5 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                              PRIMARY
+                            </span>
+                            <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
+                              {user.name || "Primary Profile Address"}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{user.address}</div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowLocationModal(false);
+                            navigate("/profile?tab=addresses");
+                          }}
+                          className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                          title="Edit address in Profile"
+                        >
+                          <Edit3 size={12} />
+                          <span>Edit</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {savedAddresses.map((addr) => (
+                      <div
+                        key={addr.id}
+                        onClick={() => {
+                          changeLocation({
+                            city: addr.city || addr.type || "Address",
+                            area: addr.street || addr.address_line,
+                            pincode: addr.pincode || "452010",
+                            state: addr.state || addr.type,
+                            formatted: `${addr.street || addr.address_line}${addr.pincode ? ' (' + addr.pincode + ')' : ''}`,
+                            isGps: false
+                          });
+                          setShowLocationModal(false);
+                        }}
+                        className="w-full text-left p-2.5 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
+                              {addr.type || "HOME"}
+                            </span>
+                            <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
+                              {addr.name || user?.name || "Saved Address"}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
+                            {addr.street || addr.address_line}
+                            {addr.pincode ? ` - ${addr.pincode}` : ''}
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setShowLocationModal(false);
+                            navigate("/profile?tab=addresses");
+                          }}
+                          className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
+                          title="Edit address in Profile"
+                        >
+                          <Edit3 size={12} />
+                          <span>Edit</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
               </div>
-
-              {loadingSavedAddresses ? (
-                <div className="text-xs text-slate-400 font-bold py-4 flex items-center justify-center gap-2">
-                  <Loader2 size={14} className="animate-spin text-[#16A34A]" /> Loading saved locations...
-                </div>
-              ) : !user ? (
-                <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-600 font-semibold">Log in to select or manage your saved delivery addresses.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowLocationModal(false);
-                      setShowLoginModal(true);
-                    }}
-                    className="bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-block"
-                  >
-                    Login Now
-                  </button>
-                </div>
-              ) : savedAddresses.length === 0 && !user.address ? (
-                <div className="text-center py-4 bg-[#FFFCF5] p-3 rounded-2xl border border-slate-200 space-y-2">
-                  <p className="text-xs text-slate-600 font-semibold">No saved addresses found in your profile.</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowLocationModal(false);
-                      navigate("/profile?tab=addresses");
-                    }}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-extrabold px-4 py-2 rounded-xl text-xs transition-colors shadow-2xs cursor-pointer inline-flex items-center gap-1"
-                  >
-                    <Plus size={13} /> Add Address in Profile
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                  {user.address && (
-                    <div
-                      onClick={() => {
-                        changeLocation({
-                          city: "Home",
-                          area: user.address,
-                          pincode: user.pincode || "452010",
-                          state: "Primary",
-                          formatted: user.address,
-                          isGps: false
-                        });
-                        setShowLocationModal(false);
-                      }}
-                      className="w-full text-left p-2.5 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                            PRIMARY
-                          </span>
-                          <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
-                            {user.name || "Primary Profile Address"}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">{user.address}</div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowLocationModal(false);
-                          navigate("/profile?tab=addresses");
-                        }}
-                        className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
-                        title="Edit address in Profile"
-                      >
-                        <Edit3 size={12} />
-                        <span>Edit</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {savedAddresses.map((addr) => (
-                    <div
-                      key={addr.id}
-                      onClick={() => {
-                        changeLocation({
-                          city: addr.city || addr.type || "Address",
-                          area: addr.street || addr.address_line,
-                          pincode: addr.pincode || "452010",
-                          state: addr.state || addr.type,
-                          formatted: `${addr.street || addr.address_line}${addr.pincode ? ' (' + addr.pincode + ')' : ''}`,
-                          isGps: false
-                        });
-                        setShowLocationModal(false);
-                      }}
-                      className="w-full text-left p-2.5 rounded-2xl border border-slate-200 hover:border-[#16A34A] hover:bg-[#ECFDF3] transition-all flex items-center justify-between cursor-pointer group bg-white shadow-2xs"
-                    >
-                      <div className="min-w-0 pr-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[9px] font-black uppercase bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded">
-                            {addr.type || "HOME"}
-                          </span>
-                          <span className="text-xs font-extrabold text-[#17231A] group-hover:text-[#166534] truncate">
-                            {addr.name || user?.name || "Saved Address"}
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 font-medium truncate mt-0.5">
-                          {addr.street || addr.address_line}
-                          {addr.pincode ? ` - ${addr.pincode}` : ''}
-                        </div>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setShowLocationModal(false);
-                          navigate("/profile?tab=addresses");
-                        }}
-                        className="px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-xs font-extrabold flex items-center gap-1 shrink-0 transition-colors cursor-pointer"
-                        title="Edit address in Profile"
-                      >
-                        <Edit3 size={12} />
-                        <span>Edit</span>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
         </div>

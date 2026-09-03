@@ -1151,31 +1151,36 @@ export default function ProductDetailPage() {
 
           {/* WRITE A REVIEW MODAL */}
           {isWriteReviewOpen && (
-            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-6 md:p-8 max-w-lg w-full space-y-5 shadow-2xl relative border border-slate-100 animate-[scaleUp_0.2s_ease-out] text-left">
+            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+              <div 
+                className="bg-white rounded-3xl p-5 sm:p-8 max-w-lg w-full space-y-4 sm:space-y-5 shadow-2xl relative border border-slate-100 animate-scale-up text-left my-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
+                  type="button"
                   onClick={() => setIsWriteReviewOpen(false)}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors"
+                  aria-label="Close review dialog"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
 
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-amber-50 border border-amber-200 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
-                    <Star size={24} className="fill-amber-400 text-amber-400" />
+                <div className="flex items-center gap-3 pr-8">
+                  <div className="w-11 h-11 sm:w-12 sm:h-12 bg-amber-50 border border-amber-200 text-amber-600 rounded-2xl flex items-center justify-center shrink-0">
+                    <Star size={22} className="fill-amber-400 text-amber-400" />
                   </div>
                   <div>
-                    <h3 className="text-lg font-extrabold text-[#17231A]">
+                    <h3 className="text-base sm:text-lg font-extrabold text-[#17231A]">
                       Write a Review
                     </h3>
-                    <p className="text-xs text-slate-500 font-semibold">
+                    <p className="text-xs text-slate-500 font-semibold truncate max-w-xs">
                       Share your feedback for {product.name}
                     </p>
                   </div>
                 </div>
 
-                <form onSubmit={handleAddReview} className="space-y-4 pt-1">
-                  <div className="bg-amber-50/60 border border-amber-100 p-4 rounded-2xl text-center space-y-2">
+                <form onSubmit={handleAddReview} className="space-y-3.5 pt-1">
+                  <div className="bg-amber-50/60 border border-amber-100 p-3.5 rounded-2xl text-center space-y-2">
                     <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                       Select Rating Score
                     </label>
@@ -1192,7 +1197,7 @@ export default function ProductDetailPage() {
                             className="p-1 transition-transform hover:scale-125 cursor-pointer"
                           >
                             <Star
-                              size={28}
+                              size={24}
                               className={isFilled ? "fill-amber-400 text-amber-400" : "text-slate-300"}
                             />
                           </button>
@@ -1216,7 +1221,7 @@ export default function ProductDetailPage() {
                         value={formName}
                         onChange={(e) => setFormName(e.target.value)}
                         placeholder="e.g. Rahul Sharma"
-                        className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
+                        className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
                         required
                       />
                     </div>
@@ -1227,7 +1232,7 @@ export default function ProductDetailPage() {
                         value={formLocation}
                         onChange={(e) => setFormLocation(e.target.value)}
                         placeholder="e.g. Vijay Nagar, Indore"
-                        className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
+                        className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
                         required
                       />
                     </div>
@@ -1240,7 +1245,7 @@ export default function ProductDetailPage() {
                       value={formComment}
                       onChange={(e) => setFormComment(e.target.value)}
                       placeholder="How was the product freshness, packaging, and local kirana delivery?"
-                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl p-3.5 text-xs font-semibold outline-none focus:border-[#16A34A]"
+                      className="w-full bg-[#FFFCF5] border border-slate-200 rounded-xl p-3 text-xs font-semibold outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all resize-none"
                       required
                     />
                   </div>
@@ -1249,13 +1254,13 @@ export default function ProductDetailPage() {
                     <button
                       type="button"
                       onClick={() => setIsWriteReviewOpen(false)}
-                      className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer"
+                      className="flex-1 border border-slate-200 hover:bg-slate-50 text-slate-600 font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer"
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-3 rounded-xl text-xs transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
+                      className="flex-1 bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold py-2.5 rounded-xl text-xs transition-colors cursor-pointer shadow-sm flex items-center justify-center gap-1.5"
                     >
                       <Sparkles size={14} /> Submit Review
                     </button>
@@ -1267,21 +1272,26 @@ export default function ProductDetailPage() {
 
           {/* APP DOWNLOAD MODAL */}
           {appModalOpen && (
-            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-              <div className="bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full space-y-5 text-center shadow-2xl relative border border-slate-100">
+            <div className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+              <div 
+                className="bg-white rounded-3xl p-5 sm:p-8 max-w-sm w-full space-y-4 sm:space-y-5 text-center shadow-2xl relative border border-slate-100 animate-scale-up my-auto"
+                onClick={(e) => e.stopPropagation()}
+              >
                 <button
+                  type="button"
                   onClick={() => setAppModalOpen(false)}
-                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer"
+                  className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 cursor-pointer w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center transition-colors"
+                  aria-label="Close download modal"
                 >
-                  <X size={18} />
+                  <X size={16} />
                 </button>
 
-                <div className="w-14 h-14 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
-                  <Smartphone size={28} />
+                <div className="w-12 h-12 sm:w-14 sm:h-14 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+                  <Smartphone size={26} />
                 </div>
 
                 <div>
-                  <h3 className="text-xl font-extrabold text-[#17231A]">
+                  <h3 className="text-lg sm:text-xl font-extrabold text-[#17231A]">
                     Complete Purchase on App
                   </h3>
                   <p className="text-xs text-slate-500 font-medium mt-1 leading-relaxed">
@@ -1289,24 +1299,26 @@ export default function ProductDetailPage() {
                   </p>
                 </div>
 
-                <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-4 flex items-center justify-center gap-3">
-                  <QrCode size={48} className="text-[#17231A]" />
+                <div className="bg-[#FFFCF5] border border-slate-200 rounded-2xl p-3 sm:p-4 flex items-center justify-center gap-3">
+                  <QrCode size={44} className="text-[#17231A]" />
                   <div className="text-left text-xs">
                     <div className="font-extrabold text-[#17231A]">Scan to Install</div>
-                    <div className="text-slate-500 font-semibold">Available on Android & iOS</div>
+                    <div className="text-slate-500 font-semibold text-[11px]">Available on Android & iOS</div>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <button
+                    type="button"
                     onClick={() => alert("Downloading FillCarts for Android...")}
-                    className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-2.5 sm:py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Download size={14} /> Google Play
                   </button>
                   <button
+                    type="button"
                     onClick={() => alert("Downloading FillCarts for iOS...")}
-                    className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    className="bg-[#17231A] hover:bg-slate-800 text-white font-bold py-2.5 sm:py-3 rounded-xl text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Smartphone size={14} /> App Store
                   </button>

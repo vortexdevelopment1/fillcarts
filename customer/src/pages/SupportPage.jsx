@@ -421,8 +421,8 @@ export function SupportContent({ isEmbedded = false }) {
 
       {/* LIVE CHAT DRAWER SIMULATION MODAL */}
       {showLiveChatDrawer && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end sm:items-center justify-end sm:justify-center p-0 sm:p-4">
-          <div className="bg-white border border-emerald-100 rounded-t-3xl sm:rounded-3xl max-w-md w-full h-[520px] shadow-2xl flex flex-col justify-between overflow-hidden text-left">
+        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-end sm:items-center justify-end sm:justify-center p-0 sm:p-4 overflow-hidden">
+          <div className="bg-white border border-emerald-100 rounded-t-3xl sm:rounded-3xl max-w-md w-full h-[85dvh] sm:h-[520px] max-h-[90vh] shadow-2xl flex flex-col justify-between overflow-hidden text-left overscroll-contain animate-slide-right sm:animate-scale-up">
             
             {/* Drawer Header */}
             <div className="bg-[#166534] text-white p-4 flex items-center justify-between shrink-0">

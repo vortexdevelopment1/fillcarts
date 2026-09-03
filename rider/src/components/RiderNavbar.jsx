@@ -18,16 +18,42 @@ export default function RiderNavbar() {
     setMobileMenuOpen(false);
   }, [location.pathname]);
 
+  // Robust Body Scroll Locking for Mobile Drawer (iOS & Android friendly)
   useEffect(() => {
     if (mobileMenuOpen) {
+      const scrollY = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${scrollY}px`;
+      document.body.style.width = "100%";
       document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = "unset";
+      const scrollY = document.body.style.top;
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
+      if (scrollY) {
+        window.scrollTo(0, parseInt(scrollY || "0", 10) * -1);
+      }
     }
     return () => {
-      document.body.style.overflow = "unset";
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.width = "";
+      document.body.style.overflow = "";
     };
   }, [mobileMenuOpen]);
+
+  // Escape key support
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleNavClick = (e, link) => {
     if (link.path.startsWith("/#")) {
@@ -98,7 +124,7 @@ export default function RiderNavbar() {
             {/* Customer Link */}
             <a
               href="http://localhost:5173"
-              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
               title="Visit Customer Site"
             >
               <ShoppingBag size={13} className="text-emerald-400" />
@@ -108,7 +134,7 @@ export default function RiderNavbar() {
             {/* Vendor Link */}
             <a
               href="http://localhost:5174"
-              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5 shadow-2xs"
               title="Visit Merchant Portal"
             >
               <Store size={13} className="text-amber-400" />
@@ -128,50 +154,54 @@ export default function RiderNavbar() {
           {/* Mobile Menu Button */}
           <button
             type="button"
-            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#27272A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#F97316]"
-            aria-label="Toggle menu"
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#27272A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#F97316] transition-colors"
+            aria-label="Open Mobile Menu"
             aria-expanded={mobileMenuOpen}
           >
-            {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            <Menu size={24} />
           </button>
         </div>
       </div>
 
-      {/* Mobile Drawer Menu */}
+      {/* Mobile Drawer Menu with Independent Scrolling */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 z-[9999] lg:hidden flex">
+        <div className="fixed inset-0 z-[99999] lg:hidden flex overflow-hidden">
           {/* Backdrop Overlay */}
           <div
-            className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity duration-300"
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity duration-200 animate-fade-in touch-none"
             onClick={() => setMobileMenuOpen(false)}
             aria-hidden="true"
           />
 
-          {/* Drawer Container */}
-          <div className="relative w-[85%] max-w-[320px] bg-[#18181B] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 border-r border-[#27272A] animate-[slideRight_0.25s_ease-out]">
-            <div>
-              {/* Drawer Top Header */}
-              <div className="p-4 bg-[#27272A]/50 border-b border-[#27272A] flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="w-8 h-8 rounded-xl bg-[#F97316] text-white flex items-center justify-center font-extrabold">
-                    <Bike size={18} />
-                  </div>
-                  <span className="font-extrabold text-lg text-white">
-                    Filcarts <span className="text-[10px] font-bold text-[#F97316] bg-[#F97316]/10 px-1.5 py-0.5 rounded border border-[#F97316]/30">Rider</span>
-                  </span>
+          {/* Drawer Container Panel */}
+          <div 
+            className="relative w-[85%] max-w-[320px] bg-[#18181B] text-white h-[100dvh] shadow-2xl flex flex-col justify-between z-10 border-r border-[#27272A] animate-slide-right overscroll-contain touch-pan-y"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Drawer Top Header (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 bg-[#27272A]/50 border-b border-[#27272A] flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#F97316] text-white flex items-center justify-center font-extrabold">
+                  <Bike size={18} />
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="w-8 h-8 rounded-full bg-[#27272A] border border-[#3F3F46] flex items-center justify-center text-slate-400 hover:text-white cursor-pointer"
-                  aria-label="Close Menu"
-                >
-                  <X size={16} />
-                </button>
+                <span className="font-extrabold text-lg text-white">
+                  Filcarts <span className="text-[10px] font-bold text-[#F97316] bg-[#F97316]/10 px-1.5 py-0.5 rounded border border-[#F97316]/30">Rider</span>
+                </span>
               </div>
 
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-8 h-8 rounded-full bg-[#27272A] border border-[#3F3F46] flex items-center justify-center text-slate-400 hover:text-white cursor-pointer transition-colors shadow-2xs"
+                aria-label="Close Menu"
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            {/* Middle Scrollable Section (Independent Scroll) */}
+            <div className="flex-1 overflow-y-auto overscroll-contain -webkit-overflow-scrolling-touch py-2">
               {/* Navigation Links */}
               <div className="p-3 space-y-1">
                 <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 py-1">Rider Navigation</div>
@@ -223,12 +253,12 @@ export default function RiderNavbar() {
               </div>
             </div>
 
-            {/* Bottom Rider Action */}
-            <div className="p-4 border-t border-[#27272A] bg-[#27272A]/30">
+            {/* Bottom Rider Action (Fixed/Shrink-0) */}
+            <div className="shrink-0 p-4 border-t border-[#27272A] bg-[#27272A]/30">
               <a
                 href="#register"
                 onClick={() => setMobileMenuOpen(false)}
-                className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-extrabold py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+                className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-extrabold py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 cursor-pointer transition-colors"
               >
                 <span>Register as Delivery Partner</span>
                 <ArrowRight size={14} />

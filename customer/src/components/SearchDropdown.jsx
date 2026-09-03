@@ -120,8 +120,8 @@ export default function SearchDropdown({
     <div ref={dropdownRef} className={`relative w-full ${className}`}>
       {/* Search Input Bar */}
       <form onSubmit={handleSubmit} className="relative flex items-center w-full">
-        <div className="absolute left-3.5 text-[#16A34A] pointer-events-none flex items-center justify-center">
-          <Search size={17} />
+        <div className="absolute left-2 sm:left-3 text-[#16A34A] pointer-events-none flex items-center justify-center">
+          <Search size={14} className="sm:w-4 sm:h-4" />
         </div>
 
         <input
@@ -134,16 +134,17 @@ export default function SearchDropdown({
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           autoFocus={autoFocus}
-          className={`w-full pl-10 pr-10 py-2.5 bg-transparent text-sm font-semibold text-slate-900 outline-none placeholder-slate-400 ${inputClassName}`}
+          className={`w-full pl-7 sm:pl-9 pr-6 sm:pr-9 py-1 sm:py-2 bg-transparent text-xs sm:text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400 placeholder:truncate ${inputClassName}`}
         />
 
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="absolute right-3 text-slate-400 hover:text-slate-700 p-1 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+            className="absolute right-2 sm:right-2.5 text-slate-400 hover:text-slate-700 p-0.5 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
+            aria-label="Clear search"
           >
-            <X size={15} />
+            <X size={12} className="sm:w-3.5 sm:h-3.5" />
           </button>
         )}
 
@@ -160,7 +161,7 @@ export default function SearchDropdown({
 
       {/* Instant Suggestions Dropdown */}
       {isOpen && query.trim().length >= 1 && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 backdrop-blur-xl border border-emerald-200/80 rounded-2xl shadow-2xl z-[999] overflow-hidden max-h-[75vh] overflow-y-auto divide-y divide-slate-100 text-left transition-all animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute top-full -left-12 sm:left-0 sm:right-0 mt-2 w-[calc(100vw-24px)] max-w-sm sm:w-full bg-white/95 backdrop-blur-xl border border-emerald-200/80 rounded-2xl shadow-2xl z-[999] overflow-hidden max-h-[75vh] overflow-y-auto divide-y divide-slate-100 text-left transition-all animate-fade-in">
           {/* Typo Correction Banner */}
           {searchResult.didYouMean && (
             <div className="bg-[#ECFDF3] px-4 py-2.5 border-b border-emerald-100 flex items-center justify-between text-xs text-[#166534] font-bold">
