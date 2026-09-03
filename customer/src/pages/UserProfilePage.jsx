@@ -637,46 +637,49 @@ export default function UserProfilePage() {
         </div>
       </div>
 
-      <main className="max-w-6xl w-full mx-auto px-6 py-8 flex-1">
-        <div className="grid md:grid-cols-[240px_1fr] gap-8 items-start">
-          {/* Side Tabs Navigation */}
-          <aside className="bg-white border border-slate-200 rounded-3xl p-4 space-y-1 shadow-sm">
-            <div className="px-4 py-3 border-b border-slate-100 mb-2">
+      <main className="max-w-6xl w-full mx-auto px-3 sm:px-6 py-4 sm:py-8 flex-1">
+        <div className="grid md:grid-cols-[240px_1fr] gap-4 sm:gap-6 md:gap-8 items-start">
+          {/* Side Tabs Navigation - Horizontal scroll on mobile, vertical on desktop */}
+          <aside className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl p-2 sm:p-4 flex md:flex-col overflow-x-auto no-scrollbar gap-1 sm:gap-1.5 shadow-xs w-full">
+            <div className="hidden md:block px-4 py-3 border-b border-slate-100 mb-2">
               <h2 className="font-extrabold text-sm text-slate-800 leading-none">Hi, {user.name}</h2>
               <span className="text-[10px] text-slate-400 font-bold mt-1 block truncate">{user.email || user.phone}</span>
             </div>
 
             <button
+              type="button"
               onClick={() => handleTabChange("profile")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "profile"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "profile"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <User size={15} /> Edit Profile
+              <User size={15} /> <span>Edit Profile</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("orders")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "orders"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "orders"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <ShoppingBag size={15} /> My Orders
+              <ShoppingBag size={15} /> <span>My Orders</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("wishlist")}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "wishlist"
-                ? "bg-rose-50 text-rose-600"
+              className={`flex items-center justify-between gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "wishlist"
+                ? "bg-rose-50 text-rose-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <span className="flex items-center gap-2.5">
-                <Heart size={15} className={currentTab === "wishlist" ? "fill-rose-600 text-rose-600" : ""} /> My Wishlist
+              <span className="flex items-center gap-2">
+                <Heart size={15} className={currentTab === "wishlist" ? "fill-rose-600 text-rose-600" : ""} /> <span>Wishlist</span>
               </span>
-              <span className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
+              <span className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
                 currentTab === "wishlist" ? "bg-rose-200 text-rose-800" : "bg-slate-100 text-slate-500"
               }`}>
                 {wishlist.length}
@@ -684,65 +687,70 @@ export default function UserProfilePage() {
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("addresses")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "addresses"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "addresses"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <MapPin size={15} /> Saved Addresses
+              <MapPin size={15} /> <span>Addresses</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("subscriptions")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "subscriptions"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "subscriptions"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <Repeat size={15} /> My Subscriptions
+              <Repeat size={15} /> <span>Subscriptions</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("giftcards")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "giftcards"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "giftcards"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <Gift size={15} /> E-Gift Cards
+              <Gift size={15} /> <span>E-Gift Cards</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("help")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "help"
-                ? "bg-blue-50 text-blue-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "help"
+                ? "bg-blue-50 text-blue-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <LifeBuoy size={15} /> Help Center
+              <LifeBuoy size={15} /> <span>Help Center</span>
             </button>
 
             <button
+              type="button"
               onClick={() => handleTabChange("privacy")}
-              className={`w-full flex items-center gap-2.5 px-4 py-3 rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer ${currentTab === "privacy"
-                ? "bg-red-50 text-red-600"
+              className={`flex items-center gap-2 sm:gap-2.5 px-3 sm:px-4 py-2 sm:py-3 rounded-xl sm:rounded-2xl text-xs font-bold text-left transition-colors cursor-pointer whitespace-nowrap shrink-0 md:w-full ${currentTab === "privacy"
+                ? "bg-red-50 text-red-600 font-extrabold"
                 : "text-slate-600 hover:bg-slate-50"
                 }`}
             >
-              <ShieldAlert size={15} /> Account Privacy
+              <ShieldAlert size={15} /> <span>Privacy</span>
             </button>
           </aside>
 
           {/* Right Side Content Panel */}
-          <section className="bg-white border border-slate-200 rounded-[32px] p-6 md:p-8 shadow-sm min-h-[450px] min-w-0">
+          <section className="bg-white border border-slate-200 rounded-2xl sm:rounded-[32px] p-4 sm:p-6 md:p-8 shadow-xs min-h-[450px] min-w-0 w-full">
             {/* TABS CONTAINER */}
 
             {/* TAB 1: PROFILE FORM */}
             {currentTab === "profile" && (
               <div>
-                <h1 className="text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Edit Profile Details</h1>
-                <p className="text-xs text-slate-400 font-semibold mb-6">Manage your primary details for quick ordering and notifications.</p>
+                <h1 className="text-xl sm:text-2xl font-bold mb-1.5" style={{ fontFamily: "'Fraunces', serif" }}>Edit Profile Details</h1>
+                <p className="text-xs text-slate-400 font-semibold mb-5 sm:mb-6">Manage your primary details for quick ordering and notifications.</p>
 
                 <form onSubmit={handleProfileUpdate} className="space-y-4 max-w-lg">
                   <div>

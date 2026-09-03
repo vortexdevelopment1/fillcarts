@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Bike, Menu, X, ArrowRight, ExternalLink } from "lucide-react";
+import { Bike, Menu, X, ArrowRight, ExternalLink, Store, ShoppingBag } from "lucide-react";
 
 export default function RiderNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -13,6 +13,33 @@ export default function RiderNavbar() {
     { name: "Support", path: "/support" },
     { name: "FAQs", path: "/#faqs" },
   ];
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [mobileMenuOpen]);
+
+  const handleNavClick = (e, link) => {
+    if (link.path.startsWith("/#")) {
+      e.preventDefault();
+      const hashId = link.path.replace("/#", "");
+      const elem = document.getElementById(hashId);
+      if (elem) {
+        elem.scrollIntoView({ behavior: "smooth" });
+      }
+    }
+    setMobileMenuOpen(false);
+  };
 
   return (
     <header className="bg-[#18181B] text-white border-b border-[#27272A] sticky top-0 z-50 shadow-md">
@@ -35,7 +62,7 @@ export default function RiderNavbar() {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-semibold text-[#D4D4D8]">
+          <nav className="hidden lg:flex items-center gap-6 xl:gap-7 text-sm font-semibold text-[#D4D4D8]">
             {navLinks.map((link, idx) => {
               const isActive =
                 (location.pathname === "/" && link.path === "/") ||
@@ -45,6 +72,7 @@ export default function RiderNavbar() {
                 <a
                   key={idx}
                   href={link.path}
+                  onClick={(e) => handleNavClick(e, link)}
                   className={`transition-colors hover:text-[#F97316] ${
                     isActive ? "text-[#F97316] font-bold" : ""
                   }`}
@@ -66,30 +94,44 @@ export default function RiderNavbar() {
           </nav>
 
           {/* Right Action CTAs */}
-          <div className="hidden sm:flex items-center gap-3">
-            {/* Rider Login Secondary Button */}
+          <div className="hidden sm:flex items-center gap-2.5">
+            {/* Customer Link */}
             <a
-              href="#register"
-              className="text-[14px] font-semibold text-[#FAFAF9] hover:text-[#F97316] px-3.5 py-2 border border-[#3F3F46] hover:border-[#F97316]/50 rounded-xl transition-colors"
+              href="http://localhost:5173"
+              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              title="Visit Customer Site"
             >
-              Rider Login
+              <ShoppingBag size={13} className="text-emerald-400" />
+              <span>Customer Site</span>
+            </a>
+
+            {/* Vendor Link */}
+            <a
+              href="http://localhost:5174"
+              className="text-xs font-bold text-slate-300 hover:text-white bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] px-3 py-2 rounded-xl transition-colors flex items-center gap-1.5"
+              title="Visit Merchant Portal"
+            >
+              <Store size={13} className="text-amber-400" />
+              <span>Merchant Portal</span>
             </a>
 
             {/* Become a Rider Primary CTA */}
             <a
               href="#register"
-              className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[15px] font-semibold px-4.5 py-2.5 rounded-xl transition-colors shadow-xs flex items-center gap-1.5"
+              className="bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-extrabold px-4 py-2 rounded-xl transition-colors shadow-xs flex items-center gap-1.5 cursor-pointer"
             >
-              <span>Become a Rider</span>
-              <ArrowRight size={15} />
+              <span>Join as Rider</span>
+              <ArrowRight size={14} />
             </a>
           </div>
 
           {/* Mobile Menu Button */}
           <button
+            type="button"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="lg:hidden p-2 text-slate-300 hover:text-white cursor-pointer"
+            className="lg:hidden p-2 rounded-xl text-slate-300 hover:text-white hover:bg-[#27272A] cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#F97316]"
             aria-label="Toggle menu"
+            aria-expanded={mobileMenuOpen}
           >
             {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -98,44 +140,100 @@ export default function RiderNavbar() {
 
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
-        <div className="lg:hidden bg-[#18181B] border-b border-[#27272A] px-4 pt-3 pb-6 space-y-3 shadow-lg animate-[slideDown_0.2s_ease-out]">
-          <div className="space-y-1">
-            {navLinks.map((link, idx) => (
-              <a
-                key={idx}
-                href={link.path}
-                onClick={() => setMobileMenuOpen(false)}
-                className="block text-[14px] font-semibold text-[#D4D4D8] hover:text-[#F97316] hover:bg-[#27272A] px-3 py-2.5 rounded-lg transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </div>
+        <div className="fixed inset-0 z-[9999] lg:hidden flex">
+          {/* Backdrop Overlay */}
+          <div
+            className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity duration-300"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
 
-          <div className="pt-3 border-t border-[#27272A] flex flex-col gap-2.5">
-            <a
-              href="#register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-[14px] font-semibold text-[#FAFAF9] bg-[#27272A] px-4 py-2.5 rounded-xl text-center"
-            >
-              Rider Login
-            </a>
-            <a
-              href="#register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="bg-[#F97316] hover:bg-[#EA580C] text-white text-[14px] font-semibold px-4 py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5"
-            >
-              <span>Become a Rider</span>
-              <ArrowRight size={15} />
-            </a>
-            <a
-              href="http://localhost:5173"
-              onClick={() => setMobileMenuOpen(false)}
-              className="text-[13px] font-medium text-slate-400 text-center pt-1 hover:underline flex items-center justify-center gap-1"
-            >
-              <span>Visit Filcarts</span>
-              <ExternalLink size={12} />
-            </a>
+          {/* Drawer Container */}
+          <div className="relative w-[85%] max-w-[320px] bg-[#18181B] text-white h-full shadow-2xl flex flex-col justify-between overflow-y-auto z-10 border-r border-[#27272A] animate-[slideRight_0.25s_ease-out]">
+            <div>
+              {/* Drawer Top Header */}
+              <div className="p-4 bg-[#27272A]/50 border-b border-[#27272A] flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-[#F97316] text-white flex items-center justify-center font-extrabold">
+                    <Bike size={18} />
+                  </div>
+                  <span className="font-extrabold text-lg text-white">
+                    Filcarts <span className="text-[10px] font-bold text-[#F97316] bg-[#F97316]/10 px-1.5 py-0.5 rounded border border-[#F97316]/30">Rider</span>
+                  </span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="w-8 h-8 rounded-full bg-[#27272A] border border-[#3F3F46] flex items-center justify-center text-slate-400 hover:text-white cursor-pointer"
+                  aria-label="Close Menu"
+                >
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="p-3 space-y-1">
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 py-1">Rider Navigation</div>
+                {navLinks.map((link, idx) => (
+                  link.path.startsWith("/#") ? (
+                    <a
+                      key={idx}
+                      href={link.path}
+                      onClick={(e) => handleNavClick(e, link)}
+                      className="block text-xs font-bold text-[#D4D4D8] hover:text-[#F97316] hover:bg-[#27272A] px-3 py-2.5 rounded-xl transition-colors"
+                    >
+                      {link.name}
+                    </a>
+                  ) : (
+                    <Link
+                      key={idx}
+                      to={link.path}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="block text-xs font-bold text-[#D4D4D8] hover:text-[#F97316] hover:bg-[#27272A] px-3 py-2.5 rounded-xl transition-colors"
+                    >
+                      {link.name}
+                    </Link>
+                  )
+                ))}
+              </div>
+
+              {/* Other Portals */}
+              <div className="p-3 border-t border-[#27272A] space-y-2">
+                <div className="text-[10px] font-black text-slate-400 uppercase tracking-wider px-3 py-0.5">Other Portals</div>
+                <a
+                  href="http://localhost:5173"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] text-xs font-bold text-slate-200 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <ShoppingBag size={14} className="text-emerald-400" /> Customer Shopping
+                  </span>
+                  <ExternalLink size={12} className="text-slate-400" />
+                </a>
+
+                <a
+                  href="http://localhost:5174"
+                  className="flex items-center justify-between p-2.5 rounded-xl bg-[#27272A] hover:bg-[#3F3F46] border border-[#3F3F46] text-xs font-bold text-slate-200 transition-colors"
+                >
+                  <span className="flex items-center gap-2">
+                    <Store size={14} className="text-amber-400" /> Merchant Store Portal
+                  </span>
+                  <ExternalLink size={12} className="text-slate-400" />
+                </a>
+              </div>
+            </div>
+
+            {/* Bottom Rider Action */}
+            <div className="p-4 border-t border-[#27272A] bg-[#27272A]/30">
+              <a
+                href="#register"
+                onClick={() => setMobileMenuOpen(false)}
+                className="w-full bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-extrabold py-2.5 rounded-xl text-center shadow-xs flex items-center justify-center gap-1.5 cursor-pointer"
+              >
+                <span>Register as Delivery Partner</span>
+                <ArrowRight size={14} />
+              </a>
+            </div>
           </div>
         </div>
       )}

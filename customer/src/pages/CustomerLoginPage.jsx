@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Phone, ShieldCheck, ArrowRight, ArrowLeft, Smartphone,
-  RotateCcw, CheckCircle2, Lock, Mail, Sparkles, HelpCircle
+  RotateCcw, CheckCircle2, Lock, Mail, Sparkles, HelpCircle,
+  Eye, EyeOff
 } from "lucide-react";
 import api from "../api";
 import { useCart } from "../context/CartContext";
@@ -28,6 +29,7 @@ export default function CustomerLoginPage() {
   const [step, setStep] = useState("phone");
   const [contact, setContact] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [timer, setTimer] = useState(30);
   const [error, setError] = useState("");
@@ -266,22 +268,22 @@ export default function CustomerLoginPage() {
   }, []);
 
   return (
-    <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col justify-between font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
-      {/* Top Simple Header */}
-      <header className="bg-white border-b border-slate-100 py-4 px-6">
+    <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col justify-between font-sans overflow-x-hidden" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+      {/* Top Header */}
+      <header className="bg-white border-b border-slate-100 py-3.5 sm:py-4 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-[#16A34A] rounded-xl flex items-center justify-center text-white font-black text-lg shadow-sm">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 bg-[#16A34A] rounded-xl flex items-center justify-center text-white font-black text-base sm:text-lg shadow-sm">
               F
             </div>
-            <span className="font-extrabold text-xl text-[#17231A] tracking-tight">
+            <span className="font-extrabold text-lg sm:text-xl text-[#17231A] tracking-tight">
               Fill<span className="text-[#16A34A]">Carts</span>
             </span>
           </Link>
 
           <Link
             to="/categories"
-            className="text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-4 py-2 rounded-full hover:bg-emerald-100 transition-colors"
+            className="text-[11px] sm:text-xs font-extrabold text-[#166534] bg-[#ECFDF3] border border-emerald-200 px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-full hover:bg-emerald-100 transition-colors"
           >
             Explore Marketplace
           </Link>
@@ -289,15 +291,15 @@ export default function CustomerLoginPage() {
       </header>
 
       {/* CENTER LOGIN CONTAINER */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 py-12">
-        <div className="max-w-md w-full bg-white border border-emerald-100 rounded-3xl p-6 sm:p-8 shadow-xl space-y-6 text-left relative overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 py-8 sm:py-12">
+        <div className="max-w-md w-full bg-white border border-emerald-100 rounded-3xl p-5 sm:p-8 shadow-xl space-y-5 sm:space-y-6 text-left relative overflow-hidden">
           
           {/* Top Pill Badge */}
           <div className="text-center space-y-2">
-            <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200/80 mb-1">
+            <span className="inline-flex items-center gap-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-[#F59E0B] bg-amber-50 px-3.5 py-1.5 rounded-full border border-amber-200/80 mb-1">
               <ShieldCheck size={13} /> Secure Customer Portal
             </span>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#17231A]">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#17231A]">
               Welcome Back to FillCarts
             </h1>
             <p className="text-xs text-slate-500 font-medium">
@@ -341,7 +343,7 @@ export default function CustomerLoginPage() {
             </div>
           )}
 
-          {/* STEP 1: EMAIL / PHONE INPUT */}
+          {/* STEP 1: OTP EMAIL / PHONE INPUT */}
           {step === "phone" && loginMode === "otp" && (
             <form onSubmit={handleSendOtp} className="space-y-4 text-xs">
               <div>
@@ -356,7 +358,7 @@ export default function CustomerLoginPage() {
                     placeholder="Enter email (e.g. name@gmail.com) or phone"
                     value={contact}
                     onChange={handleContactChange}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:border-[#16A34A] transition-all"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -381,7 +383,7 @@ export default function CustomerLoginPage() {
             </form>
           )}
 
-          {/* STEP 1: PASSWORD LOGIN */}
+          {/* STEP 1: PASSWORD LOGIN WITH VISIBILITY TOGGLE */}
           {step === "phone" && loginMode === "password" && (
             <form onSubmit={handlePasswordLogin} className="space-y-4 text-xs">
               <div>
@@ -396,7 +398,7 @@ export default function CustomerLoginPage() {
                     placeholder="Enter 10-digit phone or name@email.com"
                     value={contact}
                     onChange={handleContactChange}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:border-[#16A34A] transition-all"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
                   />
                 </div>
               </div>
@@ -409,12 +411,20 @@ export default function CustomerLoginPage() {
                   <Lock size={16} className="absolute left-3.5 text-slate-400" />
                   <input
                     required
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => { setPassword(e.target.value); setError(""); }}
-                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:border-[#16A34A] transition-all"
+                    className="w-full bg-[#FFFCF5] border border-slate-200 rounded-2xl pl-10 pr-10 py-3 text-xs font-semibold text-[#17231A] focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 text-slate-400 hover:text-slate-700 cursor-pointer transition-colors"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                  >
+                    {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 
@@ -439,114 +449,120 @@ export default function CustomerLoginPage() {
           )}
 
           {/* GOOGLE SIGN-IN BUTTON */}
-{step === "phone" && (
-  <div className="space-y-4">
-    <div className="relative flex py-1 items-center">
-      <div className="flex-grow border-t border-slate-200"></div>
-      <span className="flex-shrink mx-4 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
-        Or continue with
-      </span>
-      <div className="flex-grow border-t border-slate-200"></div>
-    </div>
+          {step === "phone" && (
+            <div className="space-y-4">
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-200"></div>
+                <span className="flex-shrink mx-4 text-slate-400 text-[10px] font-bold uppercase tracking-wider">
+                  Or continue with
+                </span>
+                <div className="flex-grow border-t border-slate-200"></div>
+              </div>
 
-    <div className="w-full flex justify-center">
-      <GoogleLogin
-        onSuccess={handleGoogleSuccess}
-        onError={handleGoogleError}
-        useOneTap={false}
-        theme="outline"
-        shape="pill"
-      />
-    </div>
-  </div>
-)}
+              <div className="w-full flex justify-center">
+                <GoogleLogin
+                  onSuccess={handleGoogleSuccess}
+                  onError={handleGoogleError}
+                  useOneTap={false}
+                  theme="outline"
+                  shape="pill"
+                />
+              </div>
+            </div>
+          )}
 
           {/* STEP 2: OTP VERIFICATION */}
           {step === "otp" && (
-            <form onSubmit={handleVerifyOtp} className="space-y-5 text-xs">
-              <div className="bg-[#ECFDF3] border border-emerald-200 p-3.5 rounded-2xl flex items-center justify-between text-xs">
-                <div>
-                  <span className="text-[10px] font-black uppercase text-[#166534] block">OTP Sent To</span>
-                  <span className="font-extrabold text-[#17231A]">{contact}</span>
+            <form onSubmit={handleVerifyOtp} className="space-y-4 text-xs">
+              <div className="text-center space-y-1">
+                <div className="w-12 h-12 bg-[#ECFDF3] text-[#16A34A] rounded-2xl flex items-center justify-center mx-auto mb-2">
+                  <Smartphone size={24} />
                 </div>
-                <button
-                  type="button"
-                  onClick={() => setStep("phone")}
-                  className="text-xs font-bold text-[#16A34A] hover:underline cursor-pointer"
-                >
-                  Change
-                </button>
+                <h3 className="text-base font-extrabold text-[#17231A]">Enter 6-Digit OTP</h3>
+                <p className="text-xs text-slate-500">
+                  Sent to <span className="font-bold text-[#166534]">{contact}</span>
+                </p>
               </div>
 
-              <div>
-                <label className="block font-extrabold text-[#17231A] mb-2 text-center">
-                  Enter 6-Digit Verification Code
-                </label>
-                <div className="flex justify-between gap-2 max-w-xs mx-auto">
-                  {otp.map((digit, idx) => (
-                    <input
-                      key={idx}
-                      id={`otp-${idx}`}
-                      type="text"
-                      maxLength={1}
-                      value={digit}
-                      onChange={(e) => handleOtpChange(idx, e.target.value)}
-                      className="w-10 h-12 text-center text-base font-black bg-[#FFFCF5] border-2 border-emerald-200 rounded-xl text-[#17231A] focus:border-[#16A34A] focus:outline-none"
-                    />
-                  ))}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between text-xs pt-1">
-                <button
-                  type="button"
-                  onClick={handleResend}
-                  disabled={timer > 0}
-                  className={`font-bold ${
-                    timer > 0
-                      ? "text-slate-400 cursor-not-allowed"
-                      : "text-[#16A34A] hover:underline cursor-pointer"
-                  }`}
-                >
-                  {timer > 0 ? `Resend OTP in ${timer}s` : "Resend OTP"}
-                </button>
-
-                <span className="text-slate-400 text-[11px] font-semibold">Check your email inbox / spam</span>
+              <div className="flex justify-center gap-2 py-2">
+                {otp.map((digit, idx) => (
+                  <input
+                    key={idx}
+                    id={`otp-${idx}`}
+                    type="text"
+                    inputMode="numeric"
+                    maxLength={1}
+                    value={digit}
+                    onChange={(e) => handleOtpChange(idx, e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Backspace" && !digit && idx > 0) {
+                        const prev = document.getElementById(`otp-${idx - 1}`);
+                        if (prev) prev.focus();
+                      }
+                    }}
+                    className="w-11 h-12 text-center text-lg font-black bg-[#FFFCF5] border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#16A34A] focus:border-transparent transition-all"
+                  />
+                ))}
               </div>
 
               <button
                 type="submit"
-                disabled={isVerifyingOtp}
+                disabled={isVerifyingOtp || otp.join("").length < 6}
                 className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:bg-[#86efac] disabled:cursor-not-allowed text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isVerifyingOtp ? (
                   <>
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Verifying Code...</span>
+                    <span>Verifying OTP...</span>
                   </>
                 ) : (
                   <>
-                    <span>Verify & Login</span>
-                    <CheckCircle2 size={15} />
+                    <span>Verify & Continue</span>
+                    <CheckCircle2 size={16} />
                   </>
                 )}
               </button>
+
+              <div className="flex items-center justify-between text-xs pt-2">
+                <button
+                  type="button"
+                  onClick={() => { setStep("phone"); setError(""); }}
+                  className="text-slate-500 hover:text-slate-800 font-bold flex items-center gap-1 cursor-pointer"
+                >
+                  <ArrowLeft size={13} /> Change Contact
+                </button>
+
+                {timer > 0 ? (
+                  <span className="text-slate-400 font-bold">Resend in {timer}s</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleResend}
+                    disabled={isSendingOtp}
+                    className="text-[#16A34A] hover:text-[#15803D] font-extrabold flex items-center gap-1 cursor-pointer"
+                  >
+                    <RotateCcw size={12} /> Resend OTP
+                  </button>
+                )}
+              </div>
             </form>
           )}
 
-          {/* Footer Link to Register */}
-          <div className="pt-4 border-t border-slate-100 text-center text-xs font-semibold text-slate-500">
-            Don't have a FillCarts account?{" "}
-            <Link to="/register" className="font-extrabold text-[#16A34A] hover:underline">
-              Create Account
-            </Link>
+          {/* Registration Link */}
+          <div className="pt-2 border-t border-slate-100 text-center">
+            <p className="text-xs text-slate-500 font-medium">
+              Don't have an account?{" "}
+              <Link to="/register" className="text-[#16A34A] font-extrabold hover:underline">
+                Create Account
+              </Link>
+            </p>
           </div>
         </div>
       </main>
 
-      {/* Simple Footer */}
-      <footer className="bg-white border-t border-slate-100 py-4 px-6 text-center text-xs text-slate-400 font-semibold">
-        © 2026 FillCarts Technologies Pvt Ltd. All rights reserved.
+      {/* Footer Copyright */}
+      <footer className="py-4 text-center text-xs text-slate-400 border-t border-slate-100">
+        © {new Date().getFullYear()} FillCarts. Safe & Encrypted Customer Gateway.
       </footer>
     </div>
   );
