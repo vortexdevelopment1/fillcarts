@@ -179,14 +179,20 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
     { label: "Features", to: "/features" },
   ];
 
+  const [partnerNotice, setPartnerNotice] = useState("");
+
   const handlePartnerLink = (e, type) => {
     if (!user) {
       e.preventDefault();
       setMobileMenuOpen(false);
       const msg = type === "vendor"
-        ? "Please login first to become a Vendor."
-        : "Please login first to become a Rider.";
-      setShowLoginModal(msg);
+        ? "Please login first to become a Vendor. Redirecting..."
+        : "Please login first to become a Rider. Redirecting...";
+      setPartnerNotice(msg);
+      setTimeout(() => {
+        setPartnerNotice("");
+        navigate("/login");
+      }, 2000);
       return false;
     }
   };
@@ -199,6 +205,13 @@ export default function Navbar({ searchPlaceholder = "Search products, stores...
 
   return (
     <header className="w-full sticky top-0 z-50 shadow-sm border-b border-emerald-900/10">
+      {/* Partner Toast Notice */}
+      {partnerNotice && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[99999] bg-[#17231A] text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center gap-2.5 text-xs font-bold animate-fade-in pointer-events-none">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span>{partnerNotice}</span>
+        </div>
+      )}
       {/* TOP OFFER BAR WITH MARQUEE ANIMATION */}
       <div className="bg-[#0B2616] text-emerald-50 text-[11px] sm:text-xs font-semibold h-8 sm:h-9 overflow-hidden flex items-center border-b border-emerald-950 select-none">
         <div className="flex whitespace-nowrap animate-[marquee_22s_linear_infinite]">

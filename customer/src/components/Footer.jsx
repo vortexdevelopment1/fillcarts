@@ -1,5 +1,5 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 
 const VENDOR_URL =
@@ -52,21 +52,35 @@ const footerColumns = [
 ];
 
 export default function Footer() {
-  const { user, setShowLoginModal } = useCart();
+  const { user } = useCart();
+  const navigate = useNavigate();
+  const [partnerNotice, setPartnerNotice] = useState("");
 
   const handlePartnerLink = (e, type) => {
     if (!user) {
       e.preventDefault();
       const msg = type === "vendor"
-        ? "Please login first to become a Vendor."
-        : "Please login first to become a Rider.";
-      setShowLoginModal(msg);
+        ? "Please login first to become a Vendor. Redirecting..."
+        : "Please login first to become a Rider. Redirecting...";
+      setPartnerNotice(msg);
+      setTimeout(() => {
+        setPartnerNotice("");
+        navigate("/login");
+      }, 2000);
       return false;
     }
   };
 
   return (
-    <footer className="bg-[#17231A] text-slate-200 pt-16 pb-8 border-t border-emerald-900/40" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+    <footer className="bg-[#17231A] text-slate-200 pt-16 pb-8 border-t border-emerald-900/40 relative" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+      {/* Toast Notification Banner */}
+      {partnerNotice && (
+        <div className="fixed bottom-6 right-6 z-[99999] bg-[#17231A] text-white px-5 py-3 rounded-2xl shadow-2xl border border-emerald-500/40 flex items-center gap-2.5 text-xs font-bold animate-fade-in pointer-events-none">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span>{partnerNotice}</span>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
           {/* Brand info column */}

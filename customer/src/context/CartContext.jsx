@@ -211,22 +211,6 @@ export function CartProvider({ children }) {
     setCart([]);
   };
 
-  const [loginModalMessage, setLoginModalMessage] = useState(
-    "Please log in to add items to your cart, manage subscriptions, and track doorstep delivery."
-  );
-
-  const handleSetShowLoginModal = (param) => {
-    if (typeof param === "string" && param.trim()) {
-      setLoginModalMessage(param.trim());
-      setShowLoginModal(true);
-    } else if (param === false) {
-      setShowLoginModal(false);
-    } else {
-      setLoginModalMessage("Please log in to add items to your cart, manage subscriptions, and track doorstep delivery.");
-      setShowLoginModal(true);
-    }
-  };
-
   const cartCount = cart.reduce((total, item) => total + (item?.quantity || 0), 0);
   const cartTotal = cart.reduce((total, item) => total + (item?.price || 0) * (item?.quantity || 0), 0);
   const cartSavings = cart.reduce((total, item) => {
@@ -250,7 +234,7 @@ export function CartProvider({ children }) {
         loadingUser,
         logoutUser,
         checkUserProfile,
-        setShowLoginModal: handleSetShowLoginModal,
+        setShowLoginModal,
         userLocation,
         changeLocation
       }}
@@ -275,8 +259,8 @@ export function CartProvider({ children }) {
               <h2 className="text-lg font-black text-[#17231A] leading-snug">
                 Login Required
               </h2>
-              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[260px] mx-auto leading-relaxed">
-                {loginModalMessage || "Please log in to add items to your cart, manage subscriptions, and track doorstep delivery."}
+              <p className="text-xs text-slate-500 font-semibold mt-1.5 max-w-[240px] mx-auto leading-relaxed">
+                Please log in to add items to your cart, manage subscriptions, and track doorstep delivery.
               </p>
             </div>
 
