@@ -41,11 +41,12 @@ const buildAuthToken = (customer) =>
 
 const setAuthCookie = (res, customer) => {
   const token = buildAuthToken(customer);
+  const isProduction = process.env.NODE_ENV === "production" || !process.env.NODE_ENV;
 
   res.cookie("token", token, {
     httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
+    sameSite: isProduction ? "none" : "lax",
+    secure: isProduction,
     maxAge: 7 * 24 * 60 * 60 * 1000,
   });
 
@@ -144,9 +145,10 @@ router.post(["/login-customer", "/customer/login"], async (req, res) => {
       return res.status(401).send("Invalid phone/email or password");
     }
 
-    setAuthCookie(res, user);
+    const token = setAuthCookie(res, user);
     return res.send({
       message: "Login successful",
+      token,
       customer: formatCustomerResponse(user),
     });
   } catch (error) {
@@ -316,9 +318,10 @@ router.post("/verify-otp", async (req, res) => {
       });
     }
 
-    setAuthCookie(res, user);
+    const token = setAuthCookie(res, user);
     return res.send({
       message: "Login successful",
+      token,
       customer: formatCustomerResponse(user),
     });
   } catch (error) {
@@ -443,9 +446,10 @@ router.post("/forgot-password/reset", async (req, res) => {
       });
     }
 
-    setAuthCookie(res, user);
+    const token = setAuthCookie(res, user);
     return res.send({
       message: "Password reset successful! Logging you in...",
+      token,
       customer: formatCustomerResponse(user),
     });
   } catch (error) {

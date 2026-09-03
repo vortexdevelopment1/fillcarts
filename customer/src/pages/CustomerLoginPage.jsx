@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import {
   Phone, ShieldCheck, ArrowRight, ArrowLeft, Smartphone,
@@ -107,6 +107,10 @@ export default function CustomerLoginPage() {
         }
       }
 
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
       if (res.data.customer) {
         setUser(res.data.customer);
       } else if (checkUserProfile) {
@@ -177,6 +181,10 @@ export default function CustomerLoginPage() {
         otp: entered,
       });
 
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
       const customerObj = res.data.customer || customerProfile;
       if (customerObj) {
         setUser(customerObj);
@@ -206,6 +214,35 @@ export default function CustomerLoginPage() {
       setError(getErrorMessage(err));
     }
   };
+
+  const handleGoogleSuccess = useCallback(async (credentialResponse) => {
+    try {
+      const res = await api.post("/auth/google-login", {
+        token: credentialResponse.credential,
+      });
+
+      if (res.data?.token) {
+        localStorage.setItem("token", res.data.token);
+      }
+
+      if (res.data?.user || res.data?.customer) {
+        setUser(res.data.user || res.data.customer);
+      }
+
+      if (typeof checkUserProfile === "function") {
+        await checkUserProfile();
+      }
+
+      navigate("/");
+    } catch (err) {
+      console.error("LOGIN ERROR", err.response?.data || err.message);
+      setError("Google login failed. Please try again.");
+    }
+  }, [navigate, setUser, checkUserProfile]);
+
+  const handleGoogleError = useCallback(() => {
+    setError("Google login was cancelled or failed.");
+  }, []);
 
   return (
     <div className="bg-[#FFFCF5] min-h-screen text-[#17231A] flex flex-col justify-between font-sans" style={{ fontFamily: "'Manrope', 'Inter', sans-serif" }}>
@@ -373,33 +410,11 @@ export default function CustomerLoginPage() {
 
     <div className="w-full flex justify-center">
       <GoogleLogin
-        onSuccess={async (credentialResponse) => {
-          try {
-            const res = await api.post("/auth/google-login", {
-              token: credentialResponse.credential,
-            });
-
-            if (res.data?.token) {
-              localStorage.setItem("token", res.data.token);
-            }
-
-            if (res.data?.user || res.data?.customer) {
-              setUser(res.data.user || res.data.customer);
-            }
-
-            if (typeof checkUserProfile === "function") {
-              await checkUserProfile();
-            }
-
-            navigate("/");
-          } catch (err) {
-            console.error("LOGIN ERROR", err.response?.data || err.message);
-            setError("Google login failed. Please try again.");
-          }
-        }}
-        onError={() => {
-          setError("Google login was cancelled or failed.");
-        }}
+        onSuccess={handleGoogleSuccess}
+        onError={handleGoogleError}
+        useOneTap={false}
+        theme="outline"
+        shape="pill"
       />
     </div>
   </div>

@@ -13,6 +13,7 @@ export function CartProvider({ children }) {
   // Register global 401 unauthorized handler to clear invalid user session
   useEffect(() => {
     setOnUnauthorized(() => {
+      localStorage.removeItem("token");
       setUser(null);
     });
   }, []);
@@ -198,6 +199,7 @@ export function CartProvider({ children }) {
     } catch (e) {
       console.error("Logout failed", e);
     }
+    localStorage.removeItem("token");
     setUser(null);
     setCart([]);
   };
