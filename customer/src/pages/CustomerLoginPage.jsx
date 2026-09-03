@@ -33,6 +33,9 @@ export default function CustomerLoginPage() {
   const [error, setError] = useState("");
   const [customerProfile, setCustomerProfile] = useState(null);
   const [loginMode, setLoginMode] = useState("otp");
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isVerifyingOtp, setIsVerifyingOtp] = useState(false);
 
   useEffect(() => {
     if (step !== "otp" || timer <= 0) return;
@@ -90,6 +93,7 @@ export default function CustomerLoginPage() {
     }
 
     const isEmail = contact.includes("@");
+    setIsLoggingIn(true);
 
     try {
       const payload = isEmail
@@ -120,6 +124,8 @@ export default function CustomerLoginPage() {
       navigate("/");
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
@@ -134,10 +140,13 @@ export default function CustomerLoginPage() {
     }
 
     const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
+    setIsSendingOtp(true);
 
     try {
       const res = await api.post("/send-otp", {
         [isEmail ? "email" : "contact"]: contact.trim(),
+        email: isEmail ? contact.trim() : undefined,
+        contact: contact.trim(),
         type: "email",
       });
 
@@ -148,6 +157,8 @@ export default function CustomerLoginPage() {
       setTimer(30);
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -174,10 +185,13 @@ export default function CustomerLoginPage() {
     }
 
     const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
+    setIsVerifyingOtp(true);
 
     try {
       const res = await api.post("/verify-otp", {
         [isEmail ? "email" : "contact"]: contact.trim(),
+        email: isEmail ? contact.trim() : undefined,
+        contact: contact.trim(),
         otp: entered,
       });
 
@@ -195,23 +209,30 @@ export default function CustomerLoginPage() {
       navigate("/");
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setIsVerifyingOtp(false);
     }
   };
 
   const handleResend = async () => {
-    if (timer > 0) return;
+    if (timer > 0 || isSendingOtp) return;
     setError("");
     const isEmail = contact.includes("@") || /[a-zA-Z]/.test(contact);
+    setIsSendingOtp(true);
 
     try {
       await api.post("/send-otp", {
         [isEmail ? "email" : "contact"]: contact.trim(),
+        email: isEmail ? contact.trim() : undefined,
+        contact: contact.trim(),
         type: "email",
       });
       setTimer(30);
       setOtp(["", "", "", "", "", ""]);
     } catch (err) {
       setError(getErrorMessage(err));
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -342,10 +363,20 @@ export default function CustomerLoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isSendingOtp}
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:bg-[#86efac] disabled:cursor-not-allowed text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Get Instant Email OTP</span>
-                <ArrowRight size={15} />
+                {isSendingOtp ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Sending OTP to your email...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Get Instant Email OTP</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
           )}
@@ -389,10 +420,20 @@ export default function CustomerLoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isLoggingIn}
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:bg-[#86efac] disabled:cursor-not-allowed text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Login with Password</span>
-                <ArrowRight size={15} />
+                {isLoggingIn ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Logging in...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Login with Password</span>
+                    <ArrowRight size={15} />
+                  </>
+                )}
               </button>
             </form>
           )}
@@ -475,10 +516,20 @@ export default function CustomerLoginPage() {
 
               <button
                 type="submit"
-                className="w-full bg-[#16A34A] hover:bg-[#15803D] text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
+                disabled={isVerifyingOtp}
+                className="w-full bg-[#16A34A] hover:bg-[#15803D] disabled:bg-[#86efac] disabled:cursor-not-allowed text-white font-extrabold text-xs py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer"
               >
-                <span>Verify & Login</span>
-                <CheckCircle2 size={15} />
+                {isVerifyingOtp ? (
+                  <>
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    <span>Verifying Code...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Verify & Login</span>
+                    <CheckCircle2 size={15} />
+                  </>
+                )}
               </button>
             </form>
           )}
